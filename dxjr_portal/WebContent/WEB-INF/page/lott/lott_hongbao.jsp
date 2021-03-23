@@ -61,7 +61,7 @@
 			<div class="col clearfix">
 				<span class="gray3 f16">可用抽奖机会 <span class="orange bold">${chanceTotalNum}</span>
 					次
-				</span><a href="${path }/lottery_chance/info.html" class="ml40">111获得更多抽奖机会</a>
+				</span><a href="${path }/lottery_chance/info.html" class="ml40">111111获得更多抽奖机会</a>
 			</div>
 
 		</div>

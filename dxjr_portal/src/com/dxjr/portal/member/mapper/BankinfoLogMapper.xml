@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dxjr.portal.member.mapper.BankinfoLogMapper" >
+  <resultMap id="BaseResultMap" type="com.dxjr.base.entity.BankinfoLog" >
+    <id column="ID" property="id" jdbcType="INTEGER" />
+    <result column="USER_ID" property="userId" jdbcType="INTEGER" />
+    <result column="CARDNUM" property="cardNum" jdbcType="VARCHAR" />
+    <result column="TYPE" property="type" jdbcType="TINYINT" />
+    <result column="STATUS" property="status" jdbcType="TINYINT" />
+    <result column="ADD_BY" property="addBy" jdbcType="INTEGER" />
+    <result column="ADD_TIME" property="addTime" jdbcType="TIMESTAMP" />
+    <result column="REMARK" property="remark" jdbcType="VARCHAR" />
+  </resultMap>
+
+  <sql id="Base_Column_List" >
+    ID, USER_ID, CARDNUM, TYPE, STATUS, ADD_BY, ADD_TIME, REMARK
+  </sql>
+  
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from rocky_bankinfo_log
+    where ID = #{id,jdbcType=INTEGER}
+  </select>
+  	
+  	<!-- 查询银行卡信息日志表-用户锁定的记录-->
+  	<select id="queryBankCardLogLockByUserId" parameterType="java.lang.Integer" resultMap="BaseResultMap" >
+		select 
+    	<include refid="Base_Column_List" />
+    	from rocky_bankinfo_log
+		where USER_ID = #{userId} and TYPE =0 and STATUS = 0 order by ADD_TIME desc  limit 0,1
+  	</select>
+  
+  <!-- 查询银行卡操作日志中的锁定记录(type=0的记录)--> 
+  	<select id="querytBankCardLock" parameterType="java.lang.Integer" resultType="java.lang.Integer" >
+		select count(id)
+    	from rocky_bankinfo_log
+		where USER_ID = #{userId} and TYPE =0 and STATUS = 0
+  	</select>
+  	
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from rocky_bankinfo_log
+    where ID = #{id,jdbcType=INTEGER}
+  </delete>
+
+  <insert id="insert" parameterType="com.dxjr.base.entity.BankinfoLog" >
+    insert into rocky_bankinfo_log (USER_ID, CARDNUM, 
+      TYPE, STATUS, ADD_BY, ADD_TIME, 
+      REMARK,BANKVERIF)
+      select * from (
+    	select #{userId,jdbcType=INTEGER} as USER_ID, #{cardNum,jdbcType=VARCHAR} as CARDNUM, 
+    	#{type,jdbcType=TINYINT} as TYPE,  #{status,jdbcType=TINYINT} as STATUS, #{addBy,jdbcType=INTEGER} as ADD_BY,
+    	#{addTime,jdbcType=TIMESTAMP} as ADD_TIME,#{remark,jdbcType=VARCHAR} as REMARK,#{bankVerif,jdbcType=INTEGER} as BANKVERIF
+		) t 
+ 	<!-- where not exists (select 1 from rocky_bankinfo_log c where c.USER_ID = t.USER_ID and c.TYPE = 0 and c.STATUS = 0); -->
+  </insert>
+  
+  <insert id="insertOld" parameterType="com.dxjr.base.entity.BankinfoLog" >
+    insert into rocky_bankinfo_log (USER_ID, CARDNUM, 
+      TYPE, STATUS, ADD_BY, ADD_TIME, 
+      REMARK,BANKVERIF)
+    values (#{userId,jdbcType=INTEGER}, #{cardNum,jdbcType=VARCHAR}, 
+      #{type,jdbcType=TINYINT}, #{status,jdbcType=TINYINT}, #{addBy,jdbcType=INTEGER}, #{addTime,jdbcType=TIMESTAMP}, 
+      #{remark,jdbcType=VARCHAR}, #{bankVerif,jdbcType=INTEGER})
+  </insert>
+
+  <update id="updateByPrimaryKey" parameterType="com.dxjr.base.entity.BankinfoLog" >
+    update rocky_bankinfo_log
+    set USER_ID = #{userId,jdbcType=INTEGER},
+      CARDNUM = #{cardNum,jdbcType=VARCHAR},
+      TYPE = #{type,jdbcType=TINYINT},
+      STATUS = #{status,jdbcType=TINYINT},
+      ADD_BY = #{addBy,jdbcType=INTEGER},
+      ADD_TIME = #{addTime,jdbcType=TIMESTAMP},
+      REMARK = #{remark,jdbcType=VARCHAR}
+    where ID = #{id,jdbcType=INTEGER}
+  </update>
+</mapper>

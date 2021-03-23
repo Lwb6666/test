@@ -1,0 +1,27 @@
+.main_image {width:100%; min-width:1000px; height:349px; border-top:1px solid #d7d7d7; overflow:hidden; margin:0 auto; position:relative;z-index:3;}
+.main_image ul {width:9999px; height:349px; overflow:hidden; position:absolute; top:0; left:0 ;}
+.main_image li {float:left; width:100%; height:349px;}
+.main_image li span {display:block; width:100%; height:349px;}
+.main_image li a {display:block; width:100%; height:349px;}
+.main_image li .img_3 {background: url('../images/topImage/img_new_3.jpg') center top no-repeat;} 
+.main_image li .img_4 {background: url('../images/topImage/img_new_4.jpg') center top no-repeat;} 
+.main_image li .img_7 {background: url('../images/topImage/img_new_7.jpg') center top no-repeat;}
+.main_image li .img_8 {background: url('../images/topImage/img_new_8.jpg') center top no-repeat;}
+.main_image li .img_9 {background: url('../images/topImage/img_new_9.jpg') center top no-repeat;}
+.main_image li .img_10 {background: url('../images/topImage/img_new_10.jpg') center top no-repeat;}
+.main_image li .img_11 {background: url('../images/topImage/img_new_11.jpg') center top no-repeat;}
+.main_image li .img_12{background: url('../images/topImage/img_new_12.jpg') center top no-repeat;}
+.main_image li .img_13{background: url('../images/topImage/img_new_13.jpg') center top no-repeat;}
+.main_image li .img_14{background: url('../images/topImage/img_new_14.jpg') center top no-repeat;}
+.main_image li .img_15{background: url('../images/topImage/img_new_15.jpg') center top no-repeat;}
+.main_image li .img_16{background: url('../images/topImage/img_new_16.jpg') center top no-repeat;}
+.main_image li .img_17{background: url('../images/topImage/img_new_17.jpg') center top no-repeat;}
+.main_image li .img_18{background: url('../images/topImage/img_new_18.jpg') center top no-repeat;}
+.main_image li .img_19{background: url('../images/topImage/img_new_19.jpg') center top no-repeat;}
+.main_image li .img_20{background: url('../images/topImage/img_new_20.jpg') center top no-repeat;}
+.main_image li .img_21{background: url('../images/topImage/img_new_21.jpg') center top no-repeat;}
+.main_image li .img_22{background: url('../images/topImage/img_new_22.jpg') center top no-repeat;}
+.main_image li .img_23{background: url('../images/topImage/img_new_23.jpg') center top no-repeat;}
+.main_image li .img_24{background: url('../images/topImage/img_new_24.jpg') center top no-repeat;}
+.main_image li .img_25{background: url('../images/topImage/img_new_27.jpg') center top no-repeat;}
+.main_image li .img_26{background: url('../images/topImage/img_new_29.jpg') center top no-repeat;}

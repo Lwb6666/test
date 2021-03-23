@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dxjr.portal.fix.mapper.fixRateMapper" >
+  <resultMap id="BaseResultMap" type="com.dxjr.base.entity.FixRate" >
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="fix_type" property="fixType" jdbcType="INTEGER" />
+    <result column="signout_type" property="signoutType" jdbcType="INTEGER" />
+    <result column="signout_rate" property="signoutRate" jdbcType="DECIMAL" />
+    <result column="signout_fee_rate" property="signoutFeeRate" jdbcType="DECIMAL" />
+    <result column="add_user" property="addUser" jdbcType="INTEGER" />
+    <result column="add_time" property="addTime" jdbcType="TIMESTAMP" />
+    <result column="add_ip" property="addIp" jdbcType="VARCHAR" />
+    <result column="remark" property="remark" jdbcType="VARCHAR" />
+    <result column="update_user" property="updateUser" jdbcType="INTEGER" />
+    <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+    <result column="update_ip" property="updateIp" jdbcType="VARCHAR" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, fix_type, signout_type, signout_rate, signout_fee_rate, add_user, add_time, add_ip, 
+    remark, update_user, update_time, update_ip
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from t_fix_rate
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from t_fix_rate
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.dxjr.base.entity.FixRate" >
+    insert into t_fix_rate (id, fix_type, signout_type, 
+      signout_rate, signout_fee_rate, add_user, 
+      add_time, add_ip, remark, 
+      update_user, update_time, update_ip
+      )
+    values (#{id,jdbcType=INTEGER}, #{fixType,jdbcType=INTEGER}, #{signoutType,jdbcType=INTEGER}, 
+      #{signoutRate,jdbcType=DECIMAL}, #{signoutFeeRate,jdbcType=DECIMAL}, #{addUser,jdbcType=INTEGER}, 
+      #{addTime,jdbcType=TIMESTAMP}, #{addIp,jdbcType=VARCHAR}, #{remark,jdbcType=VARCHAR}, 
+      #{updateUser,jdbcType=INTEGER}, #{updateTime,jdbcType=TIMESTAMP}, #{updateIp,jdbcType=VARCHAR}
+      )
+      <selectKey resultType="java.lang.Integer" order="AFTER" keyProperty="id">  
+      	    SELECT LAST_INSERT_ID() AS ID    
+   	</selectKey>
+  </insert>
+  <insert id="insertSelective" parameterType="com.dxjr.base.entity.FixRate" >
+    insert into t_fix_rate
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="fixType != null" >
+        fix_type,
+      </if>
+      <if test="signoutType != null" >
+        signout_type,
+      </if>
+      <if test="signoutRate != null" >
+        signout_rate,
+      </if>
+      <if test="signoutFeeRate != null" >
+        signout_fee_rate,
+      </if>
+      <if test="addUser != null" >
+        add_user,
+      </if>
+      <if test="addTime != null" >
+        add_time,
+      </if>
+      <if test="addIp != null" >
+        add_ip,
+      </if>
+      <if test="remark != null" >
+        remark,
+      </if>
+      <if test="updateUser != null" >
+        update_user,
+      </if>
+      <if test="updateTime != null" >
+        update_time,
+      </if>
+      <if test="updateIp != null" >
+        update_ip,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="fixType != null" >
+        #{fixType,jdbcType=INTEGER},
+      </if>
+      <if test="signoutType != null" >
+        #{signoutType,jdbcType=INTEGER},
+      </if>
+      <if test="signoutRate != null" >
+        #{signoutRate,jdbcType=DECIMAL},
+      </if>
+      <if test="signoutFeeRate != null" >
+        #{signoutFeeRate,jdbcType=DECIMAL},
+      </if>
+      <if test="addUser != null" >
+        #{addUser,jdbcType=INTEGER},
+      </if>
+      <if test="addTime != null" >
+        #{addTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="addIp != null" >
+        #{addIp,jdbcType=VARCHAR},
+      </if>
+      <if test="remark != null" >
+        #{remark,jdbcType=VARCHAR},
+      </if>
+      <if test="updateUser != null" >
+        #{updateUser,jdbcType=INTEGER},
+      </if>
+      <if test="updateTime != null" >
+        #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateIp != null" >
+        #{updateIp,jdbcType=VARCHAR},
+      </if>
+    </trim>
+    <selectKey resultType="java.lang.Integer" order="AFTER" keyProperty="id">  
+      	    SELECT LAST_INSERT_ID() AS ID    
+   	</selectKey>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.dxjr.base.entity.FixRate" >
+    update t_fix_rate
+    <set >
+      <if test="fixType != null" >
+        fix_type = #{fixType,jdbcType=INTEGER},
+      </if>
+      <if test="signoutType != null" >
+        signout_type = #{signoutType,jdbcType=INTEGER},
+      </if>
+      <if test="signoutRate != null" >
+        signout_rate = #{signoutRate,jdbcType=DECIMAL},
+      </if>
+      <if test="signoutFeeRate != null" >
+        signout_fee_rate = #{signoutFeeRate,jdbcType=DECIMAL},
+      </if>
+      <if test="addUser != null" >
+        add_user = #{addUser,jdbcType=INTEGER},
+      </if>
+      <if test="addTime != null" >
+        add_time = #{addTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="addIp != null" >
+        add_ip = #{addIp,jdbcType=VARCHAR},
+      </if>
+      <if test="remark != null" >
+        remark = #{remark,jdbcType=VARCHAR},
+      </if>
+      <if test="updateUser != null" >
+        update_user = #{updateUser,jdbcType=INTEGER},
+      </if>
+      <if test="updateTime != null" >
+        update_time = #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateIp != null" >
+        update_ip = #{updateIp,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.dxjr.base.entity.FixRate" >
+    update t_fix_rate
+    set fix_type = #{fixType,jdbcType=INTEGER},
+      signout_type = #{signoutType,jdbcType=INTEGER},
+      signout_rate = #{signoutRate,jdbcType=DECIMAL},
+      signout_fee_rate = #{signoutFeeRate,jdbcType=DECIMAL},
+      add_user = #{addUser,jdbcType=INTEGER},
+      add_time = #{addTime,jdbcType=TIMESTAMP},
+      add_ip = #{addIp,jdbcType=VARCHAR},
+      remark = #{remark,jdbcType=VARCHAR},
+      update_user = #{updateUser,jdbcType=INTEGER},
+      update_time = #{updateTime,jdbcType=TIMESTAMP},
+      update_ip = #{updateIp,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  
+  <!-- 根据定期宝类型和提前退出类型查询费率配置记录 -->
+  <select id="selectByFixTypeAndSignoutType" resultMap="BaseResultMap" >
+    select 
+    <include refid="Base_Column_List" />
+    from t_fix_rate
+    where fix_type = #{fixType,jdbcType=INTEGER}
+    and signout_type = #{signoutType,jdbcType=INTEGER} limit 1
+  </select>
+</mapper>

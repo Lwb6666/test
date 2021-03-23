@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dxjr.portal.configuration.mapper.ConfigurationMapper">
+
+	<select id="selectAll" resultMap="com.dxjr.base.mapper.BaseConfigurationMapper.BaseResultMap">
+		select * from rocky_configuration where STATUS = 0 order by TYPE, `ORDER`
+	</select>
+
+
+	<select id="selectByTypeAndValue" resultMap="com.dxjr.base.mapper.BaseConfigurationMapper.BaseResultMap">
+		SELECT * FROM rocky_configuration WHERE TYPE = #{type} AND `VALUE` = #{value} limit 1
+	</select>
+</mapper>

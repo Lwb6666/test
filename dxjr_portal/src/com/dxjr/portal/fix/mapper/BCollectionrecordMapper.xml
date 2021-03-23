@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.dxjr.portal.fix.mapper.BCollectionrecordMapper">	
+
+	<resultMap type="com.dxjr.portal.collection.vo.BCollectionRecordVo" id="bCollectionRecordResultMap">
+		<id property="id" 						column="ID"/>
+		<result property="status"				column="STATUS"/>
+		<result property="order"				column="ORDER"/>
+		<result property="tenderId"				column="TENDER_ID"/>
+		<result property="repayTime"			column="REPAY_TIME"/>
+		<result property="repayYestime"			column="REPAY_YESTIME"/>
+		<result property="repayAccount"			column="REPAY_ACCOUNT"/>
+		<result property="repayYesaccount"		column="REPAY_YESACCOUNT"/>
+		<result property="interest"				column="INTEREST"/>
+		<result property="capital"				column="CAPITAL"/>
+		<result property="lateDays"				column="LATE_DAYS"/>
+		<result property="lateInterest"			column="LATE_INTEREST"/>
+		<result property="addtime"				column="ADDTIME"/>
+		<result property="addip"				column="ADDIP"/>
+		<result property="advancetime"			column="ADVANCETIME"/>
+		<result property="advanceYesaccount"	column="ADVANCE_YESACCOUNT"/>
+		<result property="firstBorrowId"		column="FIRST_BORROW_ID"/>
+		<result property="isFirstBorrow"		column="IS_FIRST_BORROW"/>
+		<result property="userId"				column="USER_ID"/>
+		<result property="borrowId"				column="BORROW_ID"/>
+		<result property="firstTenderRealId"	column="FIRST_TENDER_REAL_ID"/>
+		<result property="repayAccountSum"		column="repayAccountSum"/>
+		<result property="capitalSum"			column="capitalSum"/>
+		<result property="borrowOrder" column="borrowOrder"/>
+	</resultMap>
+	
+	<sql id="Base_Column_List">
+		bc.`STATUS`,
+		bc.`ORDER`,
+		bc.`TENDER_ID`,
+		FROM_UNIXTIME(bc.`REPAY_TIME`, '%Y-%m-%d') as REPAY_TIME,
+		FROM_UNIXTIME(bc.`REPAY_YESTIME`, '%Y-%m-%d') as REPAY_YESTIME,
+		bc.`REPAY_ACCOUNT`,
+		bc.`REPAY_YESACCOUNT`,
+		bc.`INTEREST`,
+		bc.`CAPITAL`,
+		bc.`LATE_DAYS`,
+		bc.`LATE_INTEREST`,
+		bc.`ADDTIME`,
+		bc.`ADDIP`,
+		bc.`ADVANCETIME`,
+		bc.`ADVANCE_YESACCOUNT`,
+		bc.`FIRST_BORROW_ID`,
+		bc.`IS_FIRST_BORROW`,
+		bc.`USER_ID`,
+		bc.`BORROW_ID`,
+		bc.`FIRST_TENDER_REAL_ID`
+	</sql>
+	
+	<!-- 根据定期宝ID查询投标记录表中待收本金总和 -->
+	<select id="queryCollectionrecordSum" parameterType="java.lang.Integer" resultType="java.math.BigDecimal">
+		SELECT Ifnull(Sum(rbc.CAPITAL),0)
+		FROM   rocky_b_collectionrecord rbc
+		       INNER JOIN rocky_b_tenderrecord rbt
+		         ON rbc.TENDER_ID = rbt.ID
+		WHERE  rbc.`STATUS` = 0
+		       AND rbt.USER_ID = #{fixBorrowId}
+		       AND rbt.`STATUS` = 1;
+	</select>
+	
+	<select id="queryCollectionrecord" resultMap="bCollectionRecordResultMap">
+	select <include refid="Base_Column_List" />,b.order as borrowOrder from rocky_b_collectionrecord bc
+	left join rocky_borrow b on b.ID = bc.BORROW_ID where bc.user_id = #{userId} and bc.tender_id = #{tenderId} and bc.borrow_id = #{borrowId}
+	</select>
+	
+</mapper>

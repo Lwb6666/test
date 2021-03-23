@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.dxjr.base.mapper.BaseMailSendControlMapper">
+	
+	<!-- AccountLinkman结果集 -->
+	<resultMap type="com.dxjr.base.entity.MailSendControl" id="mailSendControlResultMap">
+		<id property="id" column="id" />
+		<result property="type" 				column="type" />
+		<result property="indate" 				column="indate" />
+		<result property="mailTotalNum" 		column="mail_total_num" />
+		<result property="mailYesNum" 			column="mail_yes_num" />
+		<result property="mailNoNum"	    	column="mail_no_num" />
+		<result property="addtime"  			column="ADDTIME" />
+	</resultMap>
+	
+	<!--关联人类基本列 -->
+	<sql id="mailSendControlBaseColumn">
+		c.ID, 
+		c.type, 
+		c.indate, 
+		c.mail_total_num, 
+		c.mail_yes_num, 
+		c.mail_no_num, 
+		c.ADDTIME
+	</sql>
+	
+	<!-- 插入记录，返回主键 -->
+	<insert id="insertEntity" parameterType="com.dxjr.base.entity.MailSendControl">
+		INSERT INTO rocky_mail_send_control 
+		(type, indate, mail_total_num, mail_yes_num, mail_no_num, ADDTIME)
+		VALUES
+		(#{type}, #{indate}, #{mailTotalNum}, #{mailYesNum}, #{mailNoNum}, #{addtime})
+ 		 <selectKey resultType="java.lang.Integer" order="AFTER" keyProperty="id">  
+      	    SELECT LAST_INSERT_ID() AS ID    
+   		 </selectKey>
+	</insert>
+	
+  	<!-- 根据ID查询 -->
+	<select id="queryById" parameterType="java.lang.Integer" resultMap="mailSendControlResultMap" >
+		select 	
+		   <include refid="mailSendControlBaseColumn"/>
+		from
+			rocky_mail_send_control c
+		where 1=1
+		and c.id=#{id}
+  	</select>
+	
+  <!-- 更新记录 -->
+  <update id="updateEntity" parameterType="com.dxjr.base.entity.MailSendControl" >
+    update rocky_mail_send_control
+    <set >
+      <if test="type != null" >
+        type = #{type,jdbcType=INTEGER},
+      </if>
+      <if test="indate != null" >
+        indate = #{indate,jdbcType=DATE},
+      </if>
+      <if test="mailTotalNum != null" >
+        mail_total_num = #{mailTotalNum,jdbcType=INTEGER},
+      </if>
+      <if test="mailYesNum != null" >
+        mail_yes_num = #{mailYesNum,jdbcType=INTEGER},
+      </if>
+      <if test="mailNoNum != null" >
+        mail_no_num = #{mailNoNum,jdbcType=INTEGER},
+      </if>
+      <if test="addtime != null" >
+        ADDTIME = #{addtime,jdbcType=DATE},
+      </if>
+    </set>
+    where ID = #{id}
+  </update>
+  	
+</mapper>  

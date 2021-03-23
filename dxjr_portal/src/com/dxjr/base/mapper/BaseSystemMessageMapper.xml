@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.dxjr.base.mapper.BaseSystemMessageMapper">
+	
+	<!-- 结果集 -->
+	<resultMap type="com.dxjr.base.entity.SystemMessage" id="systemMessageResultMap">
+		<id property="id" column="id" />
+		<result property="title" 		column="TITLE" />
+		<result property="type" 		column="TYPE" />
+		<result property="userId" 		column="USER_ID" />
+		<result property="content" 		column="CONTENT" />
+		<result property="addtime"	    column="ADDTIME" />
+		<result property="isRead"	    column="IS_READ" />
+	</resultMap>
+	
+	<!--基本列 -->
+	<sql id="systemMessageBaseColumn">
+		s.ID, 
+		s.TITLE, 
+		s.TYPE, 
+		s.USER_ID, 
+		s.CONTENT, 
+		s.ADDTIME,
+		s.IS_READ
+	</sql>
+	
+	<!-- 插入记录，返回主键 -->
+	<insert id="insertEntity" parameterType="com.dxjr.base.entity.SystemMessage">
+		INSERT INTO rocky_system_message 
+		(TITLE,	TYPE,	USER_ID,	CONTENT,	ADDTIME,	IS_READ)
+		VALUES
+		( #{title},#{type},#{userId},#{content},#{addtime},#{isRead}	)
+		
+ 		 <selectKey resultType="java.lang.Integer" order="AFTER" keyProperty="id">  
+      	    SELECT LAST_INSERT_ID() AS ID    
+   		 </selectKey>
+	</insert>
+	
+  	<!-- 根据ID查询 -->
+	<select id="queryById" parameterType="java.lang.Integer" resultMap="systemMessageResultMap" >
+		select 	
+		   <include refid="systemMessageBaseColumn"/>
+		from
+			rocky_system_message s
+		where 1=1
+		and s.id=#{id}
+  	</select>
+	
+  <!-- 更新-->
+  <update id="updateEntity" parameterType="com.dxjr.base.entity.SystemMessage" >
+    update rocky_online_counter
+    <set >
+      <if test="title != null" >
+        TITLE = #{title},
+      </if>
+      <if test="type != null" >
+        TYPE = #{type},
+      </if>
+      <if test="userId != null" >
+        USER_ID = #{userId},
+      </if>
+      <if test="content != null" >
+        CONTENT = #{content},
+      </if>
+      <if test="addtime != null" >
+        ADDTIME = #{addtime},
+      </if>
+      <if test="isRead != null" >
+        IS_READ = #{isRead},
+      </if>
+    </set>
+    where ID = #{id}
+  </update>
+  	
+</mapper>  

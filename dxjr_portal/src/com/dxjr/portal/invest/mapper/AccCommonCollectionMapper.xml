@@ -1,0 +1,540 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.dxjr.portal.invest.mapper.AccCommonCollectionMapper">
+	<!-- -->
+	<resultMap type="com.dxjr.portal.invest.vo.CommonCollectionVo" id="accCommonCollectionResultMap">
+			 <id property="id" 					column="ID"/>
+			 <result property="status"			column="STATUS"/>
+			 <result property="order"			column="ORDER"/>
+			 <result property="borrowOrder"     column="borrowOrder"/>
+			 <result property="tenderId"		column="TENDER_ID"/>
+			 <result property="repayTime"		column="REPAY_TIME"/>
+			 <result property="repayYestime"	column="REPAY_YESTIME"/>
+			 <result property="repayAccount"	column="REPAY_ACCOUNT"/>
+			 <result property="repayYesaccount"	column="REPAY_YESACCOUNT"/>
+			 <result property="interest"		column="INTEREST"/>
+			 <result property="capital"			column="CAPITAL"/>
+			 <result property="lateDays"		column="LATE_DAYS"/>
+			 <result property="lateInterest"	column="LATE_INTEREST"/>
+			 <result property="tenderTime"	    column="tenderTime"/>
+			 <result property="parentId"	    column="parentId"/>
+			 <result property="addtime"			column="ADDTIME"/>
+			 <result property="addip"			column="ADDIP"/>
+			 <result property="advancetime"		column="ADVANCETIME"/>
+			 <result property="firstBorrowId"	column="FIRST_BORROW_ID"/>
+			 <result property="isFirstBorrow"	column="IS_FIRST_BORROW"/>
+			 <result property="firstTenderRealId"	column="FIRST_TENDER_REAL_ID"/>
+			 <result property="first_periods" column="first_periods"/>
+			 
+			 <result property="vipApp_passed" column="vipApp_passed"/>
+			 
+			 <result property="borrowId" 			column="cborrowId"/>
+			 <result property="timeLimit"		column="borrowTimeLimit"/>
+			 <result property="name"			column="borrowName"/>
+			 <result property="userName"        column="USERNAME"/>
+			 <result property="apr" 			column="borrowApr"/>
+			 <result property="getYesAccount" 	column="getYesAccount"/>
+			 <result property="inverestFee" 	column="inverestFee"/>
+			 <result property="yesInterest" 	column="yesInterest"/>
+			 <result property="iscustody"  column="IS_CUSTODY"/>
+			 <result property="tenderType"  column="TENDER_TYPE"/>
+             <result property="ishowfloat" column="HAS_EXTRA_INTEREST"/>
+             <result property="yearApr" column="APR_YEAR"/>
+		<association property="borrowVo" 		javaType="com.dxjr.portal.borrow.vo.BorrowVo">
+			 <id property="id" 					column="borrowId"/>
+			 <result property="status" 			column="borrowStatus"/>
+			 <result property="borrowtype"		column="borrowType"/>
+			 <result property="style"			column="borrowStyle"/>
+			 <result property= "creditRating"   column="creditRating"/>
+		</association>	
+		
+		<association property="brepaymentRecordVo" javaType="com.dxjr.portal.repayment.vo.BRepaymentRecordVo">
+			 <id     property = "id"       		column="repaymentWebid"/>  
+			 <result property="webstatus" 		column="repaymentWebStatus"/>
+			 <result property="status"			column="repaymentStatus"/>
+		</association> 
+	</resultMap>
+	
+<!-- 	 <resultMap type="com.dxjr.portal.repayment.vo.BRepaymentRecordVo" id="brepaymentRecordVoResultMap">  
+        	 <id column="id" column="repaymentWebid"/>  
+			 <result property="webstatus" 	column="repaymentWebStatus"/>
+			 <result property="status"		column="repaymentStatus"/>
+    </resultMap> -->
+			<sql id="collection_condition">
+                    <if test="user_id != null and user_id != ''">
+                    	AND t.user_id = #{user_id}
+                    </if>
+                    
+                    <if test="status_type != null and status_type == 0">
+						AND (
+						(c.STATUS =0
+					    <if test="beginTime != null and beginTime != '' and endTime != null and endTime != ''">
+							and c.REPAY_TIME <![CDATA[>=]]> #{beginTime}
+							and c.REPAY_TIME <![CDATA[<]]> #{endTime}
+						</if> 
+			            ) 
+
+			            )
+					</if>
+					<if test="status_type != null and status_type == 1">
+						AND (
+						(c.STATUS in(1,3) 
+						<if test="beginTime != null and beginTime != '' and endTime != null and endTime != ''">
+							and c.REPAY_YESTIME <![CDATA[>=]]> #{beginTime}
+							and c.REPAY_YESTIME <![CDATA[<]]> #{endTime}
+						</if> 
+			            )
+			           OR 
+			            (c.STATUS =2
+			             <if test="beginTime != null and beginTime != '' and endTime != null and endTime != ''">
+							and  UNIX_TIMESTAMP(c.ADVANCETIME) <![CDATA[>=]]> #{beginTime}
+							and  UNIX_TIMESTAMP(c.ADVANCETIME) <![CDATA[<]]> #{endTime}
+						</if> 
+			            ) 
+			            )
+					</if>
+					
+					<if test="type_collection != null and type_collection == 0">
+						AND (c.FIRST_BORROW_ID IS NULL or (c.FIRST_BORROW_ID IS NOT NULL and IS_FIRST_BORROW = 2))
+					</if>
+					<if test="type_collection != null and type_collection == 1">
+						AND c.FIRST_BORROW_ID IS NOT NULL and IS_FIRST_BORROW = 1
+					</if>
+					
+					<if test="keyword != null and keyword != ''">
+						and rm.USERNAME  like concat('%', #{keyword} ,'%')
+					</if>
+					<if test="iscustody !=null and iscustody != ''">
+						<if test="iscustody==1">
+						  and c.IS_CUSTODY  = #{iscustody}
+					   </if>
+					   <if test="iscustody==0">
+						  and (c.IS_CUSTODY  = #{iscustody} or c.IS_CUSTODY is null)
+					   </if>
+					</if>
+					
+	</sql>
+
+
+	<!-- begin  普通待收和直通车待收查询  -->
+	<select id="queryAccCommonCollectionsWithPage" parameterType="java.util.Map" resultMap="accCommonCollectionResultMap" >
+		           SELECT
+                      c.id,
+                      c.status,
+                      c.ORDER,
+                      c.TENDER_ID,
+                      c.REPAY_TIME,
+                      c.REPAY_YESTIME,
+                      c.REPAY_ACCOUNT,
+                      c.REPAY_YESACCOUNT + c.REPAY_YESEXTRAINTEREST AS REPAY_YESACCOUNT,
+                      c.INTEREST,
+                      <!--CASE WHEN fc.ID is null THEN 0 ELSE 1 END AS HAS_EXTRA_INTEREST,-->
+                      <if test="status_type != null and status_type == 0">
+                          CASE WHEN fc.ID is null THEN 0 ELSE 1 END AS HAS_EXTRA_INTEREST,
+                      </if>
+                      <if test="status_type != null and status_type == 1">
+                          CASE WHEN c.REPAY_YESEXTRAINTEREST > 0 THEN 1 ELSE 0 END AS HAS_EXTRA_INTEREST,
+                      </if>
+                      fc.APR_YEAR AS APR_YEAR,
+                      c.CAPITAL,
+                      c.LATE_DAYS,
+                      c.LATE_INTEREST,
+                      c.ADDTIME,
+                      c.ADDIP,
+                      c.ADVANCETIME,
+                      c.FIRST_BORROW_ID,
+                      c.IS_FIRST_BORROW,
+                      c.FIRST_TENDER_REAL_ID,
+                      c.IS_CUSTODY,
+                      t.ADDTIME AS tenderTime,
+                      t.PARENT_ID AS parentId,
+                      b.order AS borrowOrder,
+                      b.APR AS borrowApr,
+                      b.TIME_LIMIT AS borrowTimeLimit,
+                      b.ID AS borrowId,
+                      b.NAME AS borrowName,
+                      b.ID AS cborrowId,
+                      b.status AS borrowStatus,
+                      b.borrowType AS borrowType,
+                      b.STYLE AS borrowStyle,
+                      b.TIME_LIMIT AS borrowTimeLimit,
+                      r.WEBSTATUS AS repaymentWebStatus,
+                      r.status AS repaymentStatus,
+                      r.id AS repaymentWebid,
+                      t.IS_VIP AS vipApp_passed,
+                      f.PERIODS AS first_periods, 
+                      b.credit_rating AS creditRating,
+                      rm.USERNAME,
+                      CASE WHEN c.`STATUS` = 1 OR c.`STATUS` = 2 OR c.`STATUS` = 3 THEN
+					  ROUND(c.REPAY_YESACCOUNT-c.CAPITAL+c.REPAY_YESEXTRAINTEREST,2)
+					  ELSE
+					  0
+					  END as yesInterest,
+                      CASE WHEN c.`STATUS` = 1 OR c.`STATUS` = 2 OR c.`STATUS` = 3 THEN
+						CASE WHEN b.BORROWTYPE = 3 THEN 0  ELSE ROUND((c.REPAY_YESACCOUNT-c.CAPITAL+c.REPAY_YESEXTRAINTEREST)*t.RATIO,2) END
+					  ELSE
+						0
+					  END as inverestFee,
+					  ROUND(c.REPAY_YESACCOUNT - (CASE WHEN c.`STATUS` = 1 OR c.`STATUS` = 2 OR c.`STATUS` = 3 THEN
+						CASE WHEN b.BORROWTYPE = 3 THEN 0  ELSE ROUND((c.REPAY_YESACCOUNT-c.CAPITAL+c.REPAY_YESEXTRAINTEREST)*t.RATIO,2) END
+					  ELSE
+						0
+					  END),2) as getYesAccount,
+					  t.TENDER_TYPE
+                    FROM rocky_b_collectionrecord c
+                      LEFT JOIN rocky_b_tenderrecord t
+                        ON t.id = c.TENDER_ID
+                      LEFT JOIN rocky_borrow b
+                        ON b.id = t.borrow_id
+                      LEFT JOIN rocky_member rm 
+                        ON b.USER_ID = rm.id 
+                      LEFT JOIN t_first_borrow f
+                        ON f.id = c.FIRST_BORROW_ID
+                      LEFT JOIN rocky_b_repaymentrecord r
+                        ON r.borrow_id = b.id 
+                      LEFT JOIN t_float_coupon fc
+                        ON c.TENDER_ID = fc.TARGET_ID
+                          and c.USER_ID = fc.USER_ID
+                          and fc.TYPE = 1
+                          and fc.TARGET_TYPE = 1
+                    <if test="status_type != null and status_type == 0">
+                          and fc.STATUS = 1
+                    </if>
+                          and fc.IS_CUSTODY != 1
+                    WHERE 1 = 1
+						<include refid="collection_condition"/>
+                    	AND c.ORDER = r.ORDER 
+                    ORDER BY c.REPAY_YESTIME DESC,c.REPAY_TIME ASC 
+  	</select> 
+  		<select id="queryAccCommonCollections" parameterType="java.util.Map" resultMap="accCommonCollectionResultMap" >
+		           SELECT
+                      c.id,
+                      c.status,
+                      c.ORDER,
+                      c.TENDER_ID,
+                      c.REPAY_TIME,
+                      c.REPAY_YESTIME,
+                      c.REPAY_ACCOUNT,
+                      c.REPAY_YESACCOUNT + c.REPAY_YESEXTRAINTEREST AS REPAY_YESACCOUNT,
+                      c.INTEREST,
+                      <!--CASE WHEN fc.ID is null THEN 0 ELSE 1 END AS HAS_EXTRA_INTEREST,-->
+                      <if test="status_type != null and status_type == 0">
+                          CASE WHEN fc.ID is null THEN 0 ELSE 1 END AS HAS_EXTRA_INTEREST,
+                      </if>
+                      <if test="status_type != null and status_type == 1">
+                          CASE WHEN c.REPAY_YESEXTRAINTEREST > 0 THEN 1 ELSE 0 END AS HAS_EXTRA_INTEREST,
+                      </if>
+                      fc.APR_YEAR AS APR_YEAR,
+                      c.CAPITAL,
+                      c.LATE_DAYS,
+                      c.LATE_INTEREST,
+                      c.ADDTIME,
+                      c.ADDIP,
+                      c.ADVANCETIME,
+                      c.FIRST_BORROW_ID,
+                      c.IS_FIRST_BORROW,
+                      c.IS_CUSTODY,
+                      t.ADDTIME AS tenderTime,
+                      b.order AS borrowOrder,
+                      b.APR AS borrowApr,
+                      b.TIME_LIMIT AS borrowTimeLimit,
+                      b.ID AS borrowId,
+                      b.NAME AS borrowName,
+                      b.ID AS cborrowId,
+                      b.status AS borrowStatus,
+                      b.borrowType AS borrowType,
+                      b.STYLE AS borrowStyle,
+                      b.TIME_LIMIT AS borrowTimeLimit,
+                      r.WEBSTATUS AS repaymentWebStatus,
+                      r.status AS repaymentStatus,
+                      r.id AS repaymentWebid,
+                      t.IS_VIP AS vipApp_passed,
+                      f.PERIODS AS first_periods,
+                      b.credit_rating AS creditRating,
+                      rm.USERNAME,
+                      t.TENDER_TYPE
+                    FROM rocky_b_collectionrecord c
+                      LEFT JOIN rocky_b_tenderrecord t
+                        ON t.id = c.TENDER_ID
+                      LEFT JOIN rocky_borrow b
+                        ON b.id = t.borrow_id
+                      LEFT JOIN rocky_member rm 
+                        ON b.USER_ID = rm.id 
+                      LEFT JOIN t_first_borrow f
+                        ON f.id = c.FIRST_BORROW_ID
+                      LEFT JOIN rocky_b_repaymentrecord r
+                        ON r.borrow_id = b.id
+                      LEFT JOIN t_float_coupon fc
+                        ON c.TENDER_ID = fc.TARGET_ID
+                          and c.USER_ID = fc.USER_ID
+                          and fc.TYPE = 1
+                          and fc.TARGET_TYPE = 1
+                          and fc.STATUS = 1
+                          and fc.IS_CUSTODY != 1
+                    WHERE 1 = 1
+						<include refid="collection_condition"/>
+                    	AND c.ORDER = r.ORDER 
+                    ORDER BY c.status ASC,c.REPAY_TIME ASC 
+  	</select> 	
+  	
+  	
+  		<select id="countAccCommonCollections" parameterType="java.util.Map" resultType="java.lang.Integer" >
+		           SELECT
+                      count(1) 
+                    FROM rocky_b_collectionrecord c 
+                      LEFT JOIN rocky_b_tenderrecord t
+                        ON t.id = c.TENDER_ID
+                      LEFT JOIN rocky_borrow b
+                        ON b.id = t.borrow_id
+                     LEFT JOIN rocky_member rm 
+                        ON b.USER_ID = rm.id 
+                      LEFT JOIN t_first_borrow f
+                        ON f.id = c.FIRST_BORROW_ID
+                      RIGHT JOIN rocky_b_repaymentrecord r
+                        ON r.borrow_id = b.id 
+                    
+                    WHERE 1 = 1
+                    <include refid="collection_condition"/>
+                    	AND c.ORDER = r.ORDER 
+  	</select> 	
+  	<!-- end  -->
+  	
+  		<!-- begin  投标直通车投标记录  -->
+	<select id="queryAccFirstCommonCollectionsWithPage" parameterType="java.util.Map" resultMap="accCommonCollectionResultMap" >
+		           SELECT
+                      c.id,
+                      c.status,
+                      c.ORDER,
+                      c.TENDER_ID,
+                      c.REPAY_TIME,
+                      c.REPAY_YESTIME,
+                      c.REPAY_ACCOUNT,
+                      c.REPAY_YESACCOUNT,
+                      c.INTEREST,
+                      c.CAPITAL,
+                      c.LATE_DAYS,
+                      c.LATE_INTEREST,
+                      c.ADDTIME,
+                      c.ADDIP,
+                      c.ADVANCETIME,
+                      c.FIRST_BORROW_ID,
+                      c.IS_FIRST_BORROW,
+                      c.IS_CUSTODY,
+                      t.PARENT_ID AS parentId,
+                      t.ADDTIME AS tenderTime,
+                      b.order AS borrowOrder,
+                      b.APR AS borrowApr,
+                      b.TIME_LIMIT AS borrowTimeLimit,
+                      b.ID AS borrowId,
+                      b.NAME AS borrowName,
+                      b.ID AS cborrowId,
+                      b.status AS borrowStatus,
+                      b.borrowType AS borrowType,
+                      b.STYLE AS borrowStyle,
+                      b.TIME_LIMIT AS borrowTimeLimit,
+                      r.WEBSTATUS AS repaymentWebStatus,
+                      r.status AS repaymentStatus,
+                      r.id AS repaymentWebid,
+                      t.IS_VIP AS vipApp_passed,
+                      f.PERIODS AS first_periods 
+                    FROM rocky_b_collectionrecord c
+                      LEFT JOIN rocky_b_tenderrecord t
+                        ON t.id = c.TENDER_ID
+                      LEFT JOIN rocky_borrow b
+                        ON b.id = t.borrow_id
+                      LEFT JOIN t_first_borrow f
+                        ON f.id = c.FIRST_BORROW_ID
+                      LEFT JOIN rocky_b_repaymentrecord r
+                        ON r.borrow_id = b.id 
+                    
+                    WHERE 1 = 1
+                    <if test="userId != null and userId != ''">
+                    	AND t.USER_ID = #{userId}
+                    </if>
+					<if test="firstTenderRealId != null and firstTenderRealId != ''">
+                    	AND c.FIRST_TENDER_REAL_ID = #{firstTenderRealId}
+                    </if> 
+                    
+                    <choose> 
+						<when test=" collectionStatus == 'unRec'"> 
+							AND c.STATUS = 0 
+						</when> 
+						<otherwise> 
+							AND c.STATUS IN (1,2,3)
+						</otherwise> 
+					</choose> 
+                    
+                    	AND c.ORDER = r.ORDER 
+                    ORDER BY c.status ASC,c.REPAY_TIME ASC 
+  	</select> 	
+  		<!-- begin  投标直通车投标记录(状态为空时 默认取未还款已还款状态  -->
+  		<select id="queryAccFirstCommonCollectionsList" parameterType="java.util.Map" resultMap="accCommonCollectionResultMap" >
+		           SELECT
+                      c.id,
+                      c.status,
+                      c.ORDER,
+                      c.TENDER_ID,
+                      c.REPAY_TIME,
+                      c.REPAY_YESTIME,
+                      c.REPAY_ACCOUNT,
+                      c.REPAY_YESACCOUNT,
+                      c.INTEREST,
+                      c.CAPITAL,
+                      c.LATE_DAYS,
+                      c.LATE_INTEREST,
+                      c.ADDTIME,
+                      c.ADDIP,
+                      c.ADVANCETIME,
+                      c.FIRST_BORROW_ID,
+                      c.IS_FIRST_BORROW,
+                      c.IS_CUSTODY,
+                      t.PARENT_ID AS parentId,
+                      t.ADDTIME AS tenderTime,
+                      b.order AS borrowOrder,
+                      b.APR AS borrowApr,
+                      b.TIME_LIMIT AS borrowTimeLimit,
+                      b.ID AS borrowId,
+                      b.NAME AS borrowName,
+                      b.ID AS cborrowId,
+                      b.status AS borrowStatus,
+                      b.borrowType AS borrowType,
+                      b.STYLE AS borrowStyle,
+                      b.TIME_LIMIT AS borrowTimeLimit,
+                      r.WEBSTATUS AS repaymentWebStatus,
+                      r.status AS repaymentStatus,
+                      r.id AS repaymentWebid,
+                      t.IS_VIP AS vipApp_passed,
+                      f.PERIODS AS first_periods 
+                    FROM rocky_b_collectionrecord c
+                      LEFT JOIN rocky_b_tenderrecord t
+                        ON t.id = c.TENDER_ID
+                      LEFT JOIN rocky_borrow b
+                        ON b.id = t.borrow_id
+                      LEFT JOIN t_first_borrow f
+                        ON f.id = c.FIRST_BORROW_ID
+                      LEFT JOIN rocky_b_repaymentrecord r
+                        ON r.borrow_id = b.id 
+                    
+                    WHERE 1 = 1
+                    <if test="userId != null and userId != ''">
+                    	AND t.USER_ID = #{userId}
+                    </if>
+					<if test="firstTenderRealId != null and firstTenderRealId != ''">
+                    	AND c.FIRST_TENDER_REAL_ID = #{firstTenderRealId}
+                    </if> 
+                    
+                    <if test="borrowId != null and borrowId != ''">
+                    	AND b.id = #{borrowId}
+                    </if> 
+                    AND c.STATUS IN (0,1,2,3) AND c.ORDER = r.ORDER 
+                    ORDER BY `order`
+  	</select>   	
+  	<select id="queryAccFirstCommonCollections" parameterType="java.util.Map" resultMap="accCommonCollectionResultMap" >
+		           SELECT
+                      c.id,
+                      c.status,
+                      c.ORDER,
+                      c.TENDER_ID,
+                      c.REPAY_TIME,
+                      c.REPAY_YESTIME,
+                      c.REPAY_ACCOUNT,
+                      c.REPAY_YESACCOUNT,
+                      c.INTEREST,
+                      c.CAPITAL,
+                      c.LATE_DAYS,
+                      c.LATE_INTEREST,
+                      c.ADDTIME,
+                      c.ADDIP,
+                      c.ADVANCETIME,
+                      c.FIRST_BORROW_ID,
+                      c.IS_FIRST_BORROW,
+                       c.IS_CUSTODY,
+                      t.ADDTIME AS tenderTime,
+                      b.order AS borrowOrder,
+                      b.APR AS borrowApr,
+                      b.TIME_LIMIT AS borrowTimeLimit,
+                      b.ID AS borrowId,
+                      b.NAME AS borrowName,
+                      b.ID AS cborrowId,
+                      b.status AS borrowStatus,
+                      b.borrowType AS borrowType,
+                      b.STYLE AS borrowStyle,
+                      b.TIME_LIMIT AS borrowTimeLimit,
+                      r.WEBSTATUS AS repaymentWebStatus,
+                      r.status AS repaymentStatus,
+                      r.id AS repaymentWebid,
+                      t.IS_VIP AS vipApp_passed,
+                      f.PERIODS AS first_periods 
+                    FROM rocky_b_collectionrecord c
+                      LEFT JOIN rocky_b_tenderrecord t
+                        ON t.id = c.TENDER_ID
+                      LEFT JOIN rocky_borrow b
+                        ON b.id = t.borrow_id
+                      LEFT JOIN t_first_borrow f
+                        ON f.id = c.FIRST_BORROW_ID
+                      LEFT JOIN rocky_b_repaymentrecord r
+                        ON r.borrow_id = b.id 
+                    
+                    WHERE 1 = 1
+                    <if test="userId != null and userId != ''">
+                    	AND t.USER_ID = #{userId}
+                    </if>
+					<if test="firstTenderRealId != null and firstTenderRealId != ''">
+                    	AND c.FIRST_TENDER_REAL_ID = #{firstTenderRealId}
+                    </if>
+                     <choose> 
+						<when test=" collectionStatus == 'unRec'"> 
+							AND c.STATUS = 0 
+						</when> 
+						<otherwise> 
+							AND c.STATUS IN (1,2,3)
+						</otherwise> 
+					</choose> 
+                    	AND c.ORDER = r.ORDER 
+                    ORDER BY c.status ASC,c.REPAY_TIME ASC 
+  	</select> 
+  	
+  	
+  		<select id="countAccFirstCommonCollections" parameterType="java.util.Map" resultType="java.lang.Integer" >
+		           SELECT
+                      count(1) 
+                    FROM rocky_b_collectionrecord c
+                      LEFT JOIN rocky_b_tenderrecord t
+                        ON t.id = c.TENDER_ID
+                      LEFT JOIN rocky_borrow b
+                        ON b.id = t.borrow_id
+                      LEFT JOIN t_first_borrow f
+                        ON f.id = c.FIRST_BORROW_ID
+                      RIGHT JOIN rocky_b_repaymentrecord r
+                        ON r.borrow_id = b.id 
+                    
+                    WHERE 1 = 1
+                    <if test="userId != null and userId != ''">
+                    	AND t.USER_ID = #{userId}
+                    </if>
+					<if test="firstTenderRealId != null and firstTenderRealId != ''">
+                    	AND c.FIRST_TENDER_REAL_ID = #{firstTenderRealId}
+                    </if>
+                    <choose> 
+						<when test=" collectionStatus == 'unRec'"> 
+							AND c.STATUS = 0 
+						</when> 
+						<otherwise> 
+							AND c.STATUS IN (1,2,3)
+						</otherwise> 
+					</choose> 
+                    	AND c.ORDER = r.ORDER 
+  	</select> 	
+  	<!-- end  -->
+  	
+  <!-- 	<update id="updateCollectionRecordByIds">
+  		update  rocky_b_collectionrecord  set STATUS =-1 where id in 
+     		<foreach collection="ids"  item="id" separator=","   open="("  close=")"> #{id} </foreach>
+  		 and STATUS=0 
+  	</update>
+  	 -->
+  	
+ 
+  	
+</mapper>  

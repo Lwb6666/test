@@ -1,0 +1,968 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dxjr.portal.invest.mapper.InvestRecordMapper">
+
+	<resultMap id="borrowVoResultMap" type="com.dxjr.portal.borrow.vo.BorrowVo">
+		<id column="ID" 						property="id"/>
+		<result column="USER_ID" 				property="userId" />
+		<result column="NAME" 					property="name" />
+		<result column="STATUS" 				property="status" />
+		<result column="APPRSTATUS"				property="apprstatus" />
+		<result column="ORDER" 				    property="order" />
+		<result column="BORROWTYPE" 			property="borrowtype" />
+		<result column="REPAYMENT_ACCOUNT"		property="repaymentAccount"	/>
+		<result column="MONTHLY_REPAYMENT" 		property="monthlyRepayment" />
+		<result column="REPAYMENT_YESACCOUNT" 	property="repaymentYesaccount"/>
+		<result column="REPAYMENT_YESINTEREST" 	property="repaymentYesinterest" />
+		<result column="SUCCESS_TIME" 			property="successTime" />
+		<result column="END_TIME" 				property="endTime" />
+		<result column="USE" 					property="use"  />
+		<result column="TIME_LIMIT" 			property="timeLimit"  />
+		<result column="STYLE" 					property="style" />
+		<result column="ACCOUNT" 				property="account"  />
+		<result column="ACCOUNT_YES" 			property="accountYes"  />
+		<result column="TENDER_TIMES" 			property="tenderTimes" />
+		<result column="APR" 					property="apr"  />
+		<result column="LOWEST_ACCOUNT"			property="lowestAccount" />
+		<result column="MOST_ACCOUNT" 			property="mostAccount"  />
+		<result column="VALID_TIME" 			property="validTime" />
+		<result column="AWARD" 					property="award" />
+		<result column="FUNDS" 					property="funds" />
+		<result column="CONTENT" 				property="content" />
+		<result column="SENDMESSAGE" 			property="sendmessage"  />
+		<result column="ADDTIME" 				property="addtime" />
+		<result column="ADDIP" 					property="addip"  />
+		<result column="CANCEL_USER" 			property="cancelUser"  />
+		<result column="CANCEL_TIME" 			property="cancelTime"  />
+		<result column="CANCEL_REMARK" 			property="cancelRemark" />
+		<result column="UUID" 					property="uuid" />
+		<result column="CONTRACT_NO" 			property="contractNo"  />
+		<result column="BID_PASSWORD" 			property="bidPassword" />
+		<result column="IS_AUTOTENDER" 			property="isAutotender"/>
+		<result column="REMARK" 				property="remark" />
+		<result column="PLEDGE_TYPE" 			property="pledgeType"  />
+		<result column="TIMING_BORROW_TIME"		property="timingBorrowTime" />
+		<result column="PUBLISH_TIME" 			property="publishTime" />
+		<result column="BORROW_USE" 			property="borrowUse" />
+		<result column="credit_rating" 			property="creditRating" />
+		<result column="is_Transfer" 			property="isTransfer" />
+		<result column="IS_FINANCIAL_USER" 		property="isFinancialUser" />
+		<result column="AREA_TYPE" 				property="areaType" />
+		<result column="AREA_CHANGE_TIME" 		property="areaChangeTime" />
+	    <result column="is_custody" 		    property="isCustody" />
+	</resultMap>
+	
+	<!-- 获取我要投标列表 -->
+	<select id="queryInvestRecordCount" parameterType="com.dxjr.portal.account.vo.SearchInvestCnd" resultType="java.lang.Integer">
+		SELECT
+		ifnull(count(a.id), 0)
+		FROM
+		(
+			
+			SELECT
+				rb.id,CASE
+					WHEN (rb.style != 4 ) THEN
+						(TIME_LIMIT * 30)
+					ELSE
+						TIME_LIMIT
+					END AS timeLimitOrder
+				FROM
+				ROCKY_BORROW rb
+				LEFT JOIN ROCKY_MEMBER rm ON rb.USER_ID = rm.ID
+				LEFT JOIN rocky_b_repaymentrecord re ON (
+					rb.id = re.borrow_id
+					AND rb. STATUS >= 4
+				)
+			<include refid="queryInvestRecord_where" />
+			 <!--如果是完成状态那么新手标也可以查询的到  -->
+			<if test="isShowNewBorrow != null and isShowNewBorrow == 0">
+			     AND rb.AREA_TYPE = 0
+			</if>
+			GROUP BY rb.id
+		) a <include refid="timeLimitWhereNew"/> 
+	</select>
+	<select id="queryInvestRecordCount2" parameterType="com.dxjr.portal.account.vo.SearchInvestCnd" resultType="java.lang.Integer">
+		SELECT
+		ifnull(count(a.id), 0)
+		FROM
+		(
+			
+			SELECT
+				rb.id,CASE
+					WHEN (rb.style != 4 ) THEN
+						(TIME_LIMIT * 30)
+					ELSE
+						TIME_LIMIT
+					END AS timeLimitOrder
+				FROM
+				ROCKY_BORROW rb
+				LEFT JOIN ROCKY_MEMBER rm ON rb.USER_ID = rm.ID
+				LEFT JOIN rocky_b_repaymentrecord re ON (
+					rb.id = re.borrow_id
+					AND rb. STATUS >= 4
+				)
+			<include refid="queryInvestRecord_where2" />
+			 <!--如果是完成状态那么新手标也可以查询的到  -->
+			<if test="isShowNewBorrow != null and isShowNewBorrow == 0">
+			     AND rb.AREA_TYPE = 0
+			</if>
+			GROUP BY rb.id
+		) a <include refid="timeLimitWhereNew"/> 
+	</select>
+	<!-- 获取我要投标列表 -->
+	<select id="queryInvestRecord" parameterType="com.dxjr.portal.account.vo.SearchInvestCnd" resultMap="borrowVoResultMap">
+	
+	
+	<!--如果是普通投标默认查询  -->
+	  <if test="isdefult==1">
+		       SELECT * from (
+				
+					
+				<!-- 查询预发的所有 -->
+				SELECT * FROM (
+				 (
+					SELECT
+							rb.ID,
+							rm.USERNAME,
+							rb. NAME,
+							rb.ACCOUNT,
+							rb.TIME_LIMIT,
+							CONTRACT_NO,
+							rb.BORROWTYPE,
+							rb.APR,
+							rb. STATUS,
+							rb.ACCOUNT_YES,
+							rb.ADDTIME,
+							rb.TENDER_TIMES,
+							TRUNCATE(
+								rb.ACCOUNT_YES / rb.ACCOUNT,
+								2
+							) SCHEDULE,
+							rb.STYLE,
+							rb.pledge_type,
+							rb.timing_borrow_time,
+							rb.publish_time,
+							rm.HEADIMG HEADIMG,
+							re.REPAYMENT_TIME REPAYMENT_TIME,
+							rb.BORROW_USE BORROW_USE,
+							rb.credit_rating,
+							rb.BID_PASSWORD AS bidPassword,
+							CASE
+						WHEN (rb.style != 4) THEN
+							(TIME_LIMIT * 30)
+						ELSE
+							TIME_LIMIT
+						END AS timeLimitOrder,rb.AREA_TYPE, rb.AREA_CHANGE_TIME,rb.is_custody
+						FROM
+							ROCKY_BORROW rb
+						LEFT JOIN ROCKY_MEMBER rm ON rb.USER_ID = rm.ID
+						LEFT JOIN rocky_b_repaymentrecord re ON (
+							rb.id = re.borrow_id
+							AND rb. STATUS >= 4
+						)
+						<include refid="queryInvestRecord_where" />  
+						<!--  只查询预发的 -->
+						and rb.status = 1 
+					  <!--如果是完成状态那么新手标也可以查询的到  -->
+						<if test="isShowNewBorrow != null and isShowNewBorrow == 0">
+						     AND rb.AREA_TYPE = 0
+						</if>
+						GROUP BY rb.id
+						ORDER BY
+						<!-- 判断是否排序方式，向下 -->
+						<if test="orderBy == 'apr'">
+							apr ${orderType},
+						</if>
+						<if test="orderBy == 'account'">
+							account ${orderType},
+						</if>
+						<!--进度 -->
+						<if test="orderBy == 'schedule'">
+							SCHEDULE ${orderType},
+						</if>
+						<!-- 借款期限 当为按天还款时把日期转换为月 -->
+						<if test="orderBy == 'timeLimit'">
+							case when style = 4 then TIME_LIMIT/30 ELSE TIME_LIMIT end ${orderType},
+						</if>
+						<!--发布时间-->
+						<if test="orderBy == 'publicTime'">
+							PUBLISH_TIME ${orderType},
+						</if>
+						
+						
+						<!-- 状态不是不限的时候 AREA_TYPE 排在第一位  -->
+					    <if test="limitTime !=''">
+								 AREA_TYPE desc,
+						</if>
+						
+							<!--满标时间-->
+						<if test="orderBy == 'succesTime'">
+							SUCCESS_TIME ${orderType},
+						</if>
+						
+						<if test="limitTime =='isComplete' or limitTime =='isOverdue'">
+								rb.SUCCESS_TIME desc,
+						</if>
+						
+						<if test="limitTime =='isAdvanced'">
+							rb.TIMING_BORROW_TIME asc ,
+						</if>
+					  IFNULL( PUBLISH_TIME,rb.TIMING_BORROW_TIME )   asc
+					   limit 0,2
+					) 
+				) t3 
+				UNION ALL
+				<!-- 查询非预发的所有 -->
+				SELECT * FROM (
+				 (
+					SELECT
+							rb.ID,
+							rm.USERNAME,
+							rb. NAME,
+							rb.ACCOUNT,
+							rb.TIME_LIMIT,
+							CONTRACT_NO,
+							rb.BORROWTYPE,
+							rb.APR,
+							rb. STATUS,
+							rb.ACCOUNT_YES,
+							rb.ADDTIME,
+							rb.TENDER_TIMES,
+							TRUNCATE(
+								rb.ACCOUNT_YES / rb.ACCOUNT,
+								2
+							) SCHEDULE,
+							rb.STYLE,
+							rb.pledge_type,
+							rb.timing_borrow_time,
+							rb.publish_time,
+							rm.HEADIMG HEADIMG,
+							re.REPAYMENT_TIME REPAYMENT_TIME,
+							rb.BORROW_USE BORROW_USE,
+							rb.credit_rating,
+							rb.BID_PASSWORD AS bidPassword,
+							CASE
+						WHEN (rb.style != 4) THEN
+							(TIME_LIMIT * 30)
+						ELSE
+							TIME_LIMIT
+						END AS timeLimitOrder,rb.AREA_TYPE, rb.AREA_CHANGE_TIME,rb.is_custody
+						FROM
+							ROCKY_BORROW rb
+						LEFT JOIN ROCKY_MEMBER rm ON rb.USER_ID = rm.ID
+						LEFT JOIN rocky_b_repaymentrecord re ON (
+							rb.id = re.borrow_id
+							AND rb. STATUS >= 4
+						)
+						<include refid="queryInvestRecord_where" />  
+						and rb.status in   (2,4,5,6,7,42)
+					  <!--如果是完成状态那么新手标也可以查询的到  -->
+						<if test="isShowNewBorrow != null and isShowNewBorrow == 0">
+						     AND rb.AREA_TYPE = 0
+						</if>
+						
+						GROUP BY rb.id
+						ORDER BY
+						<!-- 判断是否排序方式，向下 -->
+						<if test="orderBy == 'apr'">
+							apr ${orderType},
+						</if>
+						<if test="orderBy == 'account'">
+							account ${orderType},
+						</if>
+						<!--进度 -->
+						<if test="orderBy == 'schedule'">
+							SCHEDULE ${orderType},
+						</if>
+						<!-- 借款期限 当为按天还款时把日期转换为月 -->
+						<if test="orderBy == 'timeLimit'">
+							case when style = 4 then TIME_LIMIT/30 ELSE TIME_LIMIT end ${orderType},
+						</if>
+						<!--发布时间-->
+						<if test="orderBy == 'publicTime'">
+							PUBLISH_TIME ${orderType},
+						</if>
+						
+						
+						<!-- 状态不是不限的时候 AREA_TYPE 排在第一位  -->
+					    <if test="limitTime !=''">
+								 AREA_TYPE desc,
+						</if>
+						
+							<!--满标时间-->
+						<if test="orderBy == 'succesTime'">
+							SUCCESS_TIME ${orderType},
+						</if>
+						
+						<if test="limitTime =='isComplete' or limitTime =='isOverdue'">
+								rb.SUCCESS_TIME desc,
+						</if>
+						
+						<if test="limitTime =='isAdvanced'">
+							rb.TIMING_BORROW_TIME asc ,
+						</if>
+					     status asc, SCHEDULE desc, field(borrowtype,2,5,1,4,3), 
+					     timeLimitOrder asc ,
+					     <!-- 状态 是不限的情况   --> 
+						  <if test="isShowNewBorrow != null and isShowNewBorrow == 1">
+							    <if test="limitTime ==''">
+										 AREA_TYPE desc,
+								</if>
+						  </if>	
+						<if test="orderBy == null or orderBy == ''">
+							SUCCESS_TIME desc,
+						</if>
+					  IFNULL( PUBLISH_TIME,rb.TIMING_BORROW_TIME )   asc
+					   
+					) 
+				) t2 
+			) tt <include refid="timeLimitWhereNew"/> 
+  </if>
+	  
+	  
+	  <!-- 不是默认查询  -->
+	  <if test="isdefult == null">
+				  SELECT * from (
+						SELECT * FROM (
+							SELECT
+								rb.ID,
+								rm.USERNAME,
+								rb. NAME,
+								rb.ACCOUNT,
+								rb.TIME_LIMIT,
+								CONTRACT_NO,
+								rb.BORROWTYPE,
+								rb.APR,
+								rb. STATUS,
+								rb.ACCOUNT_YES,
+								rb.ADDTIME,
+								rb.TENDER_TIMES,
+								TRUNCATE(
+									rb.ACCOUNT_YES / rb.ACCOUNT,
+									2
+								) SCHEDULE,
+								rb.STYLE,
+								rb.pledge_type,
+								rb.timing_borrow_time,
+								rb.publish_time,
+								rm.HEADIMG HEADIMG,
+								re.REPAYMENT_TIME REPAYMENT_TIME,
+								rb.BORROW_USE BORROW_USE,
+								rb.credit_rating,
+								rb.BID_PASSWORD AS bidPassword,
+								CASE
+								WHEN (rb.style != 4 ) THEN
+								(TIME_LIMIT * 30)
+								ELSE
+								TIME_LIMIT
+								END AS timeLimitOrder,
+								rb.AREA_TYPE, rb.AREA_CHANGE_TIME, rb.SUCCESS_TIME,rb.is_custody
+								FROM
+								ROCKY_BORROW rb
+								LEFT JOIN ROCKY_MEMBER rm ON rb.USER_ID = rm.ID
+								LEFT JOIN rocky_b_repaymentrecord re ON (rb.id = re.borrow_id AND rb. STATUS >= 4)
+								where rb.status in (1,2)
+								and rb.is_autoTender = 0
+								and rb.BORROWTYPE != 3 
+								and rb.BORROWTYPE != 4
+								AND rb.AREA_TYPE = 1
+								AND rb.BORROWTYPE = '2'
+								<if test="isShowNewBorrow != null and isShowNewBorrow == 1">
+								and 1 = 2
+								</if>
+								GROUP BY rb.id
+								ORDER BY FIELD(rb.STATUS,2,1,6,4,42,5),
+								CASE WHEN rb.`STATUS` = 2 THEN publish_time WHEN rb.`STATUS` = 1 THEN rb.TIMING_BORROW_TIME END ASC,
+								CASE WHEN rb.`STATUS` > 2 THEN SUCCESS_TIME END DESC   limit 1
+						) t1
+						union all 
+						<!-- 查询非预发的所有 -->
+						SELECT * FROM (
+						 (
+							SELECT
+									rb.ID,
+									rm.USERNAME,
+									rb. NAME,
+									rb.ACCOUNT,
+									rb.TIME_LIMIT,
+									CONTRACT_NO,
+									rb.BORROWTYPE,
+									rb.APR,
+									rb. STATUS,
+									rb.ACCOUNT_YES,
+									rb.ADDTIME,
+									rb.TENDER_TIMES,
+									TRUNCATE(
+										rb.ACCOUNT_YES / rb.ACCOUNT,
+										2
+									) SCHEDULE,
+									rb.STYLE,
+									rb.pledge_type,
+									rb.timing_borrow_time,
+									rb.publish_time,
+									rm.HEADIMG HEADIMG,
+									re.REPAYMENT_TIME REPAYMENT_TIME,
+									rb.BORROW_USE BORROW_USE,
+									rb.credit_rating,
+									rb.BID_PASSWORD AS bidPassword,
+									CASE
+								WHEN (rb.style != 4) THEN
+									(TIME_LIMIT * 30)
+								ELSE
+									TIME_LIMIT
+								END AS timeLimitOrder,rb.AREA_TYPE, rb.AREA_CHANGE_TIME, rb.SUCCESS_TIME,rb.is_custody
+								FROM
+									ROCKY_BORROW rb
+								LEFT JOIN ROCKY_MEMBER rm ON rb.USER_ID = rm.ID
+								LEFT JOIN rocky_b_repaymentrecord re ON (
+									rb.id = re.borrow_id
+									AND rb. STATUS >= 4
+								)
+								<include refid="queryInvestRecord_where" />  
+								 
+							  <!--如果是完成状态那么新手标也可以查询的到  -->
+								<if test="isShowNewBorrow != null and isShowNewBorrow == 0">
+								     AND rb.AREA_TYPE = 0
+								</if>
+								
+								GROUP BY rb.id
+								ORDER BY
+								<!-- 判断是否排序方式，向下 -->
+								<if test="orderBy == 'apr'">
+									apr ${orderType},
+								</if>
+								<if test="orderBy == 'account'">
+									account ${orderType},
+								</if>
+								<!--进度 -->
+								<if test="orderBy == 'schedule'">
+									SCHEDULE ${orderType},
+								</if>
+								<!-- 借款期限 当为按天还款时把日期转换为月 -->
+								<if test="orderBy == 'timeLimit'">
+									case when style = 4 then TIME_LIMIT/30 ELSE TIME_LIMIT end ${orderType},
+								</if>
+								<!--发布时间-->
+								<if test="orderBy == 'publicTime'">
+									PUBLISH_TIME ${orderType},
+								</if>
+								
+								
+								<!-- 状态不是不限的时候 AREA_TYPE 排在第一位  -->
+							    <if test="limitTime !=''">
+										 AREA_TYPE desc,
+								</if>
+								
+									<!--满标时间-->
+								<if test="orderBy == 'succesTime'">
+									SUCCESS_TIME ${orderType},
+								</if>
+								
+								<if test="limitTime =='isComplete' or limitTime =='isOverdue'">
+										rb.SUCCESS_TIME desc,
+								</if>
+								
+								<if test="limitTime =='isAdvanced'">
+									rb.TIMING_BORROW_TIME asc ,
+								</if>
+							     field(rb.status,1,2,6,7,4,5,42) asc, SCHEDULE desc,field(borrowtype,2,5,1,4,3), 
+							     timeLimitOrder asc ,
+							     <!-- 状态 是不限的情况   --> 
+								  <if test="isShowNewBorrow != null and isShowNewBorrow == 1">
+									    <if test="limitTime ==''">
+												 AREA_TYPE desc,
+										</if>
+								  </if>	
+								<if test="orderBy == null or orderBy == ''">
+									SUCCESS_TIME desc,
+								</if>
+							  IFNULL( PUBLISH_TIME,rb.TIMING_BORROW_TIME )   asc
+							   
+							) 
+						) t2 
+					) tt <include refid="timeLimitWhere"/> 
+	  </if>
+	
+	
+	
+	
+	
+	
+		
+	</select>
+
+	<sql id="queryInvestRecord_where">
+		where rb.status in (1,2,4,5,6,7,42)
+		  and rb.is_autoTender = 0
+		  
+		  <if test="excludeJinzhi==1">
+		  <!-- 排除净值 -->
+		      and rb.BORROWTYPE != 3 
+		  </if>
+		  
+		   <if test="isdefult==1">
+		  	 <!-- 只查询预发和投标中的 -->
+		     AND rb.STATUS  IN  (1,2)
+		  </if>
+		  
+		  
+		<!-- 借款类型 -->
+		<choose>
+			<when test="borrowType != null and borrowType != ''">
+				and rb.BORROWTYPE = #{borrowType}
+			</when>
+			<otherwise>
+				<!-- 去掉秒标 -->
+				and rb.BORROWTYPE != 4
+			</otherwise>
+		</choose>
+		<!--当标是抵保信是需要通过审核 -->
+		<if test="borrowType != '3'">
+			and (
+			 	
+				(rb.APPRSTATUS > 2)
+				or
+				<!-- (rb.APPRSTATUS = 2 and CONCAT(SUBSTR(FROM_UNIXTIME(timing_borrow_time) FROM 1 FOR 16),':00') >= NOW()) -->
+				(rb.APPRSTATUS = 2 and FROM_UNIXTIME(timing_borrow_time, '%Y-%m-%d %H:%i:00') >= NOW())
+			)
+		</if>
+		<!-- 借款期限 -->
+		<if test="limitTime =='isAdvanced'">
+			and rb.timing_borrow_time is not null
+			and rb.timing_borrow_time != ''
+			and rb.`status` = 1
+		</if>
+		<if test="limitTime =='isTendering'">
+			and rb.`status` = 2
+		</if>
+		<if test="limitTime =='isComplete'">
+			and rb.STATUS in (4,5,42)
+		</if>
+		<if test="limitTime =='isOverdue'">
+			and (
+				<!--
+				(UNIX_TIMESTAMP(CONCAT(SUBSTR(NOW() FROM 1 FOR 10),' 00:00:00'))-UNIX_TIMESTAMP(CONCAT(SUBSTR(FROM_UNIXTIME(re.repayment_time) FROM 1 FOR 10),' 00:00:00'))>0 and re.`STATUS` = 0)
+				OR
+				(re.`STATUS` = 1 AND rb.BORROWTYPE in(1,2,4) AND (UNIX_TIMESTAMP(CONCAT(SUBSTR(FROM_UNIXTIME(re.repayment_yestime) FROM 1 FOR 10),' 00:00:00')) - UNIX_TIMESTAMP(CONCAT(SUBSTR(FROM_UNIXTIME(re.repayment_time) FROM 1 FOR 10),' 00:00:00'))>0))
+				-->
+				(re.`STATUS` = 0 and CURDATE() > FROM_UNIXTIME(re.repayment_time, '%Y-%m-%d'))
+				OR
+				(re.`STATUS` = 1 AND rb.BORROWTYPE in(1,2,4) AND (FROM_UNIXTIME(re.repayment_yestime, '%Y-%m-%d') > FROM_UNIXTIME(re.repayment_time, '%Y-%m-%d')))
+			)
+			and rb.id != 18043
+		</if>
+		<!-- 还款方式 -->
+		<if test=" repayType != null and repayType != ''">
+			and rb.style = #{repayType}
+		</if>
+		<!-- 标题查询 -->
+		<if test=" title != null and title != ''">
+			and rb.NAME like CONCAT('%',#{title},'%')
+		</if>
+		<!-- 借款人查询 -->
+		<if test=" borrowPeople != null and borrowPeople != ''">
+			and rm.USERNAME like CONCAT('%',#{borrowPeople},'%')
+		</if>
+		
+		<!--发表时间查询  -->
+		<if test=" beginTime != null and beginTime != '' ">
+		   and  publish_time  &gt;=  #{beginTime}  
+		</if>
+		
+		<if test=" endTime != null and endTime != '' ">
+		   and  publish_time &lt;=  #{endTime}  
+		</if>
+		
+		<if test=" borrowID != null and borrowID != '' ">
+		   and  CONTRACT_NO like CONCAT('%',#{borrowID},'%')
+		</if>
+		<!-- 是否存管标 -->
+	    <if test=" isCustody != null and isCustody != '' ">
+	       and rb.is_custody = #{isCustody}
+		</if>
+	</sql>
+	
+	<sql id="queryInvestRecord_where2">
+		where rb.status in (2)
+		  and rb.is_autoTender = 0
+		  
+		  <if test="excludeJinzhi==1">
+		  <!-- 排除净值 -->
+		      and rb.BORROWTYPE != 3 
+		  </if>
+		<!-- 借款类型 -->
+		<choose>
+			<when test="borrowType != null and borrowType != ''">
+				and rb.BORROWTYPE = #{borrowType}
+			</when>
+			<otherwise>
+				<!-- 去掉秒标 -->
+				and rb.BORROWTYPE != 4
+			</otherwise>
+		</choose>
+		<!--当标是抵保信是需要通过审核 -->
+		<if test="borrowType != '3'">
+			and (
+			 	
+				(rb.APPRSTATUS > 2)
+				or
+				<!-- (rb.APPRSTATUS = 2 and CONCAT(SUBSTR(FROM_UNIXTIME(timing_borrow_time) FROM 1 FOR 16),':00') >= NOW()) -->
+				(rb.APPRSTATUS = 2 and FROM_UNIXTIME(timing_borrow_time, '%Y-%m-%d %H:%i:00') >= NOW())
+			)
+		</if>
+		<!-- 借款期限 -->
+		<if test="limitTime =='isAdvanced'">
+			and rb.timing_borrow_time is not null
+			and rb.timing_borrow_time != ''
+			and rb.`status` = 1
+		</if>
+		<if test="limitTime =='isTendering'">
+			and rb.`status` = 2
+		</if>
+		<if test="limitTime =='isComplete'">
+			and rb.STATUS in (4,5,42)
+		</if>
+		<if test="limitTime =='isOverdue'">
+			and (
+				<!--
+				(UNIX_TIMESTAMP(CONCAT(SUBSTR(NOW() FROM 1 FOR 10),' 00:00:00'))-UNIX_TIMESTAMP(CONCAT(SUBSTR(FROM_UNIXTIME(re.repayment_time) FROM 1 FOR 10),' 00:00:00'))>0 and re.`STATUS` = 0)
+				OR
+				(re.`STATUS` = 1 AND rb.BORROWTYPE in(1,2,4) AND (UNIX_TIMESTAMP(CONCAT(SUBSTR(FROM_UNIXTIME(re.repayment_yestime) FROM 1 FOR 10),' 00:00:00')) - UNIX_TIMESTAMP(CONCAT(SUBSTR(FROM_UNIXTIME(re.repayment_time) FROM 1 FOR 10),' 00:00:00'))>0))
+				-->
+				(re.`STATUS` = 0 and CURDATE() > FROM_UNIXTIME(re.repayment_time, '%Y-%m-%d'))
+				OR
+				(re.`STATUS` = 1 AND rb.BORROWTYPE in(1,2,4) AND (FROM_UNIXTIME(re.repayment_yestime, '%Y-%m-%d') > FROM_UNIXTIME(re.repayment_time, '%Y-%m-%d')))
+			)
+			and rb.id != 18043
+		</if>
+		<!-- 还款方式 -->
+		<if test=" repayType != null and repayType != ''">
+			and rb.style = #{repayType}
+		</if>
+		<!-- 标题查询 -->
+		<if test=" title != null and title != ''">
+			and rb.NAME like CONCAT('%',#{title},'%')
+		</if>
+		<!-- 借款人查询 -->
+		<if test=" borrowPeople != null and borrowPeople != ''">
+			and rm.USERNAME like CONCAT('%',#{borrowPeople},'%')
+		</if>
+		
+		<!--发表时间查询  -->
+		<if test=" beginTime != null and beginTime != '' ">
+		   and  publish_time  &gt;=  #{beginTime}  
+		</if>
+		
+		<if test=" endTime != null and endTime != '' ">
+		   and  publish_time &lt;=  #{endTime}  
+		</if>
+		
+		<if test=" borrowID != null and borrowID != '' ">
+		   and  CONTRACT_NO =  #{borrowID}  
+		</if>
+		<!-- 是否存管标 -->
+	    <if test=" isCustody != null and isCustody != '' ">
+	       and rb.is_custody = #{isCustody}
+		</if>
+	</sql>
+	<!-- 投标查询-limit -->
+	<select id="queryBorrowByLimit" parameterType="com.dxjr.portal.account.vo.SearchInvestCnd" resultMap="borrowVoResultMap">
+		SELECT
+			rb.ID,rb.NAME
+		FROM ROCKY_BORROW rb
+		
+		where rb.status = 2
+		  and rb.is_autoTender = 0
+		  
+		GROUP BY rb.id
+		
+		ORDER BY id desc limit  #{start},#{count}
+		
+	</select>
+	
+	
+	 <select id="selectListAllTenderBorrowConstainTransfer"     parameterType="com.dxjr.portal.account.vo.SearchInvestCnd"  resultMap="borrowVoResultMap">
+       		SELECT * 
+				FROM (
+				(
+						SELECT
+				rb.ID,
+				rm.USERNAME,
+				rb. NAME,
+				rb.ACCOUNT,
+				rb.TIME_LIMIT,
+				CONTRACT_NO,
+				rb.BORROWTYPE,
+				rb.APR,
+				rb. STATUS,
+				rb.ADDTIME,
+				rb.ACCOUNT_YES,
+				rb.STYLE,
+				rb.timing_borrow_time,
+				rb.publish_time,
+				rm.HEADIMG HEADIMG,
+				rb.credit_rating,
+				rb.BID_PASSWORD AS bidPassword,
+				0 is_Transfer,
+				CASE
+				WHEN (rb.style = 1 OR rb.style = 2) THEN
+					(TIME_LIMIT * 30)
+				ELSE
+					TIME_LIMIT
+				END AS timeLimitOrder,
+				SUCCESS_TIME,
+				ROUND(
+					rb.ACCOUNT_YES / rb.ACCOUNT,
+					2
+				) SCHEDULE,
+				rm.IS_FINANCIAL_USER,
+				rb.AREA_TYPE, rb.AREA_CHANGE_TIME
+				FROM
+					ROCKY_BORROW rb
+				LEFT JOIN ROCKY_MEMBER rm ON rb.USER_ID = rm.ID
+				<include refid="queryInvestRecord_where" /> 
+				AND rb.AREA_TYPE = 1
+				AND rb.BORROWTYPE = '2'
+				ORDER BY FIELD(rb.STATUS,2,1,4,42,5),
+					CASE WHEN rb.`STATUS` = 2 THEN publish_time WHEN rb.`STATUS` = 1 THEN rb.TIMING_BORROW_TIME END ASC,
+					CASE WHEN rb.`STATUS` > 2 THEN SUCCESS_TIME END DESC
+			) 
+			UNION ALL
+       		(select  
+       			*
+       		 from   (
+		     	( SELECT
+					rb.ID,
+					rm.USERNAME,
+					rb.NAME,
+					rb.ACCOUNT,
+					rb.TIME_LIMIT,
+					CONTRACT_NO,
+					rb.BORROWTYPE,
+					rb.APR,
+					rb.STATUS, 
+					rb.ADDTIME, 
+					rb.ACCOUNT_YES,
+					rb.STYLE,
+					rb.timing_borrow_time,
+					rb.publish_time,
+				    rm.HEADIMG HEADIMG,
+					rb.credit_rating,
+					rb.BID_PASSWORD AS bidPassword,
+	                0 is_Transfer,
+	                 CASE   WHEN (rb.style=1 or rb.style=2)   THEN  (TIME_LIMIT*30)  
+				                        ELSE    TIME_LIMIT  
+                    END  as   timeLimitOrder,
+                    SUCCESS_TIME,
+                    ROUND(rb.ACCOUNT_YES/rb.ACCOUNT,2) SCHEDULE,
+                    rm.IS_FINANCIAL_USER,
+                    rb.AREA_TYPE, rb.AREA_CHANGE_TIME
+				FROM ROCKY_BORROW rb
+				LEFT JOIN ROCKY_MEMBER rm ON rb.USER_ID = rm.ID
+				LEFT JOIN rocky_b_repaymentrecord re on (rb.id=re.borrow_id and rb.status>=4)
+				<include refid="queryInvestRecord_where" />  
+				and rb.AREA_TYPE = 0
+				GROUP BY rb.id )
+				
+				<if test="limitTime != 'isOverdue' and limitTime !='isAdvanced' and borrowID ==''   ">
+					 UNION ALL 
+					 (SELECT
+					    rb.id,
+					    rm.USERNAME,
+					    rb.TRANSFER_NAME,
+					    rb.ACCOUNT_REAL,
+					    rb.TIME_LIMIT_REAL,
+					    '' CONTRACT_NO,
+					    rb.BORROW_TYPE,
+					    rb.CUR_APR,
+					    rb.STATUS,
+					    rb.ADD_TIME,
+					    rb.ACCOUNT_YES,
+					    rb.BORROW_STYLE,
+					    '' timing_borrow_time,
+					    UNIX_TIMESTAMP(rb.ADD_TIME) publish_time,
+					    rm.HEADIMG HEADIMG,
+					    rb.BORROW_CREDIT_RATING,
+					    rb.BID_PASSWORD AS bidPassword,
+					    1 isTransfer,
+					    rb.TIME_LIMIT,
+					    UNIX_TIMESTAMP(SUCCESS_TIME) ,
+					    ROUND(rb.ACCOUNT_YES/rb.ACCOUNT,2) SCHEDULE,
+					    rm.IS_FINANCIAL_USER,
+					    null as AREA_TYPE, null as AREA_CHANGE_TIME
+					  FROM rocky_b_transfer rb
+					    LEFT JOIN rocky_member rm
+					      ON rb.user_id = rm.id
+					  <include refid="queryTransfer_where" />   )
+				  </if>
+				)  tt        <include refid="timeLimitWhere"/>
+				ORDER BY
+				 
+				<!-- 判断是否排序方式，向下 -->
+				<if test="orderBy == 'apr'">
+					apr ${orderType},
+				</if>
+				<if test="orderBy == 'account'">
+					account ${orderType},
+				</if>
+				<!--进度 -->
+				<if test="orderBy == 'schedule'">
+					SCHEDULE ${orderType},
+				</if>
+				<!-- 借款期限 当为按天还款时把日期转换为月 -->
+				<if test="orderBy == 'timeLimit'">
+				case  when  is_Transfer =0  then 
+					case when  (style = 4)    then TIME_LIMIT/30 ELSE TIME_LIMIT end  
+				else 
+					case when  (style = 4 or style =3 )    then TIME_LIMIT/30 ELSE TIME_LIMIT end  
+				 end 	${orderType}, 
+				</if>
+				<!--发布时间-->
+				<if test="orderBy == 'publicTime'">
+					PUBLISH_TIME ${orderType},
+				</if>
+					<!--满标时间-->
+				<if test="orderBy == 'succesTime'">
+					SUCCESS_TIME ${orderType},
+				</if>
+				<if test="limitTime =='isComplete' or limitTime =='isOverdue'">
+						SUCCESS_TIME desc,
+				</if>
+				<if test="limitTime =='isAdvanced'">
+					TIMING_BORROW_TIME asc ,
+				</if>
+				  status asc,field(borrowtype,2,5,1,4,3),  
+				<if test="orderBy == null or orderBy == ''">
+					apr desc ,
+				</if>
+				publish_time asc
+		)) t  
+    </select> 
+	    
+    <sql id="queryTransfer_where">
+	    where  1=1 
+	    	<choose>
+				<when test="borrowType != null and borrowType != ''">
+					and rb.BORROW_TYPE = #{borrowType}
+				</when>
+				<otherwise>
+					<!-- 去掉秒标 -->
+					and rb.BORROW_TYPE != 4
+				</otherwise>
+		   </choose>
+	    
+	         <if test="limitTime =='isTendering'">
+				and rb.`status` = 2
+			</if>
+			<if test="limitTime =='isComplete'">
+				and rb.STATUS = 4
+			</if>
+			
+			<if test=" repayType != null and repayType != ''">
+				and rb.BORROW_Style = #{repayType}
+			</if>
+			
+			<!-- 标题查询 -->
+			<if test=" title != null and title != ''">
+				and rb.TRANSFER_NAME like CONCAT('%',#{title},'%')
+			</if>
+			<!-- 借款人查询 -->
+			<if test=" borrowPeople != null and borrowPeople != ''">
+				and rm.USERNAME like CONCAT('%',#{borrowPeople},'%')
+			</if>
+			
+			<!--发表时间查询  -->
+			<if test=" beginTime != null and beginTime != '' ">
+			   and  rb.ADD_TIME  &gt;=  #{beginTime}  
+			</if>
+			
+			<if test=" endTime != null and endTime != '' ">
+			   and  rb.ADD_TIME &lt;=  #{endTime}  
+			</if>
+		
+    </sql>
+    
+    
+    <sql id="timeLimitWhere">
+     where  1=1 
+      <if test="remainingterm == 1 ">
+        and  timeLimitOrder &lt; 30
+      </if>
+    
+      <if test="remainingterm == 2 ">
+      and   timeLimitOrder &gt;=30  and  timeLimitOrder &lt; 30*3      
+      </if>
+      
+      <if test="remainingterm == 3 ">
+      and  timeLimitOrder &gt;= 30*3   and   timeLimitOrder &lt; 30*6
+      </if>
+      
+      <if test="remainingterm == 4 ">
+      and  timeLimitOrder &gt;= 30*6
+      </if>
+    
+    </sql>
+    
+    <sql id="timeLimitWhereNew">
+     where  1 = 1
+      <if test="remainingterm == 1 ">
+        and  timeLimitOrder &lt; 30
+      </if>
+    
+      <if test="remainingterm == 2 ">
+      and   timeLimitOrder &gt;=30  and  timeLimitOrder &lt; 30*3      
+      </if>
+      
+      <if test="remainingterm == 3 ">
+      and  timeLimitOrder &gt;= 30*3   and   timeLimitOrder &lt; 30*6
+      </if>
+      
+      <if test="remainingterm == 4 ">
+      and  timeLimitOrder &gt;= 30*6
+      </if>
+    
+    </sql>       
+     
+    
+     <select id="selectCountAllTenderBorrowConstainTransfer"     parameterType="com.dxjr.portal.account.vo.SearchInvestCnd"    resultType="java.lang.Integer">
+       	SELECT count(*)
+			FROM (
+       		  (
+       		  SELECT
+				rb.ID
+				FROM
+					ROCKY_BORROW rb
+				LEFT JOIN ROCKY_MEMBER rm ON rb.USER_ID = rm.ID
+				<include refid="queryInvestRecord_where" />
+				AND rb.AREA_TYPE = 1
+				AND rb.BORROWTYPE = '2'
+				ORDER BY FIELD(rb.STATUS,2,1,4,42,5),
+					CASE WHEN rb.`STATUS` = 2 THEN publish_time WHEN rb.`STATUS` = 1 THEN rb.TIMING_BORROW_TIME END ASC,
+					CASE WHEN rb.`STATUS` > 2 THEN SUCCESS_TIME END DESC
+       			) 
+			UNION ALL
+       		(
+       		select  * from   (
+		     ( SELECT
+					rb.ID
+				FROM ROCKY_BORROW rb
+				LEFT JOIN ROCKY_MEMBER rm ON rb.USER_ID = rm.ID
+				LEFT JOIN rocky_b_repaymentrecord re on (rb.id=re.borrow_id and rb.status>=4)
+				<include refid="queryInvestRecord_where" />   
+				AND rb.AREA_TYPE = 0
+				GROUP BY rb.id )
+				<if test="limitTime != 'isOverdue' and limitTime !='isAdvanced'  and borrowID =='' ">
+					 UNION ALL 
+					 (SELECT
+					    rb.id
+					  FROM rocky_b_transfer rb
+					    LEFT JOIN rocky_member rm
+					      ON rb.user_id = rm.id
+					  <include refid="queryTransfer_where" />  )
+				  </if>
+				)  tt    <include refid="timeLimitWhere"/> 
+			)) t
+    </select> 
+    
+	     
+</mapper>

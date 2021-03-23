@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dxjr.wx.entry.bind.mapper.BindHistoryVoMapper" >
+  <resultMap id="BaseResultMap" type="com.dxjr.wx.entry.bind.vo.BindHistoryVo" >
+    <id column="ID" property="id" jdbcType="BIGINT" />
+    <result column="w_id" property="wId" jdbcType="BIGINT" />
+    <result column="u_id" property="uId" jdbcType="BIGINT" />
+    <result column="remove_tag" property="removeTag" jdbcType="INTEGER" />
+    <result column="create_time" property="createTime" jdbcType="VARCHAR" />
+    <result column="update_time" property="updateTime" jdbcType="VARCHAR" />
+    <result column="exemmo" property="exemmo" jdbcType="VARCHAR" />
+    <result column="status" property="status" jdbcType="VARCHAR" />
+  </resultMap>
+  <insert id="saveBindHistory" parameterType="com.dxjr.wx.entry.bind.vo.BindVo">
+      insert into wx_bind_history (w_id,u_id,remove_tag,create_time,status) 
+		values
+	 (#{wxId},#{userId},1,#{createTime},#{status})
+  </insert>
+  <insert id="saveubsubBind" parameterType="java.util.Map">
+      insert into wx_bind_history ( w_id, u_id, remove_tag, 
+      create_time, update_time,exemmo,status)
+    	select  wb.w_id, wb.u_id, 1, 
+    	wb.create_time ,'${updateTime}','${exemmo}',0 from wx_bind wb where wb.w_id in ${ids} and wb.status=1
+  </insert>
+</mapper>

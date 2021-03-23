@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.dxjr.base.mapper.BaseFirstTenderLogMapper">
+	
+	<!-- 结果集 -->
+	<resultMap type="com.dxjr.base.entity.FirstTenderLog" id="firstTenderLogResultMap">
+		<id property="id" column="id" />
+		<result property="userId" 				column="USER_ID" />
+		<result property="firstBorrowId" 		column="FIRST_BORROW_ID" />
+		<result property="firstTenderRealId" 	column="FIRST_TENDER_REAL_ID" />
+		<result property="username" 			column="USERNAME" />
+		<result property="useMoney"	    		column="USE_MONEY" />
+		<result property="openTime"  			column="OPEN_TIME" />
+		<result property="onBusTime"  			column="ONBUS_TIME" />
+		<result property="orderNum"  			column="ORDERNUM" />
+		<result property="borrowId"  			column="BORROW_ID" />
+		<result property="borrowName"  			column="BORROW_NAME" />
+		<result property="borrowContractNo" 	column="BORROW_CONTRACT_NO" />
+		<result property="borrowPublishTime" 	column="BORROW_PUBLISH_TIME" />
+		<result property="remaindMoney" 		column="REMAIND_MONDY" />
+		<result property="realAccount" 			column="REAL_ACCOUNT" />
+		<result property="status" 				column="STATUS" />
+		<result property="addTime" 				column="ADDTIME" />
+		<result property="remark" 				column="REMARK" />
+		<result property="version" 				column="VERSION" />
+	</resultMap>
+	
+	<!--基本列 -->
+	<sql id="firstTenderLogBaseColumn">
+		tl.ID, 
+		tl.USER_ID, 
+		tl.FIRST_BORROW_ID, 
+		tl.FIRST_TENDER_REAL_ID, 
+		tl.USERNAME, 
+		tl.USE_MONEY, 
+		tl.OPEN_TIME,
+		tl.ONBUS_TIME,
+		tl.ORDERNUM,
+		tl.BORROW_ID,
+		tl.BORROW_NAME,
+		tl.BORROW_CONTRACT_NO,
+		tl.BORROW_PUBLISH_TIME,
+		tl.REMAIND_MONDY,
+		tl.REAL_ACCOUNT,
+		tl.STATUS,
+		tl.ADDTIME,
+		tl.REMARK,
+		tl.VERSION
+	</sql>
+	
+	<!-- 插入记录，返回主键 -->
+	<insert id="insertEntity" parameterType="com.dxjr.base.entity.FirstTenderLog">
+		INSERT INTO t_first_tender_real 
+		(USER_ID, FIRST_BORROW_ID, FIRST_TENDER_REAL_ID, USERNAME, USE_MONEY, OPEN_TIME, ONBUS_TIME, ORDERNUM, BORROW_ID,
+		BORROW_NAME, BORROW_CONTRACT_NO, BORROW_PUBLISH_TIME, REMAIND_MONDY, REAL_ACCOUNT, STATUS, ADDTIME, REMARK, VERSION)
+		VALUES
+		(#{userId}, #{firstBorrowId}, #{firstTenderRealId}, #{username}, #{useMoney}, #{openTime}, #{onBusTime}, #{orderNum}, #{borrowId}, 
+		#{borrowName}, #{borrowContractNo}, #{borrowPublishTime}, #{remaindMoney}, #{realAccount}, #{status}, #{addTime}, #{remark}, #{version})
+ 		 <selectKey resultType="java.lang.Integer" order="AFTER" keyProperty="id">  
+      	    SELECT LAST_INSERT_ID() AS ID    
+   		 </selectKey>
+	</insert>
+	
+  	<!-- 根据ID查询 -->
+	<select id="queryById" parameterType="java.lang.Integer" resultMap="firstTenderLogResultMap" >
+		select 	
+		   <include refid="firstTenderLogBaseColumn"/>
+		from
+			t_first_tender_log tl
+		where 1=1
+		and tl.id=#{id}
+  	</select>
+	
+  <!-- 更新-->
+  <update id="updateEntity" parameterType="com.dxjr.base.entity.FirstTenderLog" >
+    update t_first_tender_log
+    <set >
+      <if test="userId != null" >
+        USER_ID = #{userId},
+      </if>
+      <if test="firstBorrowId != null" >
+        FIRST_BORROW_ID = #{firstBorrowId},
+      </if>
+      <if test="firstTenderRealId != null" >
+        FIRST_TENDER_REAL_ID = #{firstTenderRealId},
+      </if>
+      <if test="username != null" >
+        USERNAME = #{username},
+      </if>
+      <if test="useMoney != null" >
+        USE_MONEY = #{useMoney},
+      </if>    
+      <if test="openTime != null" >
+        OPEN_TIME = #{openTime},
+      </if>
+      <if test="onBusTime != null" >
+        ONBUS_TIME = #{onBusTime},
+      </if>  
+      <if test="orderNum != null" >
+        ORDERNUM = #{orderNum},
+      </if>
+      <if test="borrowId != null" >
+        BORROW_ID = #{borrowId},
+      </if>   
+      <if test="borrowName != null" >
+        BORROW_NAME = #{borrowName},
+      </if>  
+      <if test="borrowContractNo != null" >
+        BORROW_CONTRACT_NO = #{borrowContractNo},
+      </if>  
+      <if test="borrowPublishTime != null" >
+        BORROW_PUBLISH_TIME = #{borrowPublishTime},
+      </if>  
+      <if test="remaindMoney != null" >
+        REMAIND_MONDY = #{remaindMoney},
+      </if>  
+      <if test="realAccount != null" >
+        REAL_ACCOUNT = #{realAccount},
+      </if>  
+      <if test="status != null" >
+        STATUS = #{status},
+      </if>  
+      <if test="addTime != null" >
+        ADDTIME = #{addTime},
+      </if>  
+      <if test="remark != null" >
+        REMARK = #{remark},
+      </if>   
+      <if test="version != null" >
+        VERSION = #{version},
+      </if>        
+    </set>
+    where ID = #{id}
+    <if test="selfVersion != null">
+       and VERSION = #{selfVersion}
+    </if>
+  </update>	
+</mapper>  

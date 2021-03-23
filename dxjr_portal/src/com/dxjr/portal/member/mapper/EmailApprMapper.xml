@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.dxjr.portal.member.mapper.EmailApprMapper">
+	
+	<!-- 返回的结果集 -->
+	<resultMap type="com.dxjr.portal.member.vo.EmailApproVo" id="emailApproResultMap">
+		<id property="id" column="id" />
+		<result property="userId" 			column="USER_ID" />
+		<result property="randUUID" 		column="RANDUUID" />
+		<result property="checked" 			column="CHECKED" />
+		<result property="apprTime" 		column="APPRTIME" />
+		<result property="apprIp"	    	column="APPRIP" />		
+		<result property="email"			column="email"/>
+		<result property="platform"         column="platform"/>
+	</resultMap>
+	
+	<!--基本列 -->
+	<sql id="emailApproBaseColumn">
+		a.ID, 
+		a.USER_ID, 
+		a.RANDUUID,
+		a.CHECKED, 
+		a.APPRTIME, 
+		a.APPRIP,
+		a.platform  
+	</sql>
+	
+	<!-- 封装查询条件 -->
+	<sql id="emailAppr_Where_Clause">
+		<if test="id != null">
+			and a.id =#{id}
+		</if>
+		<if test="userId != null ">
+			and a.USER_ID = #{userId}
+		</if>
+	</sql>
+	
+  	<!-- 根据条件查询记录集合 -->
+	<select id="queryEmailApprList" parameterType="com.dxjr.portal.member.vo.EmailApproCnd" resultMap="emailApproResultMap" >
+		select 	
+			m.EMAIL   			as email,
+		   <include refid="emailApproBaseColumn"/>
+		from
+			ROCKY_EMAIL_APPRO a,rocky_member m
+		where 1=1
+		and a.USER_ID = m.id
+		<include refid="emailAppr_Where_Clause"/>
+  	</select>
+  	
+  	  	<!-- 根据条件查询记录数量-->
+	<select id="queryEmailApprCount" parameterType="com.dxjr.portal.member.vo.EmailApproCnd" resultType="java.lang.Integer" >
+		select count(m.id)
+		from
+			ROCKY_EMAIL_APPRO a,rocky_member m
+		where 1=1
+		and a.USER_ID = m.id
+		<include refid="emailAppr_Where_Clause"/>
+  	</select>
+</mapper>  

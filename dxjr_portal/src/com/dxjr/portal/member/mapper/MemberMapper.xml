@@ -1,0 +1,376 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.dxjr.portal.member.mapper.MemberMapper">
+	
+	<!-- 返回的结果集 -->
+	<resultMap type="com.dxjr.portal.member.vo.MemberVo" id="memberResultMap">
+		<id property="id" column="id" />
+		<result property="username" 			column="USERNAME" />
+		<result property="logpassword" 			column="LOGPASSWORD" />
+		<result property="paypassword" 			column="PAYPASSWORD" />
+		<result property="headimg" 				column="HEADIMG" />
+		<result property="email"	    		column="EMAIL" />
+		<result property="status"  				column="STATUS" />
+		<result property="borrowtimes" 			column="BORROWTIMES" />
+		<result property="investtimes" 			column="INVESTTIMES" />
+		<result property="logintimes" 			column="LOGINTIMES" />
+		<result property="addtime" 			    column="ADDTIME" />
+		<result property="addip" 				column="ADDIP" />
+		<result property="shareperson" 			column="SHAREPERSON" />
+		<result property="lastlogintime" 		column="LASTLOGINTIME" />
+		<result property="lastloginip" 			column="LASTLOGINIP" />
+		<result property="useridmd5" 			column="USERIDMD5" />
+		<result property="inviterid"            column="INVITERID"/>
+		<result property="awardmoney" 			column="AWARDMONEY" />
+		<result property="accumulatepoints" 	column="ACCUMULATEPOINTS"/>
+		<result property="type" 				column="TYPE" />	
+		<result property="source" 				column="SOURCE" />
+		<result property="gainaccumulatepoints" column="GAINACCUMULATEPOINTS" />
+		<result property="province" 			column="PROVINCE" />			
+		<result property="city" 				column="CITY" />
+		<result property="area" 				column="AREA" />
+		<result property="isEmployeer" 			column="IS_EMPLOYEER" />
+		<result property="isFinancialUser" 		column="IS_FINANCIAL_USER" />	
+		<result property="qq" 					column="QQ" />
+		<result property="wxNo" 				column="WX_NO" />
+		<result property="emailPassword" 		column="EMAIL_PASSWORD" />
+		<result property="isCustody" 			column="IS_CUSTODY"/>	
+		<result property="eType" 				column="E_TYPE"/>
+		<result property="plNumber" 				column="plnum"/>
+	</resultMap>
+	
+	<!--基本列 -->
+	<sql id="memberColumn">
+		m.ID, 
+		m.USERNAME, 
+		m.LOGPASSWORD, 
+		m.PAYPASSWORD, 
+		m.HEADIMG, 
+		m.EMAIL, 
+		m.STATUS, 
+		m.BORROWTIMES, 
+		m.INVESTTIMES, 
+		m.LOGINTIMES, 
+		m.ADDTIME, 
+		m.ADDIP, 
+		m.SHAREPERSON, 
+		m.LASTLOGINTIME, 
+		m.LASTLOGINIP, 
+		m.USERIDMD5, 
+		m.INVITERID, 
+		m.AWARDMONEY, 
+		m.ACCUMULATEPOINTS, 
+		m.TYPE, 
+		m.SOURCE, 
+		m.GAINACCUMULATEPOINTS, 
+		m.PROVINCE, 
+		m.CITY, 
+		m.AREA, 
+		m.IS_EMPLOYEER, 
+		m.IS_FINANCIAL_USER, 
+		m.QQ, 
+		m.WX_NO, 
+		m.EMAIL_PASSWORD,
+		m.HONOR,
+		m.IS_CUSTODY,
+		m.E_TYPE,
+		m.plnum
+	</sql>	
+	
+	<!-- 封装查询条件 -->
+	<sql id="member_Where_Clause">
+		<if test="id != null">
+			and m.id =#{id}
+		</if>
+		<if test="username != null and username !=''">
+			and m.username = #{username}
+		</if>
+		<if test="email !=null and email !=''">
+			and m.EMAIL =#{email}
+		</if>
+		<if test="lastlogintimeBegin !=null and lastlogintimeBegin !=''">
+			and m.LASTLOGINTIME <![CDATA[>=]]> #{lastlogintimeBegin}
+		</if>
+		<if test="lastlogintimeEnd !=null and lastlogintimeEnd !=''">
+			and m.LASTLOGINTIME <![CDATA[<=]]> #{lastlogintimeEnd}
+		</if>
+		<if test="userIdMD5 !=null and userIdMD5 !=''">
+			and m.USERIDMD5 <![CDATA[=]]> #{userIdMD5} 
+		</if>					
+	</sql>
+	
+  	<!-- 根据条件查询会员记录集合 -->
+	<select id="queryMemberList" parameterType="com.dxjr.portal.member.vo.MemberCnd" resultMap="memberResultMap" >
+		select 	
+		   <include refid="memberColumn"/>
+		from
+			rocky_member m
+		where 1=1
+		<include refid="member_Where_Clause"/>
+  	</select>
+  	
+  	<!-- 根据条件查询会员记录数量-->
+	<select id="queryMemberCount" parameterType="com.dxjr.portal.member.vo.MemberCnd" resultType="java.lang.Integer" >
+		select count(m.id)
+		from
+			rocky_member m
+		where 1=1
+		<include refid="member_Where_Clause"/>
+  	</select>
+  	
+  	<!-- 根据登录名字查找记录，目前可为：用户名，邮箱名 --> 
+	<select id="queryMemberByloginname" parameterType="java.lang.String" resultMap="memberResultMap" > 
+		select 
+		<include refid="memberColumn"/> 
+		from 
+		rocky_member m 
+		left join rocky_mobile_appro rmp 
+		on m.ID=rmp.USER_ID AND rmp.PASSED = 1
+		where m.status = 0 
+		and (m.USERNAME=#{loginname} or rmp.MOBILENUM=#{loginname} OR m.EMAIL = #{loginname}) 
+		limit 1 
+	</select>
+  	 	
+  	<!-- 根据用户id查询用户的认证信息-->
+	<select id="queryMemberApproByUserId" parameterType="java.lang.Integer" resultType="com.dxjr.portal.member.vo.MemberApproVo" >
+		SELECT
+		  m.ID			 AS     id,
+		  m.USERNAME     AS     username,
+		  m.ADDTIME 	 AS     userAddtime,
+		  ra.ISPASSED    AS  	namePassed,
+		  ra.REALNAME    AS     realname,
+		  ra.cardtype    AS     cardtype,
+		  ra.IDCARDNO    AS     idcardno,
+		  ma.MOBILENUM   AS     mobilenum,
+		  ma.PASSED      AS     mobilePassed,
+		  ea.CHECKED     AS     emailChecked,
+		  va.PASSED      AS     vipPassed,
+		  FROM_UNIXTIME(va.APPROVETIME) as approveTime,
+		  va.INDATE		 as		inDate,
+		  vl.`STATUS`    as 	svipPassed,
+		  vl.`ADDTIME`   as		svipAddDate,
+		  vl.`ORDER`    as     	svipOrder
+		FROM ROCKY_MEMBER m
+		  LEFT JOIN ROCKY_REALNAME_APPRO ra
+		    ON m.ID = ra.USER_ID
+		  LEFT JOIN ROCKY_MOBILE_APPRO ma
+		    ON m.ID = ma.USER_ID
+		  LEFT JOIN ROCKY_EMAIL_APPRO ea
+		    ON m.ID = ea.USER_ID
+		  LEFT JOIN ROCKY_VIP_APPRO va
+		    ON m.ID = va.USER_ID
+		  LEFT JOIN rocky_vip_level vl 
+		    ON m.ID = vl.USER_ID AND vl.TYPE = 1
+		WHERE m.ID = #{memberId}
+  	</select>
+  	
+  	<!-- 查询某人的推广用户记录（分页） -->
+  	<select id="queryAllFriendForPageByUserId" parameterType="com.dxjr.portal.account.vo.FriendCnd" resultMap="memberResultMap" >
+		select 	
+		   	m.id,m.username,m.addtime,m.awardmoney
+		from
+			rocky_member m
+		where m.INVITERID = #{userId}
+		order by m.addtime desc
+  	</select>
+  	
+  	<!-- 查询某人的推广用户记录数量 -->
+  	<select id="queryAllFriendCountByUserId" parameterType="java.lang.Integer" resultType="java.lang.Integer" >
+		select count(m.id)
+		from
+			rocky_member m
+		where m.INVITERID = #{userId}
+  	</select>
+  	
+  	<!-- 查询某人的推广用户记录获得的奖励 -->
+  	<select id="queryAllFriendSumMoneyByUserId" parameterType="java.lang.Integer" resultType="Double" >
+		select sum(m.AWARDMONEY)
+		from
+			rocky_member m
+		where m.INVITERID = #{userId}
+  	</select>
+  	
+  	<!-- 根据条件查询会员记录集合 -->
+	<select id="queryMemberByCnd" parameterType="com.dxjr.portal.member.vo.MemberCnd" resultMap="memberResultMap" >
+		select 	
+		   <include refid="memberColumn"/>
+		from
+			rocky_member m
+		where 1=1
+		<include refid="member_Where_Clause"/>
+		
+  	</select>
+
+	<!-- 修改登录/交易密码 -->
+	<update id="updatePwd">
+		update rocky_member set ${pwdType}=#{newPwd} where id=#{userId}
+	</update>
+
+	<!-- 查询是否正正式用户 -->
+	<select id="queryUserIsAutherized" parameterType="Integer" resultType="Integer">
+		select count(*) from rocky_member where ID = #{userId} and TYPE = 0
+	</select>
+
+	<!-- 查询是否实名认证 -->
+	<select id="queryRealNameIspassed" parameterType="Integer" resultType="Integer">
+		select count(id) from rocky_realname_appro where user_id = #{userId} and ispassed = 1
+	</select>
+	
+	<!-- 查询是否邮箱认证 -->
+	<select id="queryEmailIspassed" parameterType="Integer" resultType="Integer">
+		select count(id) from rocky_email_appro where user_id = #{userId} and checked = 1
+	</select>
+	
+	<!-- 查询是否手机认证 -->
+	<select id="queryMobileIspassed" parameterType="Integer" resultType="Integer">
+		select count(id) from rocky_mobile_appro where user_id = #{userId} and passed = 1
+	</select>
+	
+	<!-- 查询是否VIP -->
+	<select id="queryVIPIspassed" parameterType="Integer" resultType="Integer">
+		select count(id) from rocky_vip_appro where user_id = #{userId} and passed = 1
+	</select>
+	
+	<!--新注册用户初始化论坛角色 -->
+  	<insert id="insertBbsUserGroupForUncertified" parameterType="Integer">
+  		insert into t_bbs_user_group(USER_ID, GROUP_ID) values (#{userId}, 5)
+  	</insert>
+  	
+	<!-- 用户认证通过更新论坛角色 -->
+  	<update id="updateBbsUserGroupForRegistered" parameterType="Integer">
+  		update t_bbs_user_group set GROUP_ID = 4 where USER_ID = #{userId}
+  	</update>
+  	
+  	<!-- 用户认证通过更新论坛权限 -->
+  	<insert id="insertBbsUserPermissionForRegistered" parameterType="Integer">
+		insert into t_bbs_user_permission(USER_ID, PERMISSION_ID, COLUMN_ID)
+		select #{userId}, p.ID as permissionId, c.ID as columnId from
+		(select ID, `NAME` from t_bbs_permission where STATUS = 0 and NAME in ('post', 'reply', 'signin', 'collect', 'support')) p,
+		(select ID, ISPOSTPUBLIC from rocky_bbs_columns where STATUS = 0 and PARENTID is not null) c
+		where c.ISPOSTPUBLIC = 1 or (c.ISPOSTPUBLIC = 0 and p.NAME != 'post')
+  	</insert>
+  	
+	<!-- 查询是否正确的支付密码 -->
+	<select id="queryPayPasswordIsCorrect" parameterType="java.util.Map" resultType="java.lang.Integer">
+		select count(*) from rocky_member where ID = #{userId} and PAYPASSWORD = #{payPassword}
+	</select>
+	
+	<!-- 登录积分 -->
+	<insert id="insertAccumulatePointsForLogin" parameterType="java.lang.Integer">
+		insert into rocky_member_accumulate_points (MEMBERID, ACCUMULATEPOINTS, GAINACCUMULATEPOINTS, GAINDATE, TYPE, POINTSMAGNIFICATION, REMARK, TARGETID)
+		select #{memberId}, 3, 3, now(), 0, 1, null, #{memberId} from dual
+		where not exists (select 1 from rocky_member_accumulate_points where TYPE = 0 and MEMBERID = #{memberId} and GAINDATE >= curdate() and GAINDATE &lt; (curdate() + interval 1 day) limit 1)
+	</insert>
+
+	<!-- 登录信息 -->
+	<insert id="updateMemberForLogin" parameterType="java.util.Map">
+		update rocky_member
+		set LOGINTIMES = LOGINTIMES + 1,
+		    LASTLOGINTIME = UNIX_TIMESTAMP(),
+		    LASTLOGINIP = #{ip}
+		where ID = #{id}
+	</insert>
+
+	<update id="updateMemberForCustody" parameterType="com.dxjr.portal.member.vo.MemberVo">
+		UPDATE rocky_member
+			SET IS_CUSTODY = #{isCustody},
+				E_TYPE = #{eType}
+			WHERE ID = #{id}
+				AND STATUS = #{status}
+	</update>
+	
+	<update id="updateAccumulatePointsByIdForLogin" parameterType="java.lang.Integer">
+		update rocky_member set GAINACCUMULATEPOINTS = GAINACCUMULATEPOINTS + 3, ACCUMULATEPOINTS = ACCUMULATEPOINTS + 3
+		where ID = #{id}
+		and exists (select 1 from rocky_member_accumulate_points where TYPE = 0 and MEMBERID = #{id} and GAINDATE >= curdate() and GAINDATE &lt; (curdate() + interval 1 day) limit 1)
+	</update>
+	
+	<update id="updateAccumulatePoints" >
+		update rocky_member set ACCUMULATEPOINTS = ACCUMULATEPOINTS + #{point}
+		where ID = #{id}		
+	</update>
+	
+	<!-- 根据userId查询会员记录并锁定 -->
+	<select id="queryMemberByIdForUpdate" parameterType="java.lang.Integer" resultMap="memberResultMap" >
+		select 	
+		   <include refid="memberColumn"/>
+		from
+			rocky_member m
+		where id = #{userId} for update
+  	</select>
+  	<select id="queryMemberById" parameterType="java.lang.Integer" resultMap="memberResultMap" >
+		select 	
+		   <include refid="memberColumn"/>
+		from
+			rocky_member m
+		where id = #{userId} 
+  	</select>
+  	
+  	<select id="querySimpleInfoById" parameterType="java.lang.Integer" resultMap="memberResultMap" >
+		 select 	
+		    m.ID, 
+			m.USERNAME, 
+			m.STATUS, 
+			m.ADDTIME, 
+			m.IS_EMPLOYEER, 
+			m.IS_FINANCIAL_USER
+			from
+			rocky_member m
+		 where id = #{userId}  
+  	</select>
+  	
+  	
+  	<select id="queryPasswordInfoById" parameterType="java.lang.Integer" resultType="com.dxjr.portal.member.vo.MemberVo" >
+		 select 	
+		    m.ID, 
+			m.USERNAME, 
+			m.STATUS, 
+			m.ADDTIME, 
+			m.IS_EMPLOYEER, 
+			m.LOGPASSWORD,
+			m.PAYPASSWORD,
+			m.headimg,
+			m.IS_CUSTODY as isCustody,
+			m.E_TYPE as eType
+			from
+			rocky_member m
+		 where id = #{userId}  
+  	</select>
+    <!-- 根据邮箱查找会员信息-->
+	<select id="queryMemberInfoByEmail" parameterType="java.lang.String" resultMap="memberResultMap" >
+		select 	
+		   <include refid="memberColumn"/>
+		from
+			rocky_member m
+		where m.email=#{email}
+  	</select>
+  	
+  	<!-- 获取注册用户数量 -->
+  	<select id="getRegistUserCount" resultType="java.lang.Integer" >
+		 select count(*) from rocky_member  rm
+               where STATUS = 0  
+  	</select>
+
+    <select id="queryUserBaseInfo" parameterType="java.lang.Integer"
+            resultType="com.dxjr.portal.member.vo.MemberVo">
+        SELECT
+	      a.REALNAME AS realName,
+	      a.IDCARDNO AS idCardNo,
+	      b.MOBILENUM AS mobile
+		    FROM rocky_realname_appro a
+	    	LEFT JOIN rocky_mobile_appro b
+	    		ON a.USER_ID = b.USER_ID
+	    			WHERE a.USER_ID = #{userId}
+    </select>
+    
+    <!-- 通过ID找到相应的用户名-->
+  	<select id="queryMemberNameById" parameterType="java.lang.Integer" resultType="java.lang.String" >
+		 select 	
+			m.USERNAME
+			from
+			rocky_member m
+		 where id = #{userId}  
+  	</select>
+
+</mapper>

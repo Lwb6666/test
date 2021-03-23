@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.dxjr.portal.member.mapper.BankInfoMapper">
+	
+	<!-- 返回的结果集 -->
+	<resultMap type="com.dxjr.portal.member.vo.BankInfoVo" id="bankInfoVoResultMap">
+		<id property="id" column="id" />
+		<result property="userId" 		column="USER_ID" />
+		<result property="bankName" 	column="BANKNAME" />
+		<result property="cardNum"		column="CARDNUM" />
+		<result property="branch"		column="BRANCH" />
+		<result property="realName"		column="REALNAME" />
+		<result property="idCardNo"		column="IDCARDNO" />
+		<result property="cnapsCode"	column="CNAPS_CODE"/>
+		<result property="verifyStatus"	column="VERIFY_STATUS"/>
+		<result property="noAgree"		column="NO_AGREE"/>
+		<result property="bankCode"		column="bank_code"/>
+	</resultMap>
+
+	<resultMap id="bankRM" type="com.dxjr.base.entity.Bank">
+		<id column="CNAPS_CODE" property="cnapsCode" jdbcType="BIGINT" />
+		<result column="PROVINCE" property="province" jdbcType="VARCHAR" />
+		<result column="CITY" property="city" jdbcType="VARCHAR" />
+		<result column="DISTRICT" property="district" jdbcType="VARCHAR" />
+		<result column="BANK_NAME" property="bankName" jdbcType="VARCHAR" />
+		<result column="BRANCH_NAME" property="branchName" jdbcType="VARCHAR" />
+		<result column="BANK_CODE" property="bankCode" jdbcType="VARCHAR" />
+	</resultMap>
+	
+	
+	<!--基本列 -->
+	<sql id="bankInfoBaseColumn">
+		b.*
+<!-- 		b.ID,  -->
+<!-- 		b.USER_ID,  -->
+<!-- 		b.BANKNAME,  -->
+<!-- 		b.CARDNUM,  -->
+<!-- 		b.BRANCH,  -->
+<!-- 		b.REALNAME, -->
+<!-- 		b.IDCARDNO, -->
+<!-- 		b.CNAPS_CODE, -->
+<!-- 		b.VERIFY_STATUS, -->
+<!-- 		b.NO_AGREE,b.BANK_CODE -->
+	</sql>
+	
+	<!-- 封装查询条件 -->
+	<sql id="bankInfo_Where_Clause">
+		and b.`STATUS`!=-1
+		<if test="id != null">
+			and b.id =#{id}
+		</if>
+		<if test="userId != null ">
+			and b.USER_ID = #{userId}
+		</if>
+		<if test="verifyStatus !=null">
+			and b.VERIFY_STATUS =#{verifyStatus}
+		</if>
+	</sql>
+	
+	<!-- 根据条件查询记录集合 -->    
+	<select id="queryBankInfoByUserIdCardNum" resultMap="bankInfoVoResultMap" >
+		select
+		   <include refid="bankInfoBaseColumn"/>
+		from
+			rocky_bankinfo b
+		where b.status = 0 and b.USER_ID = #{userId}
+		and b.CARDNUM = #{cardNum}
+  	</select>
+	
+  	<!-- 根据条件查询记录集合 -->
+	<select id="queryBankInfoList" parameterType="com.dxjr.portal.member.vo.BankInfoCnd" resultMap="bankInfoVoResultMap" >
+		select
+		   <include refid="bankInfoBaseColumn"/>
+		from rocky_bankinfo b 
+		where 1=1 
+		<include refid="bankInfo_Where_Clause"/>
+<!-- 		and b.CNAPS_CODE is not null -->
+  	</select>
+  	
+  	  	<!-- 根据条件查询记录数量-->
+	<select id="queryBankInfoCount" parameterType="com.dxjr.portal.member.vo.BankInfoCnd" resultType="java.lang.Integer" >
+		select count(*)
+		from rocky_bankinfo b
+		where 1=1
+		<include refid="bankInfo_Where_Clause"/>
+  	</select>
+  	
+  	<!-- 已有的银行卡数量-->
+  	<select id="queryBankCardCountByUserId" parameterType="java.lang.Integer" resultType="java.lang.Integer" >
+		select count(b.id)
+		from rocky_bankinfo b 
+		where b.status = 0 and b.USER_ID = #{userId} 
+  	</select>
+  	
+	<delete id="deleteBankinfoById" parameterType="java.lang.Integer">
+		delete from rocky_bankinfo where ID = #{id}
+	</delete>
+	
+	<select id="queryBankByCnapsCodeAndBranch" resultMap="bankRM">
+		select * from t_bank where CNAPS_CODE = #{cnapsCode,jdbcType=BIGINT} and BRANCH_NAME = #{branch} and status = 0
+		AND BANK_CODE IN(
+		  /**'中国农业银行','中国工商银行','招商银行','中国银行','中国建设银行','中国光大银行','兴业银行','平安银行', */
+		  /**'中国邮政储蓄银行','上海浦东发展银行','华夏银行','中信银行','中国民生银行','广东发展银行'*/
+		   'ICBC','ABC','BOC','CCB','CITIC','CEB','HXB','CMBC','GDB','SZPAB','CMB','CIB','SPDB','PSBC'
+		)
+	</select>
+	
+	<select id="countCardByCardNum" parameterType="java.lang.String" resultType="java.lang.Integer">
+		select count(*) from rocky_bankInfo where status = 0 and CARDNUM = #{cardNum}
+	</select>
+	
+	<select id="queryProvinceList" resultMap="bankRM">
+		select distinct PROVINCE from t_bank where status = 0
+	</select>
+	
+	<select id="queryCityList" parameterType="java.lang.String" resultMap="bankRM">
+		select distinct CITY from t_bank where PROVINCE = #{province} and status = 0
+	</select>
+	
+	<select id="queryDistrictList" parameterType="java.lang.String" resultMap="bankRM">
+		select distinct DISTRICT from t_bank where CITY = #{city} and status = 0
+	</select>
+	
+	<select id="queryBankList" parameterType="java.lang.String" resultMap="bankRM">
+		select distinct BANK_CODE, BANK_NAME from t_bank where status = 0<if test="district != null and district != ''"> and DISTRICT = #{district} </if>
+		AND BANK_CODE IN(
+		  /**'中国农业银行','中国工商银行','招商银行','中国建设银行','中国光大银行','兴业银行','平安银行', */
+		  /**'中国邮政储蓄银行','上海浦东发展银行','华夏银行', '广东发展银行'*/
+		   'ICBC','ABC', 'CCB', 'CEB','HXB', 'GDB','SZPAB','CMB','CIB','SPDB','PSBC'
+		)
+	</select>
+	
+	<select id="queryBranchList" parameterType="java.util.Map" resultMap="bankRM">
+		select BRANCH_NAME, CNAPS_CODE from t_bank where BANK_CODE = #{bankCode} and DISTRICT = #{district} and status = 0
+	</select>
+	
+	<select id="queryBranchListLike" parameterType="java.util.Map" resultMap="bankRM">
+		select BRANCH_NAME, CNAPS_CODE from t_bank where status = 0 and BANK_CODE = #{bankCode}  and DISTRICT = #{district} and BRANCH_NAME like '%' #{branchKey} '%' 
+	</select>
+	
+	<select id="queryBankInfosByCnapsCode" parameterType="java.util.Map" resultMap="bankRM">
+		select * from t_bank where CNAPS_CODE = #{cnapsCode,jdbcType=BIGINT} and status = 0
+		AND BANK_CODE IN(
+		  /**'中国农业银行','中国工商银行','招商银行','中国银行','中国建设银行','中国光大银行','兴业银行','平安银行', */
+		  /**'中国邮政储蓄银行','上海浦东发展银行','华夏银行','中信银行','中国民生银行','广东发展银行'*/
+		   'ICBC','ABC','BOC','CCB','CITIC','CEB','HXB','CMBC','GDB','SZPAB','CMB','CIB','SPDB','PSBC'
+		)
+	</select>
+	
+	<!-- 根据用户更新支付时的签约协议号 -->
+	<update id="updateNoAgreeByUserId">
+		update rocky_bankinfo
+		set NO_AGREE=#{noAgree}
+		where USER_ID=#{userId}
+		and `STATUS`!=-1
+	</update>
+	
+
+	<!-- 查询用户当前银行卡 -->
+	<select id="getUserCurrentCard" parameterType="Integer" resultMap="bankInfoVoResultMap">
+		select * from rocky_bankinfo where USER_ID=#{userId} and `STATUS`!=-1 and `STATUS`!=3  limit 1
+	</select>
+
+	<!-- 根据id更新银行卡状态 -->
+	<update id="updateBankInfoStatus">
+		update rocky_bankinfo
+		set VERIFY_STATUS=#{verifyStatus}
+		where ID=#{id}
+	</update>
+	
+	<!-- 查询用户当前审核中银行卡 -->
+	<select id="getUserCurrentCardAppro" parameterType="Integer" resultMap="bankInfoVoResultMap">
+		select * from rocky_bankinfo where USER_ID=#{userId} and `STATUS`!=-1  limit 1
+	</select>
+
+</mapper>  

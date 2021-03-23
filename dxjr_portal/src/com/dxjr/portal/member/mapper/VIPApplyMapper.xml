@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.dxjr.portal.member.mapper.VIPApplyMapper">
+	
+	<!-- 返回的结果集 -->
+	<resultMap type="com.dxjr.portal.member.vo.VIPApplyVo" id="vipApplyMapperResultMap">
+		<id property="id" column="id" />
+		<result property="userId" 		column="USER_ID" />
+		<result property="type" 		column="TYPE" />
+		<result property="passed" 		column="PASSED" />
+		<result property="approver"	    column="APPROVER" />
+		<result property="approveRemark" column="APPROVEREMARK" />
+		<result property="approveTime"	    column="APPROVETIME" />
+		<result property="serviceNum"	    column="SERVICENUM" />
+		<result property="indate"	    column="INDATE" />
+		<result property="addTime"	    column="ADDTIME" />
+		<result property="addIp"	    column="ADDIP" />
+		<result property="isFee"	    column="ISFEE" />
+		<result property="remark"	    column="REMARK" />
+		<result property="fee"	    	column="fee" />
+	</resultMap>
+	
+	<!--基本列 -->
+	<sql id="vipApplyBaseColumn">
+		v.ID, 
+		v.USER_ID,
+		v.TYPE, 
+		v.PASSED, 
+		v.APPROVER, 
+		v.APPROVEREMARK, 
+		v.APPROVETIME,
+		v.SERVICENUM,
+		v.INDATE,
+		v.ADDTIME,
+		v.ADDIP,
+		v.ISFEE,
+		v.REMARK,
+		v.fee
+	</sql>
+	
+	<!-- 封装查询条件 -->
+	<sql id="vipApply_Where_Clause">
+		<if test="id != null">
+			and v.id =#{id}
+		</if>
+		<if test="userId != null ">
+			and v.USER_ID = #{userId}
+		</if>
+		<if test="type != null ">
+			and v.TYPE = #{type}
+		</if>
+		<if test="passed != null ">
+			and v.PASSED = #{passed}
+		</if>
+	</sql>
+	
+  	<!-- 根据条件查询记录集合 -->
+	<select id="queryVIPApplyList" parameterType="com.dxjr.portal.member.vo.VIPApproCnd" resultMap="vipApplyMapperResultMap" >
+		select 	
+		   <include refid="vipApplyBaseColumn"/>
+		from
+			rocky_vip_appro v
+		where 1=1
+		<include refid="vipApply_Where_Clause"/>
+  	</select>
+  	
+  	  	<!-- 根据条件查询记录数量-->
+	<select id="queryVIPApplyCount" parameterType="com.dxjr.portal.member.vo.VIPApplyCnd" resultType="java.lang.Integer" >
+		select count(v.id)
+		from
+			rocky_vip_apply v
+		where 1=1
+		<include refid="vipApply_Where_Clause"/>
+  	</select>
+</mapper>  

@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.dxjr.portal.outerInterface.mapper.WDTYInterfaceMapper">
+
+	<!-- 插入外部访问日志 -->
+	<insert id="insertWdtyMemberBinding" parameterType="com.dxjr.portal.outerInterface.entity.WdtyMemberBinding">
+		INSERT INTO wdty_member_binding 
+		(mobile,username,usernamep,send_time,sid,loan_id,loan_type,is_reg,userkey,login_key,user_id,status,loggingType,addtime)
+		VALUES
+		(#{mobile},#{username},#{usernamep},#{send_time},#{sid},#{loan_id},#{loan_type},#{is_reg},#{userkey},#{login_key},#{user_id},#{status},#{loggingType},NOW())
+ 		 <selectKey resultType="java.lang.Integer" order="AFTER" keyProperty="id">  
+      	    SELECT LAST_INSERT_ID() AS id    
+   		 </selectKey>
+	</insert>
+	
+	<!-- 返回的结果集 -->
+	<resultMap type="com.dxjr.portal.outerInterface.entity.WdtyMemberBinding" id="MemberBindingResultMap">
+		<id property="id"               column="id" />
+		<result property="mobile" 		column="mobile" />
+		<result property="username" 	column="username" />
+		<result property="usernamep" 	column="usernamep" />
+		<result property="send_time"	column="send_time" />
+		<result property="sid"	        column="sid" />	
+		<result property="loan_id"	    column="loan_id" />
+		<result property="loan_type"	column="loan_type" />		
+		<result property="is_reg"	    column="is_reg" />
+		<result property="userkey"	    column="userkey" />	
+		<result property="login_key"	column="login_key" />	
+		<result property="user_id"	    column="user_id" />	
+		<result property="status"	    column="status" />		
+		<result property="loggingType"	column="loggingType" />
+		<result property="is_realname"	column="is_realname" />
+		<result property="is_bank"	    column="is_bank" />	
+		<result property="addtime"	    column="addtime" />
+	</resultMap>
+	
+	<!-- 根据条件查询记录集合 -->
+	<select id="queryMemberBindingInfo" parameterType="com.dxjr.portal.outerInterface.vo.WdtyParamCnd" resultMap="MemberBindingResultMap" >
+		select * FROM wdty_member_binding WHERE 1 = 1 		
+		<if test="user_id != null and user_id != ''">
+			and user_id = #{user_id}
+		</if>		
+		<if test="status != null and status != ''">
+			and `status`= #{status}
+		</if>
+		<if test="username != null and username != ''">
+			and `username`= #{username}
+		</if>
+		<if test="usernamep != null and usernamep != ''">
+			and `usernamep`= #{usernamep}
+		</if>
+		<if test="mobile != null and mobile != ''">
+			and `mobile`= #{mobile}
+		</if>
+		<if test="userkey != null and userkey != ''">
+			and `userkey`= #{userkey}
+		</if>		
+		limit 1
+  	</select>
+  	
+  	<update id="updateMemberBindingInfo" parameterType="com.dxjr.portal.outerInterface.entity.WdtyMemberBinding">
+		UPDATE wdty_member_binding 			
+		   <set >		   	   
+		  	  <if test="mobile != null " >
+		        mobile = #{mobile},
+		      </if>
+		      <if test="username != null " >
+		        username = #{username},
+		      </if>
+		      <if test="usernamep != null " >
+		        usernamep = #{usernamep},
+		      </if>
+		      <if test="send_time != null " >
+		        send_time = #{send_time},
+		      </if>
+		      <if test="sid != null " >
+		        sid = #{sid},
+		      </if>
+		      <if test="loan_id != null " >
+		        loan_id = #{loan_id},
+		      </if>
+		      <if test="loan_type != null " >
+		        loan_type = #{loan_type},
+		      </if>
+		      <if test="is_reg != null " >
+		        is_reg = #{is_reg},
+		      </if>
+		      <if test="userkey != null " >
+		        userkey = #{userkey},
+		      </if>
+		      <if test="login_key != null " >
+		        login_key = #{login_key},
+		      </if>
+		      <if test="status != null " >
+		        status = #{status},
+		      </if>	
+		      <if test="loggingType != null " >
+		        loggingType = #{loggingType},
+		      </if>		      		      
+		   </set>
+		WHERE user_id = #{user_id};
+	</update>
+	
+	<!-- 根据条件查询记录集合 -->
+	<select id="queryMemberBindingInfoByKey" parameterType="com.dxjr.portal.outerInterface.vo.WdtyParamCnd" resultMap="MemberBindingResultMap" >
+		select * FROM wdty_member_binding WHERE 1 = 1 			
+		<if test="status != null and status != ''">
+			and `status`= #{status}
+		</if>
+		<if test="mobile != null and mobile != ''">
+			and `mobile`= #{mobile}
+		</if>
+		<if test="login_key != null and login_key != ''">
+			and `login_key`= #{login_key}
+		</if>		
+		limit 1
+  	</select>
+  	
+  	<update id="updateLoginKeyById" parameterType="com.dxjr.portal.outerInterface.entity.WdtyMemberBinding">
+		UPDATE wdty_member_binding set login_key=NULL where id= #{id}		
+	</update>
+  	
+</mapper>  

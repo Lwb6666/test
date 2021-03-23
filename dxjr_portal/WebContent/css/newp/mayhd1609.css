@@ -1,0 +1,83 @@
+﻿html,body,h1,h2,h3,h4,h5,h6,div,dl,dt,dd,ul,ol,li,p,blockquote,pre,hr,figure,table,caption,th,td,form,fieldset,legend,input,button,textarea,menu{margin:0;padding:0;}
+header,footer,section,article,aside,nav,hgroup,address,figure,figcaption,menu,details{display:block;}
+table{border-collapse:collapse;border-spacing:0;}
+caption,th{font-weight:normal;}
+html,body,fieldset,img,iframe,abbr{border:0;}
+i,cite,em,var,address,dfn{font-style:normal;}
+li{list-style:none;}
+textarea{overflow:auto;resize:none;}
+label,summary{cursor:default;}
+a,button{cursor:pointer;}
+h1,h2,h3,h4,h5,h6,em,strong,b{font-size:100%;}
+del,ins,u,s,a,a:hover{text-decoration:none;}
+body{font:14px/1.14 microsoft yahei,arial;outline:0;background:#f9f9f9;color:#333;}
+html{overflow-y:scroll;}
+a{color:#fff;}
+a:hover{ color:#E9E9E9;}
+
+a{blr:expression(this.onFocus=this.blur()); outline:none;} /* 只支持IE，过多使用效率低 */ 　 
+a:focus { -moz-outline-style: none; }
+
+img{vertical-align:top;border:none;}
+
+/*清除浮动*/
+.clearfix{*zoom:1;}
+.clearfix:before,.clearfix:after {display: table; content: "";line-height: 0;}
+.clearfix:after{clear: both;} 
+.clear{clear:both; height:0;}
+
+.f22{ font-size:22px}
+.f30{ font-size:30px}
+.f40{ font-size:40px}
+.f24{ font-size:24px}
+.f18{ font-size:18px}
+.green{ color:#009139;}
+.yellow{ color:#e73828;}
+.red{ color:red;}
+
+
+.banner{ width:100%; margin:auto; height:830px; background:url(../../images/newp/newhand_01.png) no-repeat top center;}
+.b-btn{ width:270px; margin:0 auto; padding-top:530px;}
+.b-btn a{ display:block; height:75px; font-size:40px; color:#fff; padding-left:80px;font-weight:700;}
+.b-btn p{ text-align:center; font-size:34px; color:red; margin-top:5px; margin-left:35px;}
+.wrap{ width:100%;  background:#79bf5d;}
+.main{ width:1099px;margin:0 auto; position:relative;}
+.box1{ width:100%; margin:auto; height:517px; background:url(../../images/newp/newhand_02.png) center no-repeat;}
+.box1-list{ position:absolute;top:60px;left:360px;width:500px;text-align:center; line-height:32px; }
+.box-text{ padding:300px 0 0 420px;width:400px;line-height:32px;}
+
+.box2{ width:1091px; height:603px; background:url(../../images/newp/newhand_03.png) no-repeat; position:relative;top:0px; left:0px;}
+.register{ padding:10px 0 0 380px; line-height:1.6;}
+.box2-table td{ border:0; padding:12px 10px; font-weight:bold; color:#000;}
+.box2-tl{ position:absolute; width:420px; font-size:14px; top:138px; left:350px; text-align:center;}
+
+.box3{ width:1091px; height:765px; background:url(../../images/newp/newhand_04.png) no-repeat; position:relative; top:0px;left:0px; margin-left:0px;}
+.box3 span{ display:block; width:228px; height:244px; background:url(../../images/newp/rw.png) no-repeat; position:absolute; bottom:-40px; right:-30px;}
+.box3-tit{ width:550px;line-height:24px;color:#ea5514;font-weight:700; text-align:center; padding:200px 0 0 170px;  }
+.box3-text{ width:350px;line-height:24px; position:absolute;left:300px;top:200px; }
+
+
+.box4{ width:100%; height:834px; background:url(../../images/newp/newhand_05.png) center no-repeat; margin:auto;}
+.box4-tl{ position:absolute; width:525px; font-size:16px; top:250px; left:450px; text-align:center;}
+.box4-tl td{border:0; padding:16px 10px; font-weight:bold; color:#000;}
+.box4-text{ width:550px;line-height:1.6; position:absolute;left:450px;top:80px; text-align:center}
+
+.footer-bg{width:1020px; position:absolute;top:680px; }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dxjr.portal.cms.mapper.CmsTagMapper" >
+  <resultMap id="BaseResultMap" type="com.dxjr.portal.cms.vo.CmsTag" >
+    <id column="ID" property="id" jdbcType="INTEGER" />
+    <result column="NAME" property="name" jdbcType="VARCHAR" />
+    <result column="STATUS" property="status" jdbcType="TINYINT" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    ID, NAME, STATUS
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from t_cms_tag
+    where ID = #{id,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from t_cms_tag
+    where ID = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.dxjr.portal.cms.vo.CmsTag" >
+    insert into t_cms_tag (ID, NAME, STATUS
+      )
+    values (#{id,jdbcType=INTEGER}, #{name,jdbcType=VARCHAR}, #{status,jdbcType=TINYINT}
+      )
+      
+       <selectKey resultType="java.lang.Integer" order="AFTER" keyProperty="id">  
+      	    SELECT LAST_INSERT_ID() AS ID    
+   	   </selectKey>
+  </insert>
+  <insert id="insertSelective" parameterType="com.dxjr.portal.cms.vo.CmsTag" >
+    insert into t_cms_tag
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        ID,
+      </if>
+      <if test="name != null" >
+        NAME,
+      </if>
+      <if test="status != null" >
+        STATUS,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="name != null" >
+        #{name,jdbcType=VARCHAR},
+      </if>
+      <if test="status != null" >
+        #{status,jdbcType=TINYINT},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.dxjr.portal.cms.vo.CmsTag" >
+    update t_cms_tag
+    <set >
+      <if test="name != null" >
+        NAME = #{name,jdbcType=VARCHAR},
+      </if>
+      <if test="status != null" >
+        STATUS = #{status,jdbcType=TINYINT},
+      </if>
+    </set>
+    where ID = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.dxjr.portal.cms.vo.CmsTag" >
+    update t_cms_tag
+    set NAME = #{name,jdbcType=VARCHAR},
+      STATUS = #{status,jdbcType=TINYINT}
+    where ID = #{id,jdbcType=INTEGER}
+  </update>
+  
+  <select id="queryCmsTagListForPage"    resultMap="BaseResultMap" >
+     select * from   t_cms_tag where status=0 
+  </select>
+  
+  
+  <select id="getCountCmsTagListForPage"  resultType="java.lang.Integer" >
+     select count(1) from   t_cms_tag where  status=0 
+  </select>
+  
+   <select id="getTagByName"    resultMap="BaseResultMap"   parameterType="java.lang.String" >
+	    select 
+	    <include refid="Base_Column_List" />
+	    from t_cms_tag
+	   where  status=0  and  NAME=#{name}
+  </select>
+  
+  
+    <select id="queryCmsTagList"    resultMap="BaseResultMap"   parameterType="java.util.Map" >
+	    select DISTINCT
+	    <include refid="Base_Column_List" />
+	    from t_cms_tag inner JOIN t_cms_article_tag tcat  ON tcat.TAG_ID =ID 
+	   where  status=0  and  channel_id =#{channelId}  order by ID desc  limit  #{start},#{count} 
+  </select>
+  
+   <select id="queryCmsTagListByParentChannelId"    resultMap="BaseResultMap"   parameterType="java.util.Map" >
+	    select DISTINCT
+	    <include refid="Base_Column_List" />
+	    from t_cms_tag inner JOIN t_cms_article_tag tcat  ON tcat.TAG_ID =ID 
+	   where  status=0  and  channel_id in (select id from  t_cms_channel where parent_id =#{channelId} and status=0)  order by ID desc  limit  #{start},#{count} 
+  </select>
+  
+  <select id="queryTagsByName"    resultMap="BaseResultMap"   parameterType="java.util.Map" >
+	    select 
+	    <include refid="Base_Column_List" />
+	    from t_cms_tag
+	   where  status=0  and  NAME  like  concat('%',#{name},'%') limit  #{start},#{count} 
+  </select>
+  
+  <!--  标签列表查询 -->
+  <select id="queryCmsTagListByTypeAndNum"    resultType="com.dxjr.portal.cms.vo.CmsTagVo"   parameterType="java.util.Map" >
+	   	SELECT TAG_ID,ARTICLE_ID,CHANNEL_ID,t.id,t.name from 
+(select *,count(*) remen from t_cms_article_tag GROUP BY TAG_ID ORDER BY remen desc ) a
+INNER JOIN t_cms_tag t on t.id = a.TAG_ID
+where  t.status=0 
+	   	<if test="type != 0  and type != 1   and type != 2   and type != 3 " >
+        and a.channel_id =#{type} 
+      	</if>
+      	<if test="type == 1" >
+        and a.channel_id in (select id from t_cms_channel where PARENT_ID = 1)
+      	</if>
+      	<if test="type == 2" >
+        and a.channel_id in (select id from t_cms_channel where PARENT_ID = 2)
+      	</if>
+	   	limit #{num}
+  </select>
+  
+  <!--  文章列表查询-by标签 -->
+   <select id="queryArticlePageByCndList"   parameterType="com.dxjr.portal.cms.vo.SearchPageVo"  resultType="com.dxjr.portal.cms.vo.CmsArticleVo">
+	  select 
+	    	a.*,c.name,
+	    	 (SELECT GROUP_CONCAT(concat(tct.id,'-',tct.NAME) separator ' ')  FROM  t_cms_article_tag tcat LEFT JOIN t_cms_tag tct  ON tcat.TAG_ID =tct .ID   WHERE tcat.ARTICLE_ID  =a.id )  tags
+   
+	  from t_cms_article a
+		INNER JOIN t_cms_article_tag cat on cat.ARTICLE_ID = a.id
+		inner join t_cms_channel c on c.id = a.CHANNEL_ID 
+	  where  cat.TAG_ID = #{id}
+	  and a.STATUS = 0
+	  order by a.CREATE_TIME desc
+  </select>
+  <select id="queryArticlePageByCndCount"  parameterType="com.dxjr.portal.cms.vo.SearchPageVo"  resultType="java.lang.Integer">
+	  SELECT   count(1)    
+	  from t_cms_article a
+		INNER JOIN t_cms_article_tag cat on cat.ARTICLE_ID = a.id
+		inner join t_cms_channel c on c.id = a.CHANNEL_ID 
+	  where  cat.TAG_ID = #{id}	 
+  </select>
+  
+  <!-- 热门的2篇文章-by标签 -不使用了-->
+   <select id="queryHotArticlesByTagLimit"   parameterType="java.util.Map"  resultType="com.dxjr.portal.cms.vo.CmsArticleVo">
+	  select 
+	    	a.*,c.name channelName,
+	    	 (SELECT GROUP_CONCAT(concat(tct.id,'-',tct.NAME) separator ' ')  FROM  t_cms_article_tag tcat LEFT JOIN t_cms_tag tct  ON tcat.TAG_ID =tct .ID   WHERE tcat.ARTICLE_ID  =a.id )  tags
+   
+	  from t_cms_article a
+		INNER JOIN t_cms_article_tag cat on cat.ARTICLE_ID = a.id
+		inner join t_cms_channel c on c.id = a.CHANNEL_ID 
+	  where  cat.TAG_ID = #{id}
+	  order by a.HITS desc limit #{start},#{count}
+  </select>
+  
+  <!-- 标签-参数查询 -->
+  <select id="queryCmsTagByParam" resultMap="BaseResultMap" parameterType="java.util.Map" >
+    select 
+    <include refid="Base_Column_List" />
+    from t_cms_tag
+    where   status=0  and  NAME=#{param}
+  </select>
+  
+</mapper>

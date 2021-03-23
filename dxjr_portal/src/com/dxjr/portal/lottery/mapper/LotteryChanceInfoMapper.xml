@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dxjr.portal.lottery.mapper.LotteryChanceInfoMapper" >
+  <resultMap id="BaseResultMap" type="com.dxjr.portal.lottery.vo.LotteryChanceInfoVo" >
+    <id column="ID" property="id" jdbcType="INTEGER" />
+    <result column="LOTTERY_CHANCE_RULE_INFO_ID" property="lotteryChanceRuleInfoId" jdbcType="INTEGER" />
+    <result column="LOTTERY_NUM" property="lotteryNum" jdbcType="INTEGER" />
+    <result column="USE_NUM" property="useNum" jdbcType="INTEGER" />
+    <result column="USER_ID" property="userId" jdbcType="INTEGER" />
+    <result column="USERNAME" property="username" jdbcType="VARCHAR" />
+    <result column="ADD_TIME" property="addTime" jdbcType="TIMESTAMP" />
+    <result column="REMARK" property="remark" jdbcType="VARCHAR" />
+    <result column="ADD_IP" property="addIp" jdbcType="VARCHAR" />
+    <result column="chanceRuleInfoName" property="chanceRuleInfoName" jdbcType="VARCHAR" />
+  </resultMap>
+  
+  <sql id="ChanceInfo_Column_List" >
+    lci.ID, lci.LOTTERY_CHANCE_RULE_INFO_ID, lci.LOTTERY_NUM, lci.USE_NUM, lci.USER_ID, lci.USERNAME, lci.ADD_TIME, 
+    lci.REMARK, lci.ADD_IP
+  </sql>
+  
+  <sql id="Base_Column_List" >
+    ID, LOTTERY_CHANCE_RULE_INFO_ID, LOTTERY_NUM, USE_NUM, USER_ID, USERNAME, ADD_TIME, 
+    REMARK, ADD_IP
+  </sql>
+  
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from t_lottery_chance_info
+    where ID = #{id,jdbcType=INTEGER}
+  </select>
+  
+  <!-- 根据机会来源类型和userId查询记录数量 -->
+  <select id="selectCountByCodeAndUserId" resultType="java.lang.Integer">
+    SELECT count(lci.ID) 
+    FROM t_lottery_chance_info lci, t_lottery_chance_rule_info lcri 
+    WHERE lci.LOTTERY_CHANCE_RULE_INFO_ID = lcri.ID 
+    AND lcri.`CODE` = #{code} AND lcri.`STATUS` = 0 
+    AND lci.USER_ID = #{userId} AND lcri.ADD_TIME <![CDATA[ <= ]]> CURDATE() AND CURDATE() <![CDATA[ <= ]]> lcri.END_TIME
+  </select>
+  
+  <!-- 根据机会来源类型和userId查询送的抽奖总次数 -->
+  <select id="queryLotteryNumTotalByCodeAndUserId" resultType="java.lang.Integer">
+    SELECT IFNULL(sum(lci.LOTTERY_NUM), 0)
+    FROM t_lottery_chance_info lci, t_lottery_chance_rule_info lcri 
+    WHERE lci.LOTTERY_CHANCE_RULE_INFO_ID = lcri.ID 
+    AND lcri.`CODE` = #{code} AND lcri.`STATUS` = 0 
+    AND lci.USER_ID = #{userId} AND lcri.ADD_TIME <![CDATA[ <= ]]> CURDATE() AND CURDATE() <![CDATA[ <= ]]> lcri.END_TIME
+  </select>
+   
+ 	<!-- 调用发放首次达到投资等级奖励抽奖机会存储过程 -->
+	<select id="investLevelAwardLotteryChance" statementType="CALLABLE" parameterType="java.util.Map">  
+		<![CDATA[  
+		    {call invest_level_award_lottery_chance (#{userId,mode=IN,jdbcType=INTEGER}, #{account,mode=IN,jdbcType=DECIMAL}, #{msg,mode=OUT,jdbcType=VARCHAR})}  
+		]]>
+	</select>
+	
+	<!-- 调用发放开通直通车奖励抽奖机会存储过程 -->
+	<select id="firstBorrowAwardLotteryChance" statementType="CALLABLE" parameterType="java.util.Map">  
+		<![CDATA[  
+		    {call first_borrow_award_lottery_chance (
+		    #{userId,mode=IN,jdbcType=INTEGER},
+		    #{account,mode=IN,jdbcType=INTEGER},
+		    #{firstTenderRealId,mode=IN,jdbcType=INTEGER},
+		    #{msg,mode=OUT,jdbcType=VARCHAR})}  
+		]]>
+	</select>
+	
+	<!-- 查询最早一条未使用完的抽奖机会信息（用于系统抽奖） -->
+	<select id="selectFirstChanceInfoByUserId" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+	    SELECT <include refid="ChanceInfo_Column_List" />, lcr.`NAME` as chanceRuleInfoName 
+	    FROM t_lottery_chance_info lci, t_lottery_chance_rule_info lcr
+		WHERE  lci.USER_ID = #{userId} AND lci.USE_NUM > 0 AND lci.LOTTERY_CHANCE_RULE_INFO_ID = lcr.ID
+		ORDER BY lci.id ASC LIMIT 1 for update
+    </select>
+    
+    <!-- 查询抽奖机会有效次数总条数 -->
+	<select id="selectChanceUseNumTotalByUserId" resultType="java.lang.Integer" parameterType="java.lang.Integer" >
+	    SELECT IFNULL(sum(USE_NUM),0) FROM t_lottery_chance_info 
+	    WHERE USER_ID = #{userId} 
+    </select>
+    
+    <!-- 根据时间查询大于该时间的抽奖机会信息 -->
+	<select id="selectNewChanceInfoByDate" resultMap="BaseResultMap" parameterType="java.util.Date" >
+	    SELECT <include refid="ChanceInfo_Column_List" />, lcr.`NAME` as chanceRuleInfoName
+	    FROM t_lottery_chance_info lci, t_lottery_chance_rule_info lcr
+		WHERE lci.LOTTERY_CHANCE_RULE_INFO_ID = lcr.ID  AND lcr.CODE != 9
+		AND lci.ADD_TIME >= #{date} order by lci.id desc LIMIT 20
+    </select>
+    
+    <!-- 根据userId查询投资总金额 -->
+	<select id="queryInvestTotalByUserId" resultType="java.math.BigDecimal" parameterType="java.lang.Integer" >
+	    SELECT IFNULL(sum(t.total),0) FROM (
+			SELECT SUM(ACCOUNT) as total FROM rocky_b_tenderrecord
+			WHERE USER_ID = #{userId} AND TENDER_TYPE in(0,1) AND PARENT_ID IS NULL
+			UNION ALL
+			SELECT SUM(ACCOUNT) as total FROM rocky_b_subscribe WHERE USER_ID = #{userId} 
+			UNION ALL
+			SELECT SUM(bt.ACCOUNT) as total FROM rocky_b_tenderrecord bt WHERE bt.USER_ID = #{userId} AND bt.TENDER_TYPE = 2
+			UNION ALL
+			SELECT SUM(ACCOUNT) as total FROM t_fix_tender_detail WHERE USER_ID = #{userId} AND `STATUS` in(0,1,3)
+		) t
+    </select>
+  <!-- 查询未提醒抽奖次数 -->
+  <select id="queryLotteryNumTotal" resultType="java.lang.Integer">
+    SELECT IFNULL(sum(lci.USE_NUM), 0)
+    FROM t_lottery_chance_info lci, t_lottery_chance_rule_info lcri 
+    WHERE lci.LOTTERY_CHANCE_RULE_INFO_ID = lcri.ID 
+    AND lcri.`CODE` = #{code} AND lcri.`STATUS` = 0  and (lci.IS_REMINDED=2 or lci.IS_REMINDED is null)
+    AND lci.USER_ID = #{userId} AND lcri.ADD_TIME <![CDATA[ <= ]]> CURDATE() AND CURDATE() <![CDATA[ <= ]]> lcri.END_TIME
+  </select>
+</mapper>

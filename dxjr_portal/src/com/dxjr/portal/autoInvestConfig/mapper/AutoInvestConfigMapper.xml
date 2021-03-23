@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.dxjr.portal.autoInvestConfig.mapper.AutoInvestConfigMapper">
+	
+	<!-- AutoInvestConfig结果集 -->
+	<resultMap type="com.dxjr.portal.autoInvestConfig.vo.AutoInvestConfigVo" id="autoInvestConfigVoResultMap">
+		<id property="id" column="id" />
+		<result property="user_id" 				column="USER_ID" />
+		<result property="status" 				column="STATUS" />
+		<result property="tender_type" 			column="TENDER_TYPE" />
+		<result property="borrow_type" 			column="BORROW_TYPE" />
+		<result property="timelimit_status"	    column="TIMELIMIT_STATUS" />
+		<result property="min_time_limit"  		column="MIN_TIME_LIMIT" />
+		<result property="max_time_limit" 		column="MAX_TIME_LIMIT" />
+		<result property="min_day_limit" 		column="MIN_DAY_LIMIT" />
+		<result property="max_day_limit" 		column="MAX_DAY_LIMIT" />
+		<result property="min_tender_account" 	column="MIN_TENDER_ACCOUNT" />
+		<result property="tender_account_auto" 	column="TENDER_ACCOUNT_AUTO" />
+		<result property="tender_scale" 		column="TENDER_SCALE" />
+		<result property="award_flag" 			column="AWARD_FLAG" />
+		<result property="balance_not_enough" 	column="BALANCE_NOT_ENOUGH" />
+		<result property="settime" 				column="SETTIME" />
+		<result property="setip" 				column="SETIP" />
+		<result property="min_apr" 				column="MIN_APR" />
+		<result property="max_apr" 				column="MAX_APR" />
+		<result property="borrow_type1_status" 	column="BORROW_TYPE1_STATUS" />
+		<result property="borrow_type2_status" 	column="BORROW_TYPE2_STATUS" />
+		<result property="borrow_type3_status" 	column="BORROW_TYPE3_STATUS" />
+		<result property="borrow_type4_status" 	column="BORROW_TYPE4_STATUS" />
+		<result property="uptime" 				column="UPTIME" />
+		<result property="remark" 				column="REMARK" />
+		<result property="rownum" 				column="rownum" />
+		<result property="borrow_type5_status" 	column="BORROW_TYPE5_STATUS" />
+		<result property="autoType" 			column="AUTO_TYPE" />
+		<result property="vipLevel" 			column="VIP_LEVEL" />
+		<result property="platform" 			column="PLATFORM" />
+		<result property="isUseCur" 			column="IS_USE_CUR" />
+		<result property="custodyFlag" 			column="custody_flag"/>
+	</resultMap>
+	
+	<!--自动投标规则基本列 -->
+	<sql id="autoInvestConfigVoColumn">
+		n.ID, 
+		n.USER_ID, 
+		n.STATUS, 
+		n.TENDER_TYPE, 
+		n.BORROW_TYPE, 
+		n.TIMELIMIT_STATUS, 
+		n.MIN_TIME_LIMIT, 
+		n.MAX_TIME_LIMIT, 
+		n.MIN_DAY_LIMIT, 
+		n.MAX_DAY_LIMIT, 
+		n.MIN_TENDER_ACCOUNT, 
+		n.TENDER_ACCOUNT_AUTO,
+		n.TENDER_SCALE,
+		n.AWARD_FLAG,
+		n.BALANCE_NOT_ENOUGH,
+		n.SETTIME,
+		n.SETIP,
+		n.MIN_APR,
+		n.MAX_APR,
+		n.BORROW_TYPE1_STATUS,
+		n.BORROW_TYPE2_STATUS,
+		n.BORROW_TYPE3_STATUS,
+		n.BORROW_TYPE4_STATUS,
+		n.UPTIME,
+		n.REMARK,
+		n.BORROW_TYPE5_STATUS,
+		n.AUTO_TYPE,
+		n.VIP_LEVEL,
+		n.PLATFORM,
+		n.IS_USE_CUR,
+		n.custody_flag
+	</sql>
+	
+	<!-- 根据USER_ID查询自动投标规则列表. -->
+	<select id="queryListByUserId" parameterType="java.lang.Integer" resultMap="autoInvestConfigVoResultMap" >
+		SELECT 
+		<include refid="autoInvestConfigVoColumn"/>, 
+		CASE WHEN n.AUTO_TYPE = 1 THEN m.rownum WHEN n.AUTO_TYPE = 2 THEN r.rownum END as rownum 
+		FROM rocky_account_auto_invest_config n
+		LEFT JOIN (
+				SELECT @rank1:=@rank1+1 as rownum,a.* FROM (
+					SELECT t1.* FROM (
+							SELECT ID, uptime FROM rocky_account_auto_invest_config WHERE `STATUS` = 1 AND AUTO_TYPE = 1  GROUP BY user_id ORDER BY uptime asc
+					) t1 ORDER BY t1.uptime asc
+				) a,(SELECT @rank1:=0) b
+		) m on(n.id =m.id)
+		LEFT JOIN (
+				SELECT @rank2:=@rank2+1 as rownum,a.* FROM (
+					SELECT t1.* FROM (
+							SELECT ID, uptime FROM rocky_account_auto_invest_config WHERE `STATUS` = 1 AND AUTO_TYPE = 2  GROUP BY user_id ORDER BY uptime asc
+					) t1 ORDER BY t1.uptime asc
+				) a,(SELECT @rank2:=0) b
+		) r on(n.id = r.id) where n.USER_ID = #{user_id} AND n.`STATUS` != 2 ORDER BY n.`STATUS` desc,n.uptime desc;
+  	</select>
+  	
+  	<!-- 根据id查询自动投标规则 -->
+  	<select id="queryById" parameterType="java.lang.Integer" resultMap="autoInvestConfigVoResultMap" >
+		SELECT 
+		<include refid="autoInvestConfigVoColumn"/>,
+		CASE WHEN n.AUTO_TYPE = 1 THEN m.rownum WHEN n.AUTO_TYPE = 2 THEN r.rownum END as rownum 
+		FROM rocky_account_auto_invest_config n
+		LEFT JOIN (
+				SELECT @rank1:=@rank1+1 as rownum,a.* FROM (
+					SELECT t1.* FROM (
+							SELECT ID, uptime FROM rocky_account_auto_invest_config WHERE `STATUS` = 1 AND AUTO_TYPE = 1  GROUP BY user_id ORDER BY uptime asc
+					) t1 ORDER BY t1.uptime asc
+				) a,(SELECT @rank1:=0) b
+		) m on(n.id =m.id)
+		LEFT JOIN (
+				SELECT @rank2:=@rank2+1 as rownum,a.* FROM (
+					SELECT t1.* FROM (
+							SELECT ID, uptime FROM rocky_account_auto_invest_config WHERE `STATUS` = 1 AND AUTO_TYPE = 2  GROUP BY user_id ORDER BY uptime asc
+					) t1 ORDER BY t1.uptime asc
+				) a,(SELECT @rank2:=0) b
+		) r on(n.id = r.id) where n.id = #{id}
+  	</select>
+  	
+  	<!-- 根据user_id查询生效的自动投标规则数量 -->
+  	<select id="queryCountByUserId" parameterType="java.lang.Integer" resultType="java.lang.Integer" >
+		select count(id) from rocky_account_auto_invest_config  where user_id = #{user_id} and status != 2
+  	</select>
+  	
+  	<!-- 根据USER_ID查询所有已启用的自动投标规则并获取排队号(可能存在多条)-->
+	<select id="queryAllByUserId" parameterType="java.lang.Integer" resultMap="autoInvestConfigVoResultMap" >
+		SELECT 
+		<include refid="autoInvestConfigVoColumn"/>,
+		CASE WHEN n.AUTO_TYPE = 1 THEN m.rownum WHEN n.AUTO_TYPE = 2 THEN r.rownum END as rownum 
+		FROM rocky_account_auto_invest_config n
+		LEFT JOIN (
+				SELECT @rank1:=@rank1+1 as rownum,a.* FROM (
+					SELECT t1.* FROM (
+							SELECT ID, uptime FROM rocky_account_auto_invest_config WHERE `STATUS` = 1 AND AUTO_TYPE = 1  GROUP BY user_id ORDER BY uptime asc
+					) t1 ORDER BY t1.uptime asc
+				) a,(SELECT @rank1:=0) b
+		) m on(n.id =m.id)
+		LEFT JOIN (
+				SELECT @rank2:=@rank2+1 as rownum,a.* FROM (
+					SELECT t1.* FROM (
+							SELECT ID, uptime FROM rocky_account_auto_invest_config WHERE `STATUS` = 1 AND AUTO_TYPE = 2  GROUP BY user_id ORDER BY uptime asc
+					) t1 ORDER BY t1.uptime asc
+				) a,(SELECT @rank2:=0) b
+		) r on(n.id = r.id) WHERE n.USER_ID = #{user_id} AND n.`STATUS` = 1 ORDER BY n.uptime asc
+  	</select>
+  	
+  	<!-- 调用自动投标存储过程 -->
+	<select id="autoTender" parameterType="java.util.Map"
+		statementType="CALLABLE">  
+		<![CDATA[  
+		    {call auto_tender(#{borrowid,mode=IN,jdbcType=INTEGER}, #{v_uptime,mode=IN,jdbcType=INTEGER}, #{msg,mode=OUT,jdbcType=VARCHAR})}  
+		]]>
+	</select>
+	
+	<!-- 根据user_id和自动类型查询记录数量 -->
+  	<select id="findCountByUserIdAndAutoType" resultType="java.lang.Integer" >
+		select count(id) from rocky_account_auto_invest_config  where user_id = #{user_id} and AUTO_TYPE = #{autoType} and status != 2
+  	</select>
+  	<!-- 每个用户设置、修改、启用、停用、删除自动投标一个月内最多10次 -->
+  	<select id="countTotalsByUserId" resultType="java.lang.Integer" >
+		SELECT COUNT(*) from rocky_account_auto_invest_config_record WHERE USER_ID=#{userId} AND record_type!=2 AND date_format(addtime,'%Y-%m')=date_format(now(),'%Y-%m');
+  	</select>
+  	
+</mapper>  

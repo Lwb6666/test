@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.dxjr.portal.member.mapper.BankcardPicMapper">
+
+<!-- 结果集 -->
+<resultMap type="com.dxjr.portal.member.vo.BankcardPic" id="bankcardPicMap">
+	<result property="picType" 			column="pic_type" />
+	<result property="picUrl"			column="pic_url" />
+	<result property="bcId"				column="bc_id" />
+	<result property="userId"			column="user_id" />
+	<result property="addTime"			column="add_time" />
+	<result property="addIp"			column="add_ip" />
+</resultMap>
+
+<!-- 查询资料图片 -->
+<select id="getPicsByBcId" parameterType="Integer" resultMap="bankcardPicMap">
+select * from t_bankcard_pic where bc_id=#{bcId}
+</select>
+
+<!-- 上传资料图片 -->
+<insert id="add">
+insert into t_bankcard_pic(pic_type,pic_url,bc_id,user_id,add_time,add_ip)
+values(#{picType},#{picUrl},#{bcId},#{userId},now(),#{addIp})
+</insert>
+
+
+<select id="queryBankcardPicsByUserId" parameterType="Integer" resultMap="bankcardPicMap">
+	  SELECT  bp.*  FROM  t_bankcard_change  bc LEFT  JOIN   t_bankcard_pic bp  ON bc.id=bp.bc_id WHERE  
+	  bp.user_id= #{userId}  AND  bc.approve_status != -1 and  bc.approve_status != -2   AND  bp.status= 0    AND  bc.approve_status != 2 
+</select>
+
+	<delete id="deletePicById"     parameterType="java.lang.Integer" >
+			update  t_bankcard_pic  set  status =1 where id  =#{id}
+	</delete>
+
+
+  <select id="getReasonByUserId" parameterType="java.lang.Integer"  resultType="String">
+ SELECT update_reason  FROM t_bankcard_change bc   WHERE
+		bc.user_id= #{userId} AND bc.approve_status != -1 and bc.approve_status != -2 AND
+		    bc.approve_status != 2
+ 
+ </select>
+ 
+
+
+
+</mapper>

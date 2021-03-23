@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.dxjr.base.mapper.BaseMemberAccumulatePointsMapper">
+	
+	<!-- 结果集 -->
+	<resultMap type="com.dxjr.base.entity.MemberAccumulatePoints" id="memberAccumulatePointsResultMap">
+		<id property="id" column="id" />
+		<result property="memberId" 			column="MEMBERID" />
+		<result property="accumulatePoints" 	column="ACCUMULATEPOINTS" />
+		<result property="gainAccumulatePoints" column="GAINACCUMULATEPOINTS" />
+		<result property="gainDate" 	    	column="GAINDATE" />
+		<result property="type"	    	        column="TYPE" />
+		<result property="remark"	    	    column="remark" />
+	</resultMap>
+	
+	<!--基本列 -->
+	<sql id="memberAccumulatePointsBaseColumn">
+		a.ID, 
+		a.MEMBERID, 
+		a.ACCUMULATEPOINTS,
+		a.GAINACCUMULATEPOINTS, 
+		a.GAINDATE, 
+		a.TYPE,
+		a.REMARK,
+		a.sycee,
+		a.honor,
+		a.detail
+	</sql>
+	
+	<!-- 插入记录，返回主键 -->
+	<insert id="insertEntity" parameterType="com.dxjr.base.entity.MemberAccumulatePoints" >
+		INSERT INTO rocky_member_accumulate_points
+		(MEMBERID,	ACCUMULATEPOINTS,	GAINACCUMULATEPOINTS,	GAINDATE,	TYPE,	POINTSMAGNIFICATION, REMARK, TARGETID,honor,sycee,detail)
+		VALUES
+		(#{memberId},#{accumulatePoints},#{gainAccumulatePoints},now(),	#{type},#{pointSmagnification}, #{remark}, #{targetId},#{honor},#{sycee},#{detail})
+		
+ 		 <selectKey resultType="java.lang.Integer" order="AFTER" keyProperty="id">  
+      	    SELECT LAST_INSERT_ID() AS ID    
+   		 </selectKey>
+	</insert>
+	
+  	<!-- 根据ID查询 -->
+	<select id="queryById" parameterType="java.lang.Integer" resultMap="memberAccumulatePointsResultMap" >
+		select 	
+		   <include refid="memberAccumulatePointsBaseColumn"/>
+		from
+			rocky_member_accumulate_points a
+		where 1=1
+		and a.id=#{id}
+  	</select>
+  	
+  	<!-- 根据用户ID查询元宝明细：交易金额不为0 -->
+  	<select id="mySyceeList" parameterType="java.lang.Integer" resultMap="memberAccumulatePointsResultMap" >
+		select 	<include refid="memberAccumulatePointsBaseColumn"/> from rocky_member_accumulate_points a 
+		where MEMBERID=#{userId} and ACCUMULATEPOINTS <![CDATA[<>]]>0
+		order by id desc
+  	</select>
+	
+  <!-- 更新-->
+  <update id="updateEntity" parameterType="com.dxjr.base.entity.MemberAccumulatePoints" >
+    update rocky_member_accumulate_points
+    <set >
+      <if test="accumulatePoints != null" >
+        ACCUMULATEPOINTS = #{accumulatePoints},
+      </if>
+      <if test="gainAccumulatePoints != null" >
+        GAINACCUMULATEPOINTS = #{gainAccumulatePoints},
+      </if>
+      <if test="gainDate != null" >
+        GAINDATE = #{gainDate},
+      </if>
+      <if test="type != null" >
+        TYPE = #{type},
+      </if>
+      <if test="pointSmagnification != null" >
+        POINTSMAGNIFICATION = #{pointSmagnification},
+      </if>
+      <if test="remark != null" >
+        REMARK = #{remark},
+      </if>
+    </set>
+    where ID = #{id}
+  </update>
+  	
+</mapper>  

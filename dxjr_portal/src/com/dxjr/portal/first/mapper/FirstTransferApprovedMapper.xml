@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.dxjr.portal.first.mapper.FirstTransferApprovedMapper">
+  	<!-- 保存直通车转让明细信息 -->
+  	<insert id="saveFirstTransferApproved" parameterType="com.dxjr.base.entity.FirstTransferApproved">
+		INSERT INTO t_first_transfer_approved( 
+			FIRST_TRANSFER_ID, 		STATUS,		VERIFY_USER,		VERIFY_IP,		VERIFY_MAC, 
+		    VERIFY_TIME,		VERIFY_REMARK,		SYSTEM,		    PLATFORM
+		)
+		VALUES ( 
+			#{firstTransferId},		#{status},	#{verifyUser},		#{verifyIp},	#{verifyMac},
+			#{verifyTime},		#{verifyRemark},	#{system},		#{platform}
+		)
+		<selectKey resultType="java.lang.Integer" order="AFTER" keyProperty="id">  
+		  SELECT LAST_INSERT_ID() AS ID    
+	    </selectKey>
+	</insert>
+  	
+</mapper>  

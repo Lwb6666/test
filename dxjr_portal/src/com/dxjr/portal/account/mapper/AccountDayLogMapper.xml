@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.dxjr.portal.account.mapper.AccountDayLogMapper">
+
+			<resultMap type="com.dxjr.portal.account.vo.AccountDayLogVo" id="AccountDayLogResultMap">
+						 <id column="ID" 								property="id"/>
+						 <result column="USERNAME" 						property="userName" />
+						 <result column="COLLECTION" 					property="collection" />
+						 <result column="ADDTIME" 						property="addTime"/>
+						 <result column="TOTAL" 						property="total" />
+						 <result column="USE_MONEY" 					property="useMoney" />
+						 <result column="NO_USE_MONEY" 					property="noUserMoney" />
+						 <result column="NETVALUE" 						property="netValue" />
+						 <result column="FIRST_BORROW_USE_MONEY" 		property="firstBorrowUserMoney" />
+						 <result column="DRAW_MONEY" 					property="drawMoney" />
+						 <result column="NO_DRAW_MONEY" 				property="noDrawMoney" />
+			</resultMap>
+	
+	<!-- 封装查询条件 -->
+	<sql id="accountDayLog_Where_Clause">
+		<if test="id != null">
+			and ad.id =#{id}
+		</if>
+		<if test="userId != null ">
+			and ad.USER_ID = #{userId}
+		</if>
+		<if test="beginAddDate != null ">
+			and ad.ADDTIME <![CDATA[>=]]> #{beginAddDate}
+		</if>
+		<if test="endAddDate != null ">
+			and ad.ADDTIME <![CDATA[<=]]> #{endAddDate}
+		</if>				
+	</sql>
+	
+	  	<!-- 查询指定用户加权待收金额明细-->
+	<select id="queryAccountDayLogCollection" parameterType="java.lang.Integer"  resultMap="AccountDayLogResultMap" >
+								                              SELECT
+                                id,
+                                USERNAME,
+                                ROUND(SUM_COLLECTION, 2) AS COLLECTION,
+                                ADDTIME
+                              FROM (SELECT
+                                  id,
+                                  addtime AS addtime,
+                                  (SELECT
+                                      rm.username
+                                    FROM rocky_member rm
+                                    WHERE rm.id = user_id) AS username,
+                                  SUM(COLLECTION) AS SUM_COLLECTION
+                                FROM rocky_account_day_log L
+                                WHERE L.user_id = #{memberId} 
+                                      AND COLLECTION >0
+                                GROUP BY addtime,
+                                         user_id) AS SOURCE_DATE
+                              ORDER BY ADDTIME DESC 
+  	</select>
+  	
+  	<!-- 根据条件查询待收总额-->
+	<select id="queryAccountDayLogCollectionTotal" parameterType="com.dxjr.portal.account.vo.AccountDayLogCnd" resultType="java.math.BigDecimal" >
+		select sum(ad.COLLECTION)
+		from
+			rocky_account_day_log ad
+		where 1=1
+		<include refid="accountDayLog_Where_Clause"/>
+  	</select>
+</mapper>  

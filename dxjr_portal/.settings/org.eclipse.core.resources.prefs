@@ -1,0 +1,17 @@
+eclipse.preferences.version=1
+encoding//WebContent/css/circle.css=UTF-8
+encoding//WebContent/css/style.css=UTF-8
+encoding//WebContent/page/account/myAccount.jsp=UTF-8
+encoding//WebContent/page/account/myInvest.jsp=UTF-8
+encoding//WebContent/page/common/footer.jsp=UTF-8
+encoding//WebContent/page/common/main.jsp=UTF-8
+encoding//WebContent/page/common/public.jsp=UTF-8
+encoding//WebContent/page/common/taglib.jsp=UTF-8
+encoding//WebContent/page/common/video/video.jsp=UTF-8
+encoding//WebContent/page/investment/toInvest.jsp=UTF-8
+encoding//WebContent/page/test.jsp=UTF-8
+encoding//resources/cacheConfig.properties=UTF-8
+encoding//resources/jdbc.properties=UTF-8
+encoding//resources/log4j.properties=UTF-8
+encoding//resources/system.properties=UTF-8
+encoding/<project>=UTF-8

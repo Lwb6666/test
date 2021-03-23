@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.dxjr.portal.tzjinterface.mapper.RequesturlLogMapper">
+	
+	<!-- 返回的结果集 -->
+	<resultMap type="com.dxjr.portal.tzjinterface.vo.RequesturlLogVo" id="RequesturlLogResultMap">
+		<id property="id"               column="ID" />
+		<result property="userId" 		column="USER_ID" />
+		<result property="addTime" 		column="ADD_TIME" />
+		<result property="dr" 		    column="DR" />
+		<result property="ts"	        column="ts" />
+		<result property="urlString"	column="URL_STRING" />	
+		<result property="direction"	column="DIRECTION" />	
+		<result property="isSuccess"	column="IS_SUCCESS" />	
+		<result property="message"	    column="MESSAGE" />	
+	</resultMap>
+	
+			<!--基本列 -->
+			<sql id="RequesturlLogBaseColumn">
+				        trl.ID,
+                        trl.USER_ID,
+                        trl.ADD_TIME,
+                        trl.TS,
+                        trl.DR,
+                        trl.URL_STRING,
+                        trl.IS_SUCCESS,
+                        trl.MESSAGE,
+                        trl.DIRECTION
+			</sql>
+	
+	<!-- 封装查询条件 -->
+	<sql id="RequesturlLog_Where_Clause">
+		<if test="id != null">
+			and trl.id =#{id}
+		</if>
+	</sql>
+	
+  	<!-- 根据条件查询记录集合 -->
+	<select id="queryRequestUrlLog" parameterType="java.lang.Integer" resultMap="RequesturlLogResultMap" >
+		select 	
+		   <include refid="RequesturlLogBaseColumn"/>
+		from
+		 FROM tzj_requesturl_log trl WHERE trl.DR = 1 
+		<include refid="RequesturlLog_Where_Clause"/>
+  	</select>
+  	
+  		<!-- 插入记录，返回主键 -->
+	<insert id="insertRequestUrlLog" parameterType="com.dxjr.portal.tzjinterface.vo.RequesturlLogVo">
+					INSERT INTO tzj_requesturl_log 
+			  ( user_id, ADD_TIME, TS, DR, URL_STRING, DIRECTION, IS_SUCCESS, MESSAGE)
+			  VALUES (
+			  #{userId}, 
+			  UNIX_TIMESTAMP(SYSDATE()), 
+			  UNIX_TIMESTAMP(SYSDATE()), 
+			  '1', 
+			  #{urlString}, 
+			  #{direction},
+			  1, 
+			  #{message}
+			  )
+ 		 <selectKey resultType="java.lang.Integer" order="AFTER" keyProperty="id">  
+      	    SELECT LAST_INSERT_ID() AS ID    
+   		 </selectKey>
+	</insert>
+	<!-- 删除指定的访问日志，逻辑删除 -->
+	<update id="deleteRequestUrlLog" parameterType="com.dxjr.portal.tzjinterface.vo.RequesturlLogVo">
+			UPDATE tzj_requesturl_log trl 
+			SET trl.DR = 0 ,trl.TS = UNIX_TIMESTAMP(SYSDATE()) 
+			WHERE trl.DR = 1 
+			and trl.ID = #{id};
+	</update>
+	
+		<!-- 更新指定的访问日志-->
+	<update id="updateRequestUrlLog" parameterType="java.lang.Integer">
+			UPDATE tzj_requesturl_log trl 
+			
+			   <set >
+			      <if test="id != null"> 
+			       trl.TS = UNIX_TIMESTAMP(SYSDATE()),
+			      </if>
+			      <if test="isSuccess != null " >
+			        IS_SUCCESS = #{isSuccess},
+			      </if>
+			      <if test="message != null and message != ''" >
+			        MESSAGE = #{message},
+			      </if>
+			    </set>
+			WHERE trl.DR = 1 
+			and trl.ID = #{id};
+	</update>
+  	 
+</mapper>  

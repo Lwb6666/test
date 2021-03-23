@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.dxjr.portal.account.mapper.TodrawLogMapper">
+	
+	<!-- 结果集 -->
+	<resultMap type="com.dxjr.portal.account.vo.TodrawLogVo" id="todrawLogResultMap">
+		<id property="id" column="id" />
+		<result property="userId" 					column="USER_ID" />
+		<result property="status" 					column="STATUS" />
+		<result property="money" 					column="MONEY" />
+		<result property="credited" 				column="CREDITED"/>
+		<result property="fee"	    				column="FEE" />
+		<result property="remark" 					column="REMARK" /> 
+		<result property="addtime" 					column="ADDTIME" />
+		<result property="addip" 					column="ADDIP" />
+		<result property="verifyUserId" 			column="VERIFY_USERID" /> 
+		<result property="verifyTime" 				column="VERIFY_TIME" />
+		<result property="verifyRemark" 			column="VERIFY_REMARK" />
+		<result property="version" 				 	column="VERSION" />
+	</resultMap>
+	
+	<!--基本列 -->
+	<sql id="todrawLogBaseColumn">
+		t.ID, 
+		t.USER_ID, 
+		t.STATUS, 
+		t.MONEY, 
+		t.CREDITED,
+		t.FEE, 
+		t.REMARK,
+		t.ADDTIME,
+		t.ADDIP,
+		t.VERIFY_USERID, 
+		t.VERIFY_TIME, 
+		t.VERIFY_REMARK, 
+		t.VERSION
+	</sql>
+	
+	<!-- 封装查询条件 -->
+	<sql id="todrawlog_Where_Clause">
+		<if test="id != null">
+			and t.id =#{id}
+		</if>
+		<if test="userId != null ">
+			and t.USER_ID = #{userId}
+		</if>	
+		<if test="money != null ">
+			and t.MONEY = #{money}
+		</if>
+		<if test="addtime != null ">
+			and t.ADDTIME = #{addtime}
+		</if>
+		<if test="version != null ">
+			and t.VERSION = #{version}
+		</if>	
+	</sql>
+	
+	<!-- 根据条件查询记录集合 -->
+	<select id="queryTodrawLogList" parameterType="com.dxjr.portal.account.vo.TodrawLogCnd" resultMap="todrawLogResultMap" >
+		select 	
+		   <include refid="todrawLogBaseColumn"/>
+		from
+			t_todraw_log t
+		where 1=1
+		<include refid="todrawlog_Where_Clause"/>
+		ORDER BY t.ADDTIME desc
+  	</select>
+  	
+  	<!-- 根据条件查询记录数量-->
+	<select id="queryTodrawLogCount" parameterType="com.dxjr.portal.account.vo.TodrawLogCnd" resultType="java.lang.Integer" >
+		select count(t.id)
+		from
+			t_todraw_log t
+		where 1=1
+		<include refid="todrawlog_Where_Clause"/>
+  	</select>
+  	
+  	<!-- 根据userid查询冻结中的转可提金额总额-->
+	<select id="queryTodrawNoMoney" parameterType="java.lang.Integer" resultType="java.math.BigDecimal" >
+		SELECT SUM(MONEY) noMoneyToal FROM t_todraw_log WHERE USER_ID = #{userid} AND `STATUS` = 0
+  	</select>
+</mapper>  

@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.dxjr.portal.account.mapper.BorrowReportMapper">
+  	
+	<!--查询某个用户下的借款总额-->
+	<select id="queryBorrowTotalByMemberId" parameterType="java.lang.Integer" resultType="java.math.BigDecimal" >
+		SELECT SUM(b.ACCOUNT) 
+		FROM ROCKY_BORROW b 
+		WHERE b.USER_ID = #{memberId} 
+		and (b.status = 42 or b.status = 4 or b.status = 5)	
+  	</select>
+  	
+	<!--查询某个用户ID下待还本金的总计-->
+	<select id="queryUnpayCapitalByMemberId" parameterType="java.lang.Integer" resultType="java.math.BigDecimal" >
+		SELECT SUM(b.CAPITAL) 
+		FROM rocky_b_repaymentrecord b 
+		WHERE b.STATUS = 0 
+		AND b.USER_ID = #{memberId}
+  	</select>  	
+  	
+	<!--查询某个用户ID下单纯 的已还总额的总计，（未去除提前还款）-->
+	<select id="queryHavePayTotalByMemberId" parameterType="java.lang.Integer" resultType="java.math.BigDecimal" >
+		SELECT SUM(b.REPAYMENT_ACCOUNT) 
+	    FROM rocky_b_repaymentrecord b 
+	    WHERE b.STATUS = 1 
+	    AND b.USER_ID = #{memberId}
+  	</select>    	
+ 
+ 	<!--查询某个用户所有的提现手续费-->
+	<select id="queryCashCostByMemberId" parameterType="java.lang.Integer" resultType="java.math.BigDecimal" >
+		SELECT SUM(C.fee) 
+		FROM rocky_cashrecord C 
+		WHERE (C.STATUS = 2) 
+		AND C.USER_ID = #{memberId} 
+  	</select> 
+  	
+ 	<!--根据借款人获取净值标未还款的记录数-->
+	<select id="queryUnPayBorrowCountByUserId" parameterType="java.lang.Integer" resultType="java.lang.Integer" >
+		SELECT count(id) 
+		FROM ROCKY_BORROW rb 
+		where rb.USER_ID = #{memberId}  
+		and borrowType = 3 
+		and (status = 2 or status = 3 or status = 4 or status = 42)  
+  	</select>  		
+  	
+ 	<!--查询某个用户所有的待收本金总计-->
+	<select id="queryWaitReceiveCapitalByMemberId" parameterType="java.lang.Integer" resultType="java.math.BigDecimal" >
+		SELECT SUM(C.CAPITAL)
+		FROM ROCKY_B_COLLECTIONRECORD C,
+			 rocky_b_tenderrecord t
+		WHERE C.STATUS = 0
+		AND c.TENDER_ID = t.ID
+		AND t.USER_ID=#{memberId} 
+  	</select>  
+  	
+ 	<!--查询某个用户ID下待还本息的总计-->
+	<select id="queryRepaymentAccountTotalByMemberId" parameterType="java.lang.Integer" resultType="java.math.BigDecimal" >
+		SELECT SUM(r.REPAYMENT_ACCOUNT) 
+		from rocky_b_repaymentrecord r,
+			 ROCKY_BORROW b 
+		WHERE r.BORROW_ID = b.ID 
+		AND (b.STATUS = 4 or b.STATUS = 42) 
+		AND r.STATUS = 0 
+		and b.USER_ID = #{memberId} 
+  	</select>  
+  	
+  	<!-- 借款次数 -->
+	<select id="queryLoanCount" resultType="java.lang.Integer" >
+		SELECT count(*)
+		FROM ROCKY_B_REPAYMENTRECORD r, ROCKY_BORROW rb
+		where r.BORROW_ID = RB.ID
+		  and rb.USER_ID = #{memberId}  
+		<if test="status != null">
+	      and r.STATUS = #{status}
+		</if>
+  	</select>
+  	
+</mapper>  

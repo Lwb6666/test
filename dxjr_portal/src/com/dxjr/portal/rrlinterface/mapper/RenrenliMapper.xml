@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.dxjr.portal.rrlinterface.mapper.RenrenliMapper">
+	
+	<!-- 插入记录，返回主键 -->
+	<insert id="insertRrlMemberBinding" parameterType="com.dxjr.portal.rrlinterface.vo.RrlMemberBinding">
+		INSERT INTO rrl_member_binding 
+                ( 
+                  phone, 
+                  username,                                
+                  usernamep,
+                  cust_id, 
+                  sign_type, 
+                  sign, 
+                  cfrom, 
+                  user_id, 
+                  status,
+                  loggingType,
+                  cust_key, 
+                  addtime,
+                  updatetime
+                )
+                VALUES 
+                (
+                #{phone}, 
+                #{username},                              
+                #{usernamep}, 
+                #{cust_id}, 
+                #{sign_type},               
+                #{sign}, 
+                #{cfrom}, 
+                #{user_id}, 
+                #{status}, 
+                #{loggingType},
+                #{cust_key},
+                NOW(),
+                NOW()
+                );
+ 		 <selectKey resultType="java.lang.Integer" order="AFTER" keyProperty="id">  
+      	    SELECT LAST_INSERT_ID() AS ID    
+   		 </selectKey>
+	</insert>
+	
+	<!-- 查询人人利用户数量 -->
+	<select id="queryRrlMemberCount" parameterType="com.dxjr.portal.rrlinterface.vo.RrlCnd" resultType="java.lang.Integer" >
+		select count(m.id)
+		from
+			rrl_member_binding m
+		where 1=1
+		<if test="status != null">
+			and m.status = #{status}
+		</if>
+		<if test="phone !=null and phone !=''">
+			and m.phone = #{phone}
+		</if>
+  	</select>
+  	
+  	<!-- 更新指定的访问日志-->
+	<update id="updateRrlMemberBinding" parameterType="com.dxjr.portal.rrlinterface.vo.RrlMemberBinding">
+			UPDATE rrl_member_binding tmb 			
+			   <set >
+			   		tmb.updatetime=NOW(), 
+			  	  <if test="phone != null and phone != ''" >
+			        tmb.phone = #{phone},
+			      </if>
+			      <if test="username != null and username != '' " >
+			        tmb.username = #{username},
+			      </if>			      
+			      <if test="usernamep != null and usernamep != '' " >
+			        tmb.usernamep = #{usernamep},
+			      </if>
+			      <if test="cust_id != null and cust_id != ''" >
+			        tmb.cust_id = #{cust_id},
+			      </if>
+			      <if test="sign_type != null and sign_type != ''" >
+			        tmb.sign_type = #{sign_type},
+			      </if>
+			      <if test="sign != null and sign != ''" >
+			        tmb.sign = #{sign},
+			      </if>
+			      <if test="cfrom != null and cfrom != ''" >
+			        tmb.cfrom = #{cfrom},
+			      </if>
+			      <if test="user_id != null" >
+			        tmb.user_id = #{user_id},
+			      </if>
+			      <if test="status != null" >
+			        tmb.status = #{status},
+			      </if>	
+			      <if test="loggingType != null" >
+			        tmb.loggingType = #{loggingType},
+			      </if>	
+			      <if test="cust_key != null and cust_key != ''" >
+			        tmb.cust_key = #{cust_key},
+			      </if>      
+			    </set>
+			WHERE tmb.phone = #{phone};
+	</update>
+	
+	<resultMap id="tenderRecordResult" type="com.dxjr.portal.rrlinterface.vo.RrlTenderRecord">		
+		<result property="user_name" column="user_name" />
+		<result property="order_no" column="order_no" />
+		<result property="pro_name" column="pro_name" />
+		<result property="pro_id" column="pro_id" />
+		<result property="invest_money" column="invest_money" />
+		<result property="actual_invest_money" column="actual_invest_money" />
+		<result property="rate" column="rate" />
+		<result property="invest_start_date" column="invest_start_date" />
+		<result property="invest_end_date" column="invest_end_date" />
+		<result property="invest_full_scale_date" column="invest_full_scale_date" />
+		<result property="back_money" column="back_money" />
+		<result property="back_last_date" column="back_last_date" />
+		<result property="cust_key" column="cust_key" />
+	</resultMap>
+	
+	<select id="queryTenderRecord" parameterType="com.dxjr.portal.rrlinterface.vo.RrlCnd" resultMap="tenderRecordResult">
+		(SELECT
+				DISTINCT
+				tmb.usernamep as user_name,
+				rbt.ID as order_no,
+				rb.NAME as pro_name,
+				rb.ID as pro_id,
+				rbt.ACCOUNT as invest_money,
+				rbt.ACCOUNT as actual_invest_money,
+				rb.APR as rate,
+				CONCAT(rbt.ADDTIME,'000') as invest_start_date,
+				IFNULL(IF(rbt.`STATUS`=-2,(select CONCAT(UNIX_TIMESTAMP(success_time),'000') from rocky_b_transfer 
+					where tender_id=rbt.ID and borrow_id=rbt.BORROW_ID and `STATUS`=4 order by success_time ASC limit 1),CONCAT(rb.END_TIME,'000')),0) as invest_end_date,
+				CONCAT(rb.SUCCESS_TIME,'000') as invest_full_scale_date,
+				rbt.REPAYMENT_YESACCOUNT as back_money,
+				IFNULL((select CONCAT(IFNULL(REPAY_YESTIME,UNIX_TIMESTAMP(ADVANCETIME)),'000') from rocky_b_collectionrecord
+					where `STATUS` in(1,2,3) and USER_ID=rbt.USER_ID and TENDER_ID=rbt.ID order by REPAY_YESTIME,ADVANCETIME DESC limit 1),0) as back_last_date,
+				tmb.cust_key as cust_key
+				FROM rocky_borrow rb
+				INNER JOIN rocky_b_tenderrecord rbt ON rb.id = rbt.BORROW_ID 
+				INNER JOIN rrl_member_binding tmb ON tmb.user_id = rbt.user_id
+				INNER JOIN rocky_member rm ON rm.id = tmb.user_id AND rm.type = 0		
+				WHERE tmb.`status` = 1 AND rbt.ADDTIME > UNIX_TIMESTAMP(tmb.addtime)
+				and rbt.`STATUS` in(1,2,-2) and rbt.PARENT_ID IS NULL
+				<choose>
+					<when test="order_bno!=null and order_bno!=''">
+						and rbt.ID = #{order_bno}
+					</when>
+					<otherwise>
+						<if test="start_date!=null and start_date!=''" >
+					       and rbt.ADDTIME<![CDATA[>=]]>#{start_date}
+					    </if>
+					    <if test="end_date!=null and end_date!=''" >
+					       and rbt.ADDTIME<![CDATA[<=]]>#{end_date}
+					    </if>
+					    <if test="cust_key!=null and cust_key!=''" >
+					       and tmb.cust_key = #{cust_key}
+					    </if>
+					</otherwise>
+				</choose>
+		)
+		
+		UNION ALL
+		(SELECT
+				DISTINCT
+				tmb.usernamep as user_name,
+				CONCAT('D_',rbt.ID) as order_no,
+				CONCAT('定期宝', rb.CONTRACT_NO) as pro_name,
+				CONCAT('D_',rb.ID) as pro_id,
+				rbt.ACCOUNT as invest_money,
+				rbt.ACCOUNT as actual_invest_money,
+				rb.APR as rate,
+				CONCAT(UNIX_TIMESTAMP(rbt.ADDTIME),'000') as invest_start_date,
+				CONCAT(UNIX_TIMESTAMP(rb.LOCK_ENDTIME),'000') as invest_end_date,
+				CONCAT(UNIX_TIMESTAMP(rb.SUCCESS_TIME),'000') as invest_full_scale_date,
+				IF(rbt.`STATUS`=3,ROUND(rbt.ACCOUNT+(rbt.ACCOUNT*rb.APR/100/12*rb.LOCK_LIMIT), 2),0) as back_money,
+				IFNULL((select CONCAT(UNIX_TIMESTAMP(REPAYMENT_YESTIME),'000') from t_fix_repaymentrecord 
+					where `STATUS`=1 and FIX_BORROW_ID=rbt.FIX_BORROW_ID limit 1),0) as back_last_date,
+				tmb.cust_key as cust_key
+				FROM t_fix_borrow rb
+				INNER JOIN t_fix_tender_detail rbt ON rb.id = rbt.FIX_BORROW_ID 
+				INNER JOIN rrl_member_binding tmb ON tmb.user_id = rbt.user_id
+				INNER JOIN rocky_member rm ON rm.id = tmb.user_id AND rm.type = 0
+				WHERE tmb.`status` = 1 AND rbt.ADDTIME > tmb.addtime
+				and rbt.`STATUS` in(1,3)
+				<choose>
+					<when test="order_dno!=null and order_dno!=''">
+						and rbt.ID = #{order_dno}
+					</when>
+					<otherwise>
+						<if test="start_date!=null and start_date!=''" >
+					       and rbt.ADDTIME<![CDATA[>=]]>FROM_UNIXTIME(#{start_date})
+					    </if>
+					    <if test="end_date!=null and end_date!=''" >
+					       and rbt.ADDTIME<![CDATA[<=]]>FROM_UNIXTIME(#{end_date})
+					    </if>
+					    <if test="cust_key!=null and cust_key!=''" >
+					       and tmb.cust_key = #{cust_key}
+					    </if>
+					</otherwise>
+				</choose>
+		)
+	</select>
+  	
+</mapper>  

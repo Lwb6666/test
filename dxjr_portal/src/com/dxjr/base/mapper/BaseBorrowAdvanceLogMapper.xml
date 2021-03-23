@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.dxjr.base.mapper.BaseBorrowAdvanceLogMapper">
+
+	<!-- AutoInvestConfig结果集 -->
+	<resultMap type="com.dxjr.base.entity.BorrowAdvanceLog" id="autoInvestConfigResultMap">
+		<id property="id" 						column="id" />
+		<result property="userId" 				column="USER_ID" />
+		<result property="borrowId" 			column="BORROW_ID" />
+		<result property="account" 				column="ACCOUNT" />
+		<result property="realAccount" 			column="REAL_ACCOUNT" />
+		<result property="addtime"	    		column="ADDTIME" />
+		<result property="addip"  				column="ADDIP" />
+		<result property="operatorId"  			column="OPERATOR_ID" />
+	</resultMap>
+	
+	<!--自动投标规则基本列 -->
+	<sql id="borrowAdvanceLogBaseColumn">
+		bal.ID, 
+		bal.USER_ID, 
+		bal.BORROW_ID, 
+		bal.ACCOUNT, 
+		bal.REAL_ACCOUNT, 
+		bal.ADDTIME, 
+		bal.ADDIP,
+		bal.OPERATOR_ID
+	</sql>
+	
+	<!-- 插入记录，返回主键 -->
+	<insert id="insertEntity" parameterType="com.dxjr.base.entity.BorrowAdvanceLog">
+		insert into rocky_borrow_advance_log
+			(BORROW_ID, USER_ID, ACCOUNT, REAL_ACCOUNT, ADDTIME, ADDIP, OPERATOR_ID,PLATFORM,TYPE)
+		values
+			(#{borrowId}, #{userId}, #{account}, #{realAccount}, #{addtime}, #{addip}, #{operatorId},#{platform},#{type})
+			
+		<selectKey resultType="java.lang.Integer" order="AFTER" keyProperty="id">  
+			select last_insert_id() as id
+		</selectKey>
+	</insert>
+	
+	<!-- 根据ID查询 -->
+	<select id="queryById" parameterType="java.lang.Integer" resultMap="autoInvestConfigResultMap" >
+		select 	
+		   <include refid="borrowAdvanceLogBaseColumn"/>
+		from
+			rocky_borrow_advance_log bal
+		where 1=1
+		and bal.id=#{id}
+  	</select>
+	
+  	<!-- 更新新闻公告类 -->
+  	<update id="updateEntity" parameterType="com.dxjr.base.entity.BorrowAdvanceLog" >
+	    update rocky_borrow_advance_log
+	    <set >
+	      <if test="userId != null" >
+	        USER_ID = #{userId,jdbcType=INTEGER},
+	      </if>
+	      <if test="borrowId != null" >
+	        BORROW_ID = #{borrowId,jdbcType=INTEGER},
+	      </if>
+	      <if test="account != null" >
+	        ACCOUNT = #{account,jdbcType=DECIMAL},
+	      </if>
+	      <if test="realAccount != null" >
+	        REAL_ACCOUNT = #{realAccount,jdbcType=DECIMAL},
+	      </if>
+	      <if test="addtime != null" >
+	        ADDTIME = #{addtime,jdbcType=VARCHAR},
+	      </if>
+	      <if test="addip != null" >
+	        ADDIP = #{addip,jdbcType=VARCHAR},
+	      </if>
+	      <if test="operatorId != null" >
+	        OPERATOR_ID = #{operatorId,jdbcType=VARCHAR},
+	      </if>
+	    </set>
+	    where ID = #{id}
+  	</update>
+</mapper>

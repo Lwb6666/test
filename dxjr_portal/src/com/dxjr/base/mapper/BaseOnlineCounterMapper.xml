@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.dxjr.base.mapper.BaseOnlineCounterMapper">
+	
+	<!-- 结果集 -->
+	<resultMap type="com.dxjr.base.entity.OnlineCounter" id="onlineCounterResultMap">
+		<id property="id" column="id" />
+		<result property="userId" 				column="USER_ID" />
+		<result property="username" 			column="USERNAME" />
+		<result property="addtime" 				column="ADDTIME" />
+		<result property="logintime" 			column="LOGINTIME" />
+		<result property="lastexisttime"	    column="LASTEXISTTIME" />
+		<result property="sessionid"  			column="SESSIONID" />
+		<result property="logouttime" 			column="LOGOUTTIME" />
+		<result property="sessionouttime" 		column="SESSIONOUTTIME" />
+		<result property="lastupdatetime" 		column="LASTUPDATETIME" />
+		<result property="addip" 				column="ADDIP" />
+		<result property="remark" 				column="REMARK" />
+		<result property="system" 				column="SYSTEM" />
+		<result property="province" 			column="PROVINCE" />
+		<result property="city" 				column="CITY" />
+		<result property="area" 				column="AREA" />
+	</resultMap>
+	
+	<!--基本列 -->
+	<sql id="onlineCounterBaseColumn">
+		o.ID, 
+		o.USER_ID, 
+		o.USERNAME, 
+		o.ADDTIME, 
+		o.LOGINTIME, 
+		o.LASTEXISTTIME, 
+		o.SESSIONID, 
+		o.LOGOUTTIME,
+		o.SESSIONOUTTIME,
+		o.LASTUPDATETIME,
+		o.ADDIP,
+		o.REMARK,
+		o.SYSTEM,
+		o.PROVINCE,
+		o.CITY,
+		o.AREA
+	</sql>
+	
+	<!-- 插入记录，返回主键 -->
+	<insert id="insertEntity" parameterType="com.dxjr.base.entity.OnlineCounter">
+		INSERT INTO rocky_online_counter 
+		(USER_ID,	USERNAME,	ADDTIME,	LOGINTIME,	LASTEXISTTIME,	SESSIONID,	LOGOUTTIME,	SESSIONOUTTIME, 
+		 LASTUPDATETIME,	ADDIP,	REMARK,platform,	SYSTEM,	PROVINCE,	CITY,	AREA	)
+		VALUES
+		(#{userId},#{username},#{addtime},#{logintime},	#{lastexisttime},#{sessionid},#{logouttime},#{sessionouttime},
+		 #{lastupdatetime},#{addip},#{remark},#{platform},#{system},#{province},#{city},#{area}
+		)
+		
+ 		 <selectKey resultType="java.lang.Integer" order="AFTER" keyProperty="id">  
+      	    SELECT LAST_INSERT_ID() AS ID    
+   		 </selectKey>
+	</insert>
+	
+  	<!-- 根据ID查询 -->
+	<select id="queryById" parameterType="java.lang.Integer" resultMap="onlineCounterResultMap" >
+		select 	
+		   <include refid="onlineCounterBaseColumn"/>
+		from
+			rocky_online_counter o
+		where 1=1
+		and o.id=#{id}
+  	</select>
+	
+  <!-- 更新-->
+  <update id="updateEntity" parameterType="com.dxjr.base.entity.OnlineCounter" >
+    update rocky_online_counter
+    <set >
+      <if test="userId != null" >
+        USER_ID = #{userId},
+      </if>
+      <if test="username != null" >
+        USERNAME = #{username},
+      </if>
+      <if test="addtime != null" >
+        ADDTIME = #{addtime},
+      </if>
+      <if test="logintime != null" >
+        LOGINTIME = #{logintime},
+      </if>
+      <if test="lastexisttime != null" >
+        LASTEXISTTIME = #{lastexisttime},
+      </if>
+      <if test="sessionid != null" >
+        SESSIONID = #{sessionid},
+      </if>
+      <if test="logouttime != null" >
+        LOGOUTTIME = #{logouttime},
+      </if>
+      <if test="sessionouttime != null" >
+        SESSIONOUTTIME = #{sessionouttime},
+      </if>
+      <if test="lastupdatetime != null" >
+        LASTUPDATETIME = #{lastupdatetime},
+      </if>
+      <if test="addip != null" >
+        ADDIP = #{addip},
+      </if>
+      <if test="remark != null" >
+        REMARK = #{remark},
+      </if>
+      <if test="system != null" >
+        SYSTEM = #{system},
+      </if>
+      <if test="province != null" >
+        PROVINCE = #{province},
+      </if>
+      <if test="city != null" >
+        CITY = #{city},
+      </if>
+      <if test="area != null" >
+        AREA = #{area},
+      </if>                                          
+    </set>
+    where ID = #{id}
+  </update>
+  	
+</mapper>  

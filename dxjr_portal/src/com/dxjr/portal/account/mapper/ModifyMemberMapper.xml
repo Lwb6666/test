@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dxjr.portal.account.mapper.ModifyMemberMapper" >
+  <resultMap id="BaseResultMap" type="com.dxjr.portal.account.vo.ModifyMember" >
+    <id column="ID" property="id" jdbcType="INTEGER" />
+    <result column="USERID" property="userid" jdbcType="INTEGER" />
+    <result column="NWEUSERNAME" property="nweusername" jdbcType="VARCHAR" />
+    <result column="OLDUSERNAME" property="oldusername" jdbcType="VARCHAR" />
+    <result column="ADDTIME" property="addtime" jdbcType="VARCHAR" />
+    <result column="ADDIP" property="addip" jdbcType="VARCHAR" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    ID, USERID, NWEUSERNAME, OLDUSERNAME, ADDTIME, ADDIP
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from rocky_modify_member
+    where ID = #{id,jdbcType=INTEGER}
+  </select>
+  <select id="findMemberById" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from rocky_modify_member
+    where USERID = #{userId,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from rocky_modify_member
+    where ID = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.dxjr.portal.account.vo.ModifyMember" >
+    insert into rocky_modify_member (ID, USERID, NWEUSERNAME, 
+      OLDUSERNAME, ADDTIME, ADDIP
+      )
+    values (#{id,jdbcType=INTEGER}, #{userid,jdbcType=INTEGER}, #{nweusername,jdbcType=VARCHAR}, 
+      #{oldusername,jdbcType=VARCHAR}, #{addtime,jdbcType=VARCHAR}, #{addip,jdbcType=VARCHAR}
+      )
+  </insert>
+  <insert id="insertSelective" parameterType="com.dxjr.portal.account.vo.ModifyMember" >
+    insert into rocky_modify_member
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        ID,
+      </if>
+      <if test="userid != null" >
+        USERID,
+      </if>
+      <if test="nweusername != null" >
+        NWEUSERNAME,
+      </if>
+      <if test="oldusername != null" >
+        OLDUSERNAME,
+      </if>
+      <if test="addtime != null" >
+        ADDTIME,
+      </if>
+      <if test="addip != null" >
+        ADDIP,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="userid != null" >
+        #{userid,jdbcType=INTEGER},
+      </if>
+      <if test="nweusername != null" >
+        #{nweusername,jdbcType=VARCHAR},
+      </if>
+      <if test="oldusername != null" >
+        #{oldusername,jdbcType=VARCHAR},
+      </if>
+      <if test="addtime != null" >
+        #{addtime,jdbcType=VARCHAR},
+      </if>
+      <if test="addip != null" >
+        #{addip,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.dxjr.portal.account.vo.ModifyMember" >
+    update rocky_modify_member
+    <set >
+      <if test="userid != null" >
+        USERID = #{userid,jdbcType=INTEGER},
+      </if>
+      <if test="nweusername != null" >
+        NWEUSERNAME = #{nweusername,jdbcType=VARCHAR},
+      </if>
+      <if test="oldusername != null" >
+        OLDUSERNAME = #{oldusername,jdbcType=VARCHAR},
+      </if>
+      <if test="addtime != null" >
+        ADDTIME = #{addtime,jdbcType=VARCHAR},
+      </if>
+      <if test="addip != null" >
+        ADDIP = #{addip,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where ID = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.dxjr.portal.account.vo.ModifyMember" >
+    update rocky_modify_member
+    set USERID = #{userid,jdbcType=INTEGER},
+      NWEUSERNAME = #{nweusername,jdbcType=VARCHAR},
+      OLDUSERNAME = #{oldusername,jdbcType=VARCHAR},
+      ADDTIME = #{addtime,jdbcType=VARCHAR},
+      ADDIP = #{addip,jdbcType=VARCHAR}
+    where ID = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updatePassGesturePwd" parameterType="com.dxjr.portal.account.vo.ModifyMember">
+		update wx_gesture_pwd set user_Name=#{nweusername,jdbcType=VARCHAR}
+		WHERE USER_ID = #{userid,jdbcType=INTEGER}  
+	</update>
+	<update id="updateRrl" parameterType="com.dxjr.portal.account.vo.ModifyMember">
+		update rrl_member_binding  set usernamep=#{nweusername,jdbcType=VARCHAR}
+		WHERE USER_ID = #{userid,jdbcType=INTEGER}  
+	</update>
+	<update id="updateScw" parameterType="com.dxjr.portal.account.vo.ModifyMember">
+		update scw_member_binding  set usernamep=#{nweusername,jdbcType=VARCHAR}
+		WHERE USER_ID = #{userid,jdbcType=INTEGER}  
+	</update>
+	<update id="updateTzj" parameterType="com.dxjr.portal.account.vo.ModifyMember">
+		update tzj_member_binding  set user_namep=#{nweusername,jdbcType=VARCHAR}
+		WHERE USER_ID = #{userid,jdbcType=INTEGER}  
+	</update>
+	<update id="updateWdty" parameterType="com.dxjr.portal.account.vo.ModifyMember">
+		update wdty_member_binding set usernamep=#{nweusername,jdbcType=VARCHAR}
+		WHERE USER_ID = #{userid,jdbcType=INTEGER}  
+	</update>
+	<update id="updateTtx" parameterType="com.dxjr.portal.account.vo.ModifyMember">
+		update t_channel_binding set username=#{nweusername,jdbcType=VARCHAR}
+		WHERE USER_ID = #{userid,jdbcType=INTEGER}  and source=81 and status=1
+	</update>
+</mapper>

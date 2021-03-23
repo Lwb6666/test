@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.dxjr.base.mapper.BaseStaffMapper">
+	
+	<!-- 结果集 -->
+	<resultMap type="com.dxjr.base.entity.Staff" id="staffResultMap">
+		<id property="id" column="id" />
+		<result property="jobNum" 		column="JOBNUM" />
+		<result property="passwd" 		column="PASSWD" />
+		<result property="name"			column="NAME" />
+		<result property="qq"			column="QQ" />
+		<result property="email"		column="EMAIL" />
+		<result property="mobile"		column="MOBILE" />
+		<result property="tel"			column="TEL" />
+		<result property="jobPost"		column="JOBPOST" />
+		<result property="powerRight"	column="POWERRIGHT" />
+		<result property="approPower"	column="COMEINDATE" />
+		<result property="comeinDate"	column="APPROPOWER" />
+		<result property="deptValue"	column="DEPTVALUE" />
+	</resultMap>
+	
+	<!--基本列 -->
+	<sql id="staffBaseColumn">
+		s.ID, 
+		s.JOBNUM, 
+		s.PASSWD, 
+		s.NAME, 
+		s.QQ, 
+		s.EMAIL,
+		s.MOBILE,
+		s.TEL,
+		s.JOBPOST,
+		s.POWERRIGHT,
+		s.COMEINDATE,
+		s.APPROPOWER,
+		s.DEPTVALUE
+	</sql>
+	
+	<!-- 插入记录，返回主键 -->
+	<insert id="insertEntity" parameterType="com.dxjr.base.entity.Staff">
+		INSERT INTO rocky_staff 
+		(JOBNUM, 	PASSWD,		NAME,	QQ,	EMAIL,	MOBILE,		TEL,	JOBPOST,	POWERRIGHT,	COMEINDATE, 
+		APPROPOWER,	DEPTVALUE)
+		VALUES
+		(#{jobNum},#{passwd},#{name},#{qq},#{email},#{mobile},#{tel},	#{jobPost},#{powerRight},#{comeinDate},
+		#{approPower},#{deptValue})
+		
+ 		 <selectKey resultType="java.lang.Integer" order="AFTER" keyProperty="id">  
+      	    SELECT LAST_INSERT_ID() AS ID    
+   		 </selectKey>
+	</insert>
+	
+  	<!-- 根据ID查询 -->
+	<select id="queryById" parameterType="java.lang.Integer" resultMap="staffResultMap" >
+		select 	
+		   <include refid="staffBaseColumn"/>
+		from
+			rocky_staff s
+		where 1=1
+		and s.id=#{id}
+  	</select>
+	
+  <!-- 更新-->
+  <update id="updateEntity" parameterType="com.dxjr.base.entity.Staff" >
+    update rocky_staff
+    <set >
+      <if test="jobNum != null" >
+        JOBNUM = #{jobNum},
+      </if>
+      <if test="passwd != null" >
+        PASSWD = #{passwd},
+      </if>
+      <if test="name != null" >
+        NAME = #{name},
+      </if>
+      <if test="qq != null" >
+        QQ = #{qq},
+      </if>
+      <if test="email != null" >
+        EMAIL = #{email},
+      </if>
+      <if test="mobile != null" >
+        MOBILE = #{mobile},
+      </if>
+      <if test="tel != null" >
+        TEL = #{tel},
+      </if>
+      <if test="jobPost != null" >
+        JOBPOST = #{jobPost},
+      </if>
+      <if test="powerRight != null" >
+        POWERRIGHT = #{powerRight},
+      </if>
+      <if test="comeinDate != null" >
+        COMEINDATE = #{comeinDate},
+      </if>
+      <if test="approPower != null" >
+        APPROPOWER = #{approPower},
+      </if>
+      <if test="deptValue != null" >
+        DEPTVALUE = #{deptValue},
+      </if>                                    
+    </set>
+    where ID = #{id}
+  </update>
+  	
+</mapper>  

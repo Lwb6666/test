@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.dxjr.portal.sycee.mapper.SyceeGoodsMapper">
+
+<resultMap type="com.dxjr.portal.sycee.entity.SyceeGoods" id="syceeGoodsMap">
+	<id 	property="id" 				column="id" />
+	<result property="firstClass" 		column="first_class" />
+	<result property="secondClass" 		column="second_class" />
+	<result property="showFlag"			column="show_flag" />
+	<result property="useExp"			column="use_exp" />
+	<result property="useWay"			column="use_way" />
+	<result property="exchangeExp"		column="exchange_exp" />
+	<result property="validDay"			column="valid_day" />
+	<result property="approveUser"		column="approve_user" />
+	<result property="approveUsername"	column="approve_username" />
+	<result property="approveStatus"	column="approve_status" />
+	<result property="approveTime"		column="approve_time" />
+	<result property="approveRemark"	column="approve_remark" />
+	<result property="oldSycee" 		column="old_sycee" />
+</resultMap>
+
+<!-- 查询所有 -->
+<select id="getAll" resultMap="syceeGoodsMap">
+	select * from t_sycee_goods
+</select>
+
+<!-- 根据ID查询 -->
+<select id="getById" parameterType="Integer" resultMap="syceeGoodsMap">
+	select * from t_sycee_goods where id=#{id}
+</select>
+
+<!-- 根据属性查询 -->
+<select id="getByProperty" resultMap="syceeGoodsMap">
+	select * from t_sycee_goods where ${pname}=${pvalue} and show_flag=1 and approve_status=1 order by old_sycee,id DESC
+</select>
+</mapper>

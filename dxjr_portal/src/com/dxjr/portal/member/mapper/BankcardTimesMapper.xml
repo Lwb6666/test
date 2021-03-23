@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.dxjr.portal.member.mapper.BankcardTimesMapper">
+
+<!-- 结果集 -->
+<resultMap type="com.dxjr.portal.member.vo.BankcardTimes" id="bankcardTimesMap">
+	<result property="userId"			column="user_id" />
+	<result property="changeTimes"		column="change_times" />
+	<result property="applyTimes"		column="apply_times" />
+	<result property="clickTimes"		column="click_times" />
+</resultMap>
+
+<select id="getByUserId" parameterType="Integer" resultMap="bankcardTimesMap">
+select * from t_bankcard_times where user_id=#{userId}
+</select>
+
+<!-- 添加记录-->
+<insert id="insert" parameterType="Integer">
+insert into t_bankcard_times(user_id,user_name,change_times,apply_times,click_times)
+select ID, USERNAME, 0, 0, 0 from rocky_member where ID = #{userId}
+</insert>
+
+<!-- 增加次数：换卡，申请，点击申请 -->
+<update id="addTimes">
+update t_bankcard_times set 
+change_times=change_times+#{changeTimes},apply_times=apply_times+#{applyTimes},click_times=click_times+#{clickTimes}
+where user_id=#{userId} 
+</update>
+
+</mapper>

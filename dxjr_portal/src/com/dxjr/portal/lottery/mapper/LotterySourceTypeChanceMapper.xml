@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dxjr.portal.lottery.mapper.LotterySourceTypeChanceMapper" >
+  <resultMap id="BaseResultMap" type="com.dxjr.portal.lottery.vo.LotterySourceTypeChanceVo" >
+    <id column="ID" property="id" jdbcType="INTEGER" />
+    <result column="LOTTERY_CHANCE_RULE_INFO_ID" property="lotteryChanceRuleInfoId" jdbcType="INTEGER" />
+    <result column="LOTTERY_GOODS_ID" property="lotteryGoodsId" jdbcType="INTEGER" />
+    <result column="CHANCE" property="chance" jdbcType="DECIMAL" />
+    <result column="STATUS" property="status" jdbcType="INTEGER" />
+    <result column="ADD_USER_ID" property="addUserId" jdbcType="INTEGER" />
+    <result column="ADD_TIME" property="addTime" jdbcType="TIMESTAMP" />
+    <result column="ADD_IP" property="addIp" jdbcType="VARCHAR" />
+    <result column="LAST_UPDATE_USER_ID" property="lastUpdateUserId" jdbcType="INTEGER" />
+    <result column="LAST_UPDATE_TIME" property="lastUpdateTime" jdbcType="TIMESTAMP" />
+    <result column="LAST_UPDATE_IP" property="lastUpdateIp" jdbcType="VARCHAR" />
+    <result column="REMARK" property="remark" jdbcType="VARCHAR" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    ID, LOTTERY_CHANCE_RULE_INFO_ID, LOTTERY_GOODS_ID, CHANCE, STATUS, ADD_USER_ID, ADD_TIME, 
+    ADD_IP, LAST_UPDATE_USER_ID, LAST_UPDATE_TIME, LAST_UPDATE_IP, REMARK
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from t_lottery_source_type_chance
+    where ID = #{id,jdbcType=INTEGER}
+  </select>
+  
+  <!-- 查询奖品与抽奖机会来源类型的匹配中奖概率信息 -->
+  <select id="selectByLotteryChanceRuleInfoIdAndLotteryGoodsId" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    FROM t_lottery_source_type_chance 
+	WHERE `STATUS` = 0 
+	AND LOTTERY_CHANCE_RULE_INFO_ID = #{lotteryChanceRuleInfoId} 
+	AND LOTTERY_GOODS_ID = #{lotteryGoodsId}
+	ORDER BY id desc LIMIT 1
+  </select>
+  
+</mapper>

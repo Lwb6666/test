@@ -1,0 +1,18 @@
+@charset "utf-8";
+/* CSS Document */
+
+ul,li {list-style-type:none; text-transform:capitalize;}
+.clear {clear:both; *display:inline;/*IE only*/}
+
+/*menu*/
+#menu {margin:0 auto 60px; width:1024px; display:block;}
+#menu .jquery_out {float:left;line-height:32px;display:block; border-right:1px solid #fff; text-align:center; color:#fff;font:18px/32px "微软雅黑"; background:#062723 url(../../images/slide-panel_03.png) 0 0 repeat-x;}
+#menu .jquery_out .smile {padding-left:1em;}
+#menu .jquery_inner {margin-left:16px;}
+#menu .jquery {margin-right:1px;padding:0 2em;}
+#menu .mainlevel {background:#ffe60c; float:left; border-right:1px solid #fff; width:140px;/*IE6 only*/}
+#menu .mainlevel a {color:#000; text-decoration:none; line-height:32px; display:block; padding:0 20px; width:100px;}
+#menu .mainlevel a:hover {color:#fff; text-decoration:none; background:#062723 url(../../images/slide-panel_03.png) 0 0 repeat-x;}
+#menu .mainlevel ul {display:none; position:absolute;}
+#menu .mainlevel li {border-top:1px solid #fff; background:#ffe60c; width:140px;/*IE6 only*/}
+.log {text-align:center; color:skyblue; line-height:24px; text-transform:capitalize; margin:50px auto;}

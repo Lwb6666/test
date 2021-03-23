@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dxjr.portal.lottery.mapper.LotteryGoodsMapper" >
+  <resultMap id="BaseResultMap" type="com.dxjr.portal.lottery.vo.LotteryGoodsVo" >
+    <id column="ID" property="id" jdbcType="INTEGER" />
+    <result column="PARENT_ID" property="parentId" jdbcType="INTEGER" />
+    <result column="NAME" property="name" jdbcType="VARCHAR" />
+    <result column="AWARD_MONEY" property="awardMoney" jdbcType="DECIMAL" />
+    <result column="AWARD_NUM" property="awardNum" jdbcType="INTEGER" />
+    <result column="AWARD_TYPE" property="awardType" jdbcType="INTEGER" />
+    <result column="STATUS" property="status" jdbcType="INTEGER" />
+    <result column="CHANCE" property="chance" jdbcType="DECIMAL" />
+    <result column="TURNTABLE_POSITION" property="turntablePosition" jdbcType="INTEGER" />
+    <result column="ADD_USER_ID" property="addUserId" jdbcType="INTEGER" />
+    <result column="ADD_TIME" property="addTime" jdbcType="TIMESTAMP" />
+    <result column="ADD_IP" property="addIp" jdbcType="VARCHAR" />
+    <result column="LAST_UPDATE_USER_ID" property="lastUpdateUserId" jdbcType="INTEGER" />
+    <result column="LAST_UPDATE_TIME" property="lastUpdateTime" jdbcType="TIMESTAMP" />
+    <result column="LAST_UPDATE_IP" property="lastUpdateIp" jdbcType="VARCHAR" />
+    <result column="VALID_DAY" property="validDay" jdbcType="INTEGER" />
+    <result column="REMARK" property="remark" jdbcType="VARCHAR" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    ID, PARENT_ID, NAME, AWARD_MONEY, AWARD_NUM, AWARD_TYPE, STATUS, CHANCE, TURNTABLE_POSITION, 
+    ADD_USER_ID, ADD_TIME, ADD_IP, LAST_UPDATE_USER_ID, LAST_UPDATE_TIME, LAST_UPDATE_IP, 
+    VALID_DAY, REMARK
+  </sql>
+  
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from t_lottery_goods
+    where ID = #{id,jdbcType=INTEGER}
+  </select>
+  
+  <sql id="goodsVo_Column_List" >
+    lg.ID, lg.PARENT_ID, lg.NAME, lg.AWARD_MONEY, lg.AWARD_NUM, lg.AWARD_TYPE, lg.STATUS, lg.CHANCE, lg.TURNTABLE_POSITION, 
+    lg.ADD_USER_ID, lg.ADD_TIME, lg.ADD_IP, lg.LAST_UPDATE_USER_ID, lg.LAST_UPDATE_TIME, lg.LAST_UPDATE_IP, 
+    lg.VALID_DAY, lg.REMARK
+  </sql>
+  
+  <!-- 获取8种一级奖品信息（用户系统抽奖） -->
+  <select id="selectLotteryGoodsByLotteryChanceRuleInfoId" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+	SELECT 
+		lg.ID, lg.PARENT_ID, lg.NAME, lg.AWARD_MONEY, lg.AWARD_NUM, lg.AWARD_TYPE, lg.STATUS, lg.TURNTABLE_POSITION, 
+    	lg.ADD_USER_ID, lg.ADD_TIME, lg.ADD_IP, lg.LAST_UPDATE_USER_ID, lg.LAST_UPDATE_TIME, lg.LAST_UPDATE_IP, 
+    	lg.VALID_DAY, lg.REMARK,
+	 	CASE WHEN lst.id IS NOT NULL AND lst.CHANCE IS NOT NULL THEN lst.CHANCE ELSE lg.CHANCE END as CHANCE
+	   FROM t_lottery_goods lg
+		 LEFT JOIN t_lottery_source_type_chance lst ON lg.ID = lst.LOTTERY_GOODS_ID AND lst.LOTTERY_CHANCE_RULE_INFO_ID = #{lotteryChanceRuleInfoId} AND lst.`STATUS` = 0
+		 WHERE lg.`STATUS` = 0 AND lg.PARENT_ID IS NULL
+		 AND lg.TURNTABLE_POSITION <![CDATA[ >= ]]> 1 AND lg.TURNTABLE_POSITION  <![CDATA[ <= ]]> 8 
+	ORDER BY lg.TURNTABLE_POSITION ASC LIMIT 8 for update
+  </select>
+  
+  <!-- 获取8种一级奖品总中奖概率（用户系统抽奖） -->
+  <select id="queryTotalChanceByLotteryChanceRuleInfoId" resultType="java.math.BigDecimal" parameterType="java.lang.Integer" >
+	SELECT 
+	 	sum(CASE WHEN lst.id IS NOT NULL AND lst.CHANCE IS NOT NULL THEN lst.CHANCE ELSE lg.CHANCE END) 
+	   FROM t_lottery_goods lg
+		 LEFT JOIN t_lottery_source_type_chance lst ON lg.ID = lst.LOTTERY_GOODS_ID AND lst.LOTTERY_CHANCE_RULE_INFO_ID = #{lotteryChanceRuleInfoId} AND lst.`STATUS` = 0
+		 WHERE lg.`STATUS` = 0 AND lg.PARENT_ID IS NULL
+		 AND lg.TURNTABLE_POSITION <![CDATA[ >= ]]> 1 AND lg.TURNTABLE_POSITION  <![CDATA[ <= ]]> 8 
+	ORDER BY lg.TURNTABLE_POSITION ASC LIMIT 8 
+  </select>
+  
+  <!-- 获取某一级奖品的二级奖品信息（用户系统抽奖） -->
+  <select id="selectLotteryGoodsByParentId" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+	SELECT <include refid="Base_Column_List" /> FROM t_lottery_goods 
+	WHERE PARENT_ID = #{goodsId} and STATUS = 0 for update
+  </select>
+  
+  <!-- 获取某一级奖品的二级奖品的总中奖概率（用户系统抽奖） -->
+  <select id="queryTotalChanceByParentId" resultType="java.math.BigDecimal" parameterType="java.lang.Integer" >
+	SELECT sum(CHANCE) FROM t_lottery_goods 
+	WHERE PARENT_ID = #{goodsId} and STATUS = 0
+  </select>
+  
+  <!-- 获取谢谢参与抽奖类型记录 -->
+  <select id="selectForThankYou" resultMap="BaseResultMap">
+	SELECT <include refid="Base_Column_List" /> FROM t_lottery_goods 
+	WHERE AWARD_TYPE = 3 and STATUS = 0 LIMIT 1 for update
+  </select>
+</mapper>

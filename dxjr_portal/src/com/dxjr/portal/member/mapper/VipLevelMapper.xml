@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.dxjr.portal.member.mapper.VipLevelMapper">
+	
+	<!-- 结果集 -->
+	<resultMap type="com.dxjr.portal.member.vo.VipLevelVo" id="vipLevelVoResultMap">
+		<id property="id" column="id" />
+		<result property="userId" 				column="USER_ID" />
+		<result property="status" 				column="STATUS" />
+		<result property="order" 				column="ORDER" />
+		<result property="addId" 				column="ADD_ID" />
+		<result property="addTime"	   		 	column="ADDTIME" />
+		<result property="addIp"  				column="ADDIP" />
+		<result property="remark" 				column="REMARK" />
+		<result property="username" 			column="username" />
+		<result property="realName" 			column="realName" />
+		<result property="email" 				column="email" />
+		<result property="mobileNum" 			column="mobileNum" />
+	</resultMap>
+	
+	<!--基本列 -->
+	<sql id="vipLevelVoBaseColumn">
+		vl.ID, 
+		vl.USER_ID, 
+		vl.STATUS, 
+		vl.ORDER, 
+		vl.ADD_ID, 
+		vl.ADDTIME, 
+		vl.ADDIP, 
+		vl.REMARK
+	</sql>
+	
+  	<!-- 根据ID查询对象 -->
+	<select id="queryById" parameterType="java.lang.Integer" resultMap="vipLevelVoResultMap" >
+		select 	
+		   <include refid="vipLevelVoBaseColumn"/>
+		from
+			rocky_vip_level vl
+		where 1=1
+		and vl.id=#{id}
+  	</select>
+  	
+  	<!-- 根据ID查询对象并锁定 -->
+	<select id="queryByIdForUpdate" parameterType="java.lang.Integer" resultMap="vipLevelVoResultMap" >
+		select 	
+		   <include refid="vipLevelVoBaseColumn"/>
+		from
+			rocky_vip_level vl
+		where 1=1
+		and vl.id=#{id} for update
+  	</select>
+ 
+ 	<!-- 根据用户id及type查询vip会员等级信息 -->
+  	<select id="queryByUserIdAndType" resultMap="vipLevelVoResultMap" >
+		select 	
+		   <include refid="vipLevelVoBaseColumn"/>
+		from
+			rocky_vip_level vl
+		where 1=1
+		AND vl.USER_ID = #{userId} AND vl.TYPE = #{type} AND vl.STATUS = 0
+  	</select>
+</mapper>  

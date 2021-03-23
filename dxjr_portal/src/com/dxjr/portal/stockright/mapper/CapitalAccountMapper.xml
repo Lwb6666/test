@@ -1,0 +1,312 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dxjr.portal.stockright.mapper.CapitalAccountMapper" >
+
+<!-- 根据用户ID查询活期宝账户信息 -->
+	<select id="querCurByUserId"  parameterType="java.lang.Integer" resultType="com.dxjr.portal.curAccount.entity.CurAccount">
+		select 
+			ID  id, 
+			USER_ID  userId, 
+			TOTAL total , 
+			USE_MONEY useMoney, 
+			NO_USE_MONEY noUseMoney, 
+			INTEREST_TOTAL  interestTotal, 
+			INTEREST_YESTERDAY interestYesterday, 
+   		 	ADDUSER adduser, 
+   		 	ADDTIME addtime, 
+   		 	ENDTIME endtime, 
+   		 	LAST_UP_USER lastUpUser, 
+   		 	LAST_UP_TIME lastUpTime, 
+   		 	STATUS status, 
+   		 	REMARK remark
+		from t_cur_account
+		where status = 0
+		and USER_ID = #{userId}
+	</select>
+	
+	<!-- 变更用户活期宝资金 -->
+	 <update id="updateCurByUserId" parameterType="com.dxjr.portal.curAccount.entity.CurAccount" >
+    update t_cur_account
+    <set >
+      <if test="total != null" >
+        TOTAL = #{total,jdbcType=DECIMAL},
+      </if>
+      <if test="useMoney != null" >
+        USE_MONEY = #{useMoney,jdbcType=DECIMAL},
+      </if>
+      <if test="noUseMoney != null" >
+        NO_USE_MONEY = #{noUseMoney,jdbcType=DECIMAL},
+      </if>
+      <if test="lastUpUser != null" >
+        LAST_UP_USER = #{lastUpUser,jdbcType=INTEGER},
+      </if>
+        LAST_UP_TIME = now()
+    </set>
+    where ID = #{id,jdbcType=INTEGER}
+     	 and USER_ID = #{userId,jdbcType=INTEGER}
+		 and status = 0
+  </update>
+
+<insert id="saveCurAccountlog" parameterType="com.dxjr.portal.curAccount.entity.CurAccountlog">
+		insert into t_cur_accountlog
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="userId != null">
+				USER_ID,
+			</if>
+			<if test="money != null">
+				MONEY,
+			</if>
+			<if test="type != null">
+				TYPE,
+			</if>
+			<if test="total != null">
+				TOTAL,
+			</if>
+			<if test="useMoney != null">
+				USE_MONEY,
+			</if>
+			<if test="noUseMoney != null">
+				NO_USE_MONEY,
+			</if>
+			<if test="interestTotal != null">
+				INTEREST_TOTAL,
+			</if>
+			<if test="interestYesterday != null">
+				INTEREST_YESTERDAY,
+			</if>
+			<if test="adduser != null">
+				ADDUSER,
+			</if>
+			<if test="addip != null">
+				ADDIP,
+			</if>
+			<if test="remark != null">
+				REMARK,
+			</if>
+			ADDTIME,
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="userId != null">
+				#{userId,jdbcType=INTEGER},
+			</if>
+			<if test="money != null">
+				#{money,jdbcType=DECIMAL},
+			</if>
+			<if test="type != null">
+				#{type,jdbcType=INTEGER},
+			</if>
+			<if test="total != null">
+				#{total,jdbcType=DECIMAL},
+			</if>
+			<if test="useMoney != null">
+				#{useMoney,jdbcType=DECIMAL},
+			</if>
+			<if test="noUseMoney != null">
+				#{noUseMoney,jdbcType=DECIMAL},
+			</if>
+			<if test="interestTotal != null">
+				#{interestTotal,jdbcType=DECIMAL},
+			</if>
+			<if test="interestYesterday != null">
+				#{interestYesterday,jdbcType=DECIMAL},
+			</if>
+			<if test="adduser != null">
+				#{adduser,jdbcType=INTEGER},
+			</if>
+			<if test="addip != null">
+				#{addip,jdbcType=VARCHAR},
+			</if>
+			<if test="remark != null">
+				#{remark,jdbcType=VARCHAR},
+			</if>
+			now(),
+		</trim>
+	</insert>
+	
+	
+	<!-- 更新资金账户 -->
+   <update id="updateAccount" parameterType="com.dxjr.portal.account.vo.AccountVo" >
+    update rocky_account
+    <set >
+      <if test="total != null" >
+        TOTAL = #{total},
+      </if>
+      <if test="useMoney != null" >
+        USE_MONEY = #{useMoney},
+      </if>
+      <if test="noUseMoney != null" >
+        NO_USE_MONEY = #{noUseMoney},
+      </if>
+      <if test="drawMoney != null" >
+        DRAW_MONEY = #{drawMoney},
+      </if>
+       <if test="noDrawMoney != null" >
+        NO_DRAW_MONEY = #{noDrawMoney},
+      </if>                                            
+    </set>
+    where user_id = #{userId} and id = #{id}
+  </update>
+  
+	 <!-- 添加 账户日志记录   -->
+	<insert id="saveAccountlog" parameterType="com.dxjr.portal.account.vo.AccountLogCnd" >
+    insert into rocky_accountlog ( USER_ID, TYPE, 
+      TOTAL, MONEY, USE_MONEY, 
+      NO_USE_MONEY, COLLECTION, TO_USER, 
+      BORROW_ID, BORROW_NAME, ID_TYPE, 
+      REMARK, ADDTIME, ADDIP, 
+      FIRST_BORROW_USE_MONEY, DRAW_MONEY, NO_DRAW_MONEY,
+      e_use_money, e_freeze_money,e_collection
+      )
+      
+       SELECT USER_ID,#{type},total,#{money},use_money,no_use_money,collection,#{toUser},#{borrowId},#{borrowName},#{idType},#{remark},
+		UNIX_TIMESTAMP(),#{addip},FIRST_BORROW_USE_MONEY,DRAW_MONEY,NO_DRAW_MONEY,e_use_money,e_freeze_money,e_collection
+		FROM rocky_account WHERE USER_ID=#{userId}
+  </insert>
+  
+  
+  		<!-- 	,
+			a.e_use_money eUseMoney,
+			a.e_freeze_money eFreezeMoney,
+			a.e_collection eCollection -->
+  	<select id="queryCapitalAccount" parameterType="com.dxjr.portal.account.vo.AccountCnd" resultType="com.dxjr.portal.account.vo.AccountVo" >
+		select 	
+		   	a.ID  id, 
+			a.USER_ID userId, 
+			a.TOTAL total, 
+			a.USE_MONEY useMoney, 
+			a.NO_USE_MONEY noUseMoney, 
+			a.COLLECTION collection, 
+			a.NETVALUE netvalue, 
+			a.FIRST_BORROW_USE_MONEY firstBorrowUseMoney,
+			a.VERSION version,
+			a.DRAW_MONEY drawMoney,
+			a.NO_DRAW_MONEY noDrawMoney,
+			a.e_use_money eUseMoney,
+			a.e_freeze_money eFreezeMoney,
+			a.e_collection eCollection 
+		from
+			rocky_account a
+		where 1=1
+		<if test="id != null">
+			and a.id =#{id}
+		</if>
+		<if test="userId != null ">
+			and a.USER_ID = #{userId}
+		</if>
+		<if test="year != null and year == 'yes'">
+			FOR UPDATE
+		</if>		
+  	</select>
+  	
+  	
+  	
+ <!--  <insert id="insertCurOut" parameterType="com.dxjr.portal.curAccount.entity.CurOut" >
+    insert into t_cur_out
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="userId != null" >
+        USER_ID,
+      </if>
+      <if test="targetId != null" >
+        TARGET_ID,
+      </if>
+      <if test="type != null" >
+        TYPE,
+      </if>
+      <if test="account != null" >
+        ACCOUNT,
+      </if>
+      <if test="useMoney != null" >
+        USE_MONEY,
+      </if>
+      <if test="noUseMoney != null" >
+        NO_USE_MONEY,
+      </if>
+      <if test="drawMoney != null" >
+        DRAW_MONEY,
+      </if>
+      <if test="noDrawMoney != null" >
+        NO_DRAW_MONEY,
+      </if>
+      <if test="adduser != null" >
+        ADDUSER,
+      </if>
+        ADDTIME,
+      <if test="addip != null" >
+        ADDIP,
+      </if>
+      <if test="platform != null" >
+        PLATFORM,
+      </if>
+      <if test="remark != null" >
+        REMARK,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="userId != null" >
+        #{userId,jdbcType=INTEGER},
+      </if>
+      <if test="targetId != null" >
+        #{targetId,jdbcType=INTEGER},
+      </if>
+      <if test="type != null" >
+        #{type,jdbcType=INTEGER},
+      </if>
+      <if test="account != null" >
+        #{account,jdbcType=DECIMAL},
+      </if>
+      <if test="useMoney != null" >
+        #{useMoney,jdbcType=DECIMAL},
+      </if>
+      <if test="noUseMoney != null" >
+        #{noUseMoney,jdbcType=DECIMAL},
+      </if>
+      <if test="drawMoney != null" >
+        #{drawMoney,jdbcType=DECIMAL},
+      </if>
+      <if test="noDrawMoney != null" >
+        #{noDrawMoney,jdbcType=DECIMAL},
+      </if>
+      <if test="adduser != null" >
+        #{adduser,jdbcType=INTEGER},
+      </if>
+      now(),
+      <if test="addip != null" >
+        #{addip,jdbcType=VARCHAR},
+      </if>
+      <if test="platform != null" >
+        #{platform,jdbcType=INTEGER},
+      </if>
+      <if test="remark != null" >
+        #{remark,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  
+  
+  
+ <select id="queryCurInListByUserIdAndDateForUpdate" resultMap="BaseResultMap" >
+  	SELECT
+  	ID id ,
+	USER_ID userId,
+	OUT_ID outId,
+	ACCOUNT account,
+	DRAW_MONEY drawMoney, 
+	NO_DRAW_MONEY noDrawMoney,
+	CUR_NOWORKDAY_ID curNoworkdayId,
+	CAL_INTEREST_DAY calInterestDay, 
+   	ACTUAL_MONEY actualMoney,
+	ACTUAL_DRAW_MONEY actualDrawMoney,
+	ACTUAL_NO_DRAW_MONEY actualNoDrawMoney, 
+	TENDER_TYPE tenderType, 
+	ADDUSER adduser, 
+	ADDTIME addtime,
+	ADDIP addip, 
+	STATUS status,
+	PLATFORM platform, 
+	REMARK remark
+  	 FROM t_cur_in 
+	 WHERE STATUS = 0 AND USER_ID = #{userId} AND CAL_INTEREST_DAY > DATE_FORMAT(#{date}, '%Y-%m-%d') and ACTUAL_MONEY > 0
+	 order by CAL_INTEREST_DAY asc, id asc
+	 for update
+  </select> -->
+</mapper>

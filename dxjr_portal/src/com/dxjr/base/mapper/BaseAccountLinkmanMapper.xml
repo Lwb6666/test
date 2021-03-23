@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.dxjr.base.mapper.BaseAccountLinkmanMapper">
+	
+	<!-- AccountLinkman结果集 -->
+	<resultMap type="com.dxjr.base.entity.AccountLinkman" id="accountLinkmanResultMap">
+		<id property="id" column="id" />
+		<result property="userId" 				column="USER_ID" />
+		<result property="name" 				column="NAME" />
+		<result property="mobile" 				column="MOBILE" />
+		<result property="email" 				column="EMAIL" />
+		<result property="relationship"	    	column="RELATIONSHIP" />
+		<result property="addtime"  			column="ADDTIME" />
+		<result property="addip" 				column="ADDIP" />
+		<result property="modifytime" 			column="MODIFYTIME" />
+	</resultMap>
+	
+	<!--关联人类基本列 -->
+	<sql id="accountLinkmanBaseColumn">
+		n.ID, 
+		n.USER_ID, 
+		n.NAME, 
+		n.MOBILE, 
+		n.EMAIL, 
+		n.RELATIONSHIP, 
+		n.ADDTIME, 
+		n.ADDIP, 
+		n.MODIFYTIME
+	</sql>
+	
+	<!-- 插入记录，返回主键 -->
+	<insert id="insertEntity" parameterType="com.dxjr.base.entity.AccountLinkman">
+		INSERT INTO rocky_account_linkman 
+		(USER_ID, NAME, MOBILE, EMAIL, RELATIONSHIP, ADDTIME, ADDIP, MODIFYTIME)
+		VALUES
+		(#{userId}, #{name}, #{mobile},	#{email}, #{relationship}, #{addtime}, #{addip}, #{modifytime})
+		
+ 		 <selectKey resultType="java.lang.Integer" order="AFTER" keyProperty="id">  
+      	    SELECT LAST_INSERT_ID() AS ID    
+   		 </selectKey>
+	</insert>
+	
+  	<!-- 根据ID查询 -->
+	<select id="queryById" parameterType="java.lang.Integer" resultMap="accountLinkmanResultMap" >
+		select 	
+		   <include refid="accountLinkmanBaseColumn"/>
+		from
+			rocky_account_linkman n
+		where 1=1
+		and n.id=#{id}
+  	</select>
+	
+  <!-- 更新关联人类 -->
+  <update id="updateEntity" parameterType="com.dxjr.base.entity.AccountLinkman" >
+    update rocky_account_linkman
+    <set >
+      <if test="userId != null" >
+        USER_ID = #{userId,jdbcType=INTEGER},
+      </if>
+      <if test="name != null" >
+        NAME = #{name,jdbcType=INTEGER},
+      </if>
+      <if test="mobile != null" >
+        MOBILE = #{mobile,jdbcType=INTEGER},
+      </if>
+      <if test="email != null" >
+        EMAIL = #{email,jdbcType=VARCHAR},
+      </if>
+      <if test="relationship != null" >
+        RELATIONSHIP = #{relationship,jdbcType=VARCHAR},
+      </if>
+      <if test="addtime != null" >
+        ADDTIME = #{addtime,jdbcType=VARCHAR},
+      </if>
+      <if test="addip != null" >
+        ADDIP = #{addip,jdbcType=VARCHAR},
+      </if>
+      <if test="modifytime != null" >
+        MODIFYTIME = #{modifytime,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where ID = #{id}
+  </update>
+  	
+  	<!-- 根据ID查询 -->
+	<select id="queryByUserId" parameterType="java.lang.Integer" resultMap="accountLinkmanResultMap" >
+		select 	
+		   <include refid="accountLinkmanBaseColumn"/>
+		from
+			rocky_account_linkman n
+		where 1=1
+		and n.USER_ID=#{userId}
+  	</select>
+</mapper>  

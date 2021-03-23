@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.dxjr.base.mapper.BaseTodrawLogMapper">
+	
+	<!-- 结果集 -->
+	<resultMap type="com.dxjr.base.entity.TodrawLog" id="todrawLogResultMap">
+		<id property="id" column="id" />
+		<result property="userId" 					column="USER_ID" />
+		<result property="status" 					column="STATUS" />
+		<result property="money" 					column="MONEY" />
+		<result property="credited" 				column="CREDITED"/>
+		<result property="fee"	    				column="FEE" />
+		<result property="remark" 					column="REMARK" /> 
+		<result property="addtime" 					column="ADDTIME" />
+		<result property="addip" 					column="ADDIP" />
+		<result property="verifyUserId" 			column="VERIFY_USERID" /> 
+		<result property="verifyTime" 				column="VERIFY_TIME" />
+		<result property="verifyRemark" 			column="VERIFY_REMARK" />
+		<result property="version" 				 	column="VERSION" />
+	</resultMap>
+	
+	<!--基本列 -->
+	<sql id="todrawLogBaseColumn">
+		t.ID, 
+		t.USER_ID, 
+		t.STATUS, 
+		t.MONEY, 
+		t.CREDITED,
+		t.FEE, 
+		t.REMARK, 
+		t.ADDTIME, 
+		t.ADDIP, 
+		t.VERIFY_USERID,
+		t.VERIFY_TIME,
+		t.VERIFY_REMARK,
+		t.VERSION
+	</sql>
+	
+	<!-- 插入记录，返回主键 -->
+	<insert id="insertEntity" parameterType="com.dxjr.base.entity.TodrawLog">
+		INSERT INTO t_todraw_log 
+		(USER_ID,	STATUS,	MONEY,	CREDITED, FEE,	REMARK,	ADDTIME, ADDIP, VERIFY_USERID, VERIFY_TIME, VERIFY_REMARK, VERSION,PLATFORM)
+		VALUES
+		(#{userId}, #{status}, #{money}, #{credited}, #{fee}, #{remark}, #{addtime}, #{addip}, #{verifyUserId}, #{verifyTime}, #{verifyRemark}, #{version},#{platform})
+ 		 <selectKey resultType="java.lang.Integer" order="AFTER" keyProperty="id">  
+      	    SELECT LAST_INSERT_ID() AS ID    
+   		 </selectKey>
+	</insert>
+	
+  	<!-- 根据ID查询 -->
+	<select id="queryById" parameterType="java.lang.Integer" resultMap="todrawLogResultMap" >
+		select 	
+		   <include refid="todrawLogBaseColumn"/>
+		from
+			t_todraw_log t
+		where 1=1
+		and t.id=#{id}
+  	</select>
+	
+  <!-- 更新-->
+  <update id="updateEntity" parameterType="com.dxjr.base.entity.TodrawLog" >
+    update t_todraw_log
+    <set >
+      <if test="userId != null" >
+        USER_ID = #{userId},
+      </if>
+      <if test="status != null" >
+        STATUS = #{status},
+      </if>
+      <if test="money != null" >
+        MONEY = #{money},
+      </if>
+      <if test="credited != null" >
+        CREDITED = #{credited},
+      </if>      
+      <if test="fee != null" >
+        FEE = #{fee},
+      </if>
+      <if test="remark != null" >
+        REMARK = #{remark},
+      </if>
+      <if test="addtime != null" >
+        ADDTIME = #{addtime},
+      </if>
+      <if test="addip != null" >
+        ADDIP = #{addip},
+      </if> 
+      <if test="verifyUserId != null" >
+        VERIFY_USERID = #{verifyUserId},
+      </if>
+      <if test="verifyTime != null" >
+        VERIFY_TIME = #{verifyTime},
+      </if>
+      <if test="verifyRemark != null" >
+        VERIFY_REMARK = #{verifyRemark},
+      </if>
+      <if test="version != null" >
+        VERSION = #{version},
+      </if>                          
+    </set>
+    where ID = #{id}
+    <if test="selfVersion != null">
+       and VERSION = #{selfVersion}
+    </if>    
+  </update>
+  	
+</mapper>  

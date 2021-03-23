@@ -1,0 +1,605 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.dxjr.portal.first.mapper.FirstTransferMapper">
+	<!-- 直通车最终认购resultMap -->
+   	<resultMap type="com.dxjr.portal.first.vo.FirstTenderRealVo" id="firstTenderRealBaseResultMap">
+		<id property="id" column="id" />
+		<result property="firstBorrowId" 		column="FIRST_BORROW_ID" />
+		<result property="account" 				column="ACCOUNT" />
+		<result property="rate" 				column="RATE" />
+		<result property="userId" 				column="USER_ID" />
+		<result property="useMoney"	    		column="USE_MONEY" />
+		<result property="planAccount"  		column="PLAN_ACCOUNT" />
+		<result property="remark"  				column="REMARK" />
+		<result property="status"  				column="STATUS" />
+		<result property="version"  			column="VERSION" />
+		<result property="addtime"  			column="ADDTIME" />
+		<result property="firstTenderType" 		column="FIRST_TENDER_TYPE" />
+		<result property="onBusTime" 			column="ONBUS_TIME" />
+		<result property="orderNum" 			column="ORDERNUM" />
+		<result property="parentId" 			column="PARENT_ID" />
+	</resultMap>
+	
+	<!-- 直通车可转让resultMap -->
+	<resultMap type="com.dxjr.portal.first.vo.FirstTransferTypeVo" id="firstTransferTypeVoResultMap" extends="firstTenderRealBaseResultMap">
+		<result property="interest"				column="interest"/>
+		<result property="interestDiff"		    column="interestDiff"/>
+		<result property="bondsAccount"			column="bondsAccount"/>
+	</resultMap>
+	
+	<!-- 直通车转让resultMap -->
+	<resultMap type="com.dxjr.portal.first.vo.FirstTransferVo" id="firstTransferBaseResultMap" >
+		<id column="ID" property="id"/>
+		<result property="firstTenderRealId" 			column="FIRST_TENDER_REAL_ID" />
+		<result property="firstPeriods" 				column="FIRST_PERIODS" />
+		<result property="firstPerceivedRate" 			column="FIRST_PERCEIVED_RATE" />
+		<result property="tenderCapital" 				column="TENDER_CAPITAL" />
+		<result property="interest" 					column="INTEREST" />
+		<result property="interestDiff" 				column="INTEREST_DIFF" />
+		<result property="account" 						column="ACCOUNT" />
+		<result property="awards" 						column="AWARDS" />
+		<result property="accountReal" 					column="ACCOUNT_REAL" />
+		<result property="coef" 						column="COEF" />
+		<result property="manageFee" 					column="MANAGE_FEE" />
+		<result property="interestManageFee" 			column="INTEREST_MANAGE_FEE" />
+		<result property="validTime" 					column="VALID_TIME" />
+		<result property="transferName" 				column="TRANSFER_NAME" />
+		<result property="userId" 						column="USER_ID" />
+		<result property="addtime" 						column="ADD_TIME" />
+		<result property="lastUpdateTime" 				column="LAST_UPDATE_TIME" />
+		<result property="lastUpdateName" 				column="LAST_UPDATE_NAME" />
+		<result property="endTime" 						column="END_TIME" />
+		<result property="successTime" 					column="SUCCESS_TIME" />
+		<result property="bidPassword" 					column="BID_PASSWORD" />
+		<result property="status" 						column="STATUS" />
+		<result property="remark" 						column="REMARK" />
+		<result property="platform" 					column="PLATFORM" />
+		<result property="actualInterest" 				column="ACTUAL_INTEREST" />
+		<result property="avgCycle" 					column="AVG_CYCLE" />
+		<result property="avgRate" 						column="AVG_RATE" />
+		<result property="awardApr" 					column="awardApr" />
+	</resultMap>
+	
+	<!-- 直通车转让详细resultMap -->
+	<resultMap type="com.dxjr.portal.first.vo.FirstTransferVo" id="firstTransferDetailResultMap" extends="firstTransferBaseResultMap" >
+		<id column="ID" property="id"/>
+		<result property="ordernum" 			column="ORDERNUM" />
+		<result property="userName" 			column="USERNAME" />
+		<result property="subscribeUsername" 	column="SUBSCRIBE_USERNAME" />
+		<result property="firstBorrowId" 		column="FIRST_BORROW_ID" />
+		<result property="useMoney" 			column="USE_MONEY" />
+		<result property="borrowId" 			column="BORROW_ID" />
+		<result property="tenderRealId" 		column="TENDER_REAL_ID" />
+		<result property="realAddtime"			column="REAL_ADDTIME"/>
+		<result property="realOrdernum"			column="REAL_ORDERNUM"/>
+		<result property="realAccount"			column="REAL_ACCOUNT"/>
+		<result property="realUseMoney"			column="REAL_USE_MONEY"/>
+		<result property="userIdVo"				column="USER_ID"/>
+		
+	</resultMap>
+	
+	<!-- 我的账号下直通车转让信息的resultMap -->
+	<resultMap type="com.dxjr.portal.first.vo.FirstTransferVo" id="myFirstTransferResultMap" extends="firstTransferBaseResultMap" >
+		<result property="firstOpenTime" 			column="firstOpenTime" />
+		<result property="ordernum" 				column="ORDERNUM" />
+		<result property="userName" 				column="USERNAME" />
+		<result property="subscribeUsername" 		column="SUBSCRIBE_USERNAME" />
+	</resultMap>
+	
+	
+	<!--基本列 -->
+	<sql id="firstTenderRealColumn">
+		tr.ID, 
+		tr.FIRST_BORROW_ID, 
+		tr.ACCOUNT, 
+		tr.RATE, 
+		tr.USER_ID, 
+		tr.USE_MONEY, 
+		tr.PLAN_ACCOUNT,
+		tr.REMARK,
+		tr.STATUS,
+		tr.VERSION,
+		tr.ADDTIME,
+		tr.FIRST_TENDER_TYPE,
+		tr.ONBUS_TIME,
+		tr.ORDERNUM,
+		tr.PARENT_ID
+	</sql>
+	
+	<!-- 直通车转让基本列 -->
+	<sql id="firstTransferColumn">
+			FT.ID,FT.FIRST_TENDER_REAL_ID, 	 FT.FIRST_PERIODS,		FT.FIRST_PERCEIVED_RATE,		FT.TENDER_CAPITAL,		FT.INTEREST, 
+			FT.INTEREST_DIFF, 	         FT.ACCOUNT,		    FT.AWARDS,		                FT.ACCOUNT_REAL,		FT.COEF, 
+			FT.MANAGE_FEE,   		     FT.INTEREST_MANAGE_FEE,	FT.VALID_TIME,          	FT.TRANSFER_NAME,		FT.USER_ID, 
+			FT.ADD_TIME, 			     FT.END_TIME,	    	FT.BID_PASSWORD,	     		FT.STATUS,				FT.REMARK, 
+			FT.PLATFORM, 		 		 FT.ACTUAL_INTEREST,	FT.AVG_CYCLE,		            FT.AVG_RATE	,			FT.SUCCESS_TIME
+	</sql>
+	
+	<!--直通车转让查询条件-->
+	<sql id="queryFirstTransfer_where">
+		WHERE 1 = 1
+		<!-- 资金范围 -->
+		<if test=" acountRange != null and acountRange != ''">
+			<if test=" acountRange == 1">
+				AND ACCOUNT_REAL &lt;= 10000
+			</if>
+			<if test=" acountRange == 2">
+				AND ACCOUNT_REAL > 10000 AND ACCOUNT_REAL &lt;= 50000
+			</if>
+			<if test=" acountRange == 3">
+				AND ACCOUNT_REAL > 50000 AND ACCOUNT_REAL &lt;= 100000
+			</if>
+			<if test=" acountRange == 4">
+				AND ACCOUNT_REAL > 100000 AND ACCOUNT_REAL &lt;= 500000
+			</if>
+			<if test=" acountRange == 5">
+				AND ACCOUNT_REAL > 500000
+			</if>
+		</if> 
+		<!-- 转让状态 -->
+		<if test=" hasTransferStatus != null and hasTransferStatus == 'hasTransfer'">
+			AND FT.STATUS IN (2,4)
+		</if>
+		<if test=" transferStatus != null">
+			AND FT.STATUS = #{transferStatus}
+		</if>
+		<if test="userId != null">
+			AND FT.USER_ID = #{userId}
+		</if>
+		
+	</sql>
+	
+  			
+  	<!--根据条件查询直通车可转让的数量-->
+	<select id="queryCanTransferCount" parameterType="com.dxjr.portal.first.vo.FirstTransferTypeCnd" resultType="java.lang.Integer" >
+			SELECT count(tr.id)
+			FROM t_first_tender_real tr
+			LEFT JOIN (
+				/**  直通车投标冻结  */
+			    SELECT t.FIRST_TENDER_REAL_ID,IFNULL(SUM(t.ACCOUNT),0) AS tenderMoney
+			    FROM rocky_b_tenderrecord t,rocky_borrow b  
+			    WHERE 1=1 
+			    AND t.STATUS = 0 
+			    AND t.USER_ID = #{userId}
+			    AND b.ID = t.BORROW_ID 
+			    AND b.STATUS IN(2,3)
+			    AND t.TENDER_TYPE=2
+			    GROUP BY t.FIRST_TENDER_REAL_ID
+			) t ON tr.id=t.FIRST_TENDER_REAL_ID
+			LEFT JOIN (
+			    /** 直通车待收最小还款日*/
+				SELECT c.FIRST_TENDER_REAL_ID,MIN(REPAY_TIME) AS minRepayTime FROM rocky_b_collectionrecord c
+				WHERE c.status=0
+				AND c.USER_ID=#{userId}
+				AND c.FIRST_TENDER_REAL_ID IS NOT NULL
+				AND c.IS_FIRST_BORROW =1 
+				GROUP BY c.FIRST_TENDER_REAL_ID
+			) bc ON tr.id=bc.FIRST_TENDER_REAL_ID
+			WHERE 1=1
+			AND tr.STATUS  =0
+			AND tr.USER_ID =#{userId}
+			AND t.tenderMoney IS NULL
+			AND tr.PARENT_ID IS NULL
+			AND (bc.minRepayTime is null or CONCAT(DATE_ADD(FROM_UNIXTIME(bc.minRepayTime,'%Y-%m-%d'),INTERVAL -1 DAY),' 22:30:00') > STR_TO_DATE(NOW(),'%Y-%m-%d %H:%i:%S'))
+			<if test="beginTime != null and ''!=beginTime">
+			   and tr.ADDTIME >= #{beginTime} 
+			</if>
+			<if test="endTime != null and ''!=endTime">
+			   and tr.ADDTIME <![CDATA[<= concat(#{endTime},' 23:59:59')]]>
+			</if>	
+			<if test="firstTenderRealId != null">
+		   	   and tr.id = #{firstTenderRealId}
+		    </if>
+			<if test="lockedRecordYn != null and lockedRecordYn == 'yes'">
+				FOR UPDATE
+			</if>
+  	</select>
+  	
+  	
+  	<!--根据条件分页查询直通车可转让的集合-->
+	<select id="queryCanTransferList" parameterType="com.dxjr.portal.first.vo.FirstTransferTypeCnd" resultMap="firstTransferTypeVoResultMap" >
+		SELECT temp.occupyInterest as interest,
+		       temp.interestDiff,
+		       tr.ACCOUNT+IFNULL(temp.occupyInterest,0)-IFNULL(temp.interestDiff,0) AS bondsAccount,
+		       <include refid="firstTenderRealColumn"/> 
+		FROM (
+			SELECT <include refid="firstTenderRealColumn"/>
+			FROM t_first_tender_real tr
+			LEFT JOIN (
+				/**  直通车投标冻结  */
+			    SELECT t.FIRST_TENDER_REAL_ID,IFNULL(SUM(t.ACCOUNT),0) AS tenderMoney
+			    FROM rocky_b_tenderrecord t,rocky_borrow b  
+			    WHERE 1=1 
+			    AND t.STATUS = 0 
+			    AND t.USER_ID = #{userId}
+			    AND b.ID = t.BORROW_ID 
+			    AND b.STATUS IN(2,3)
+			    AND t.TENDER_TYPE=2
+			    GROUP BY t.FIRST_TENDER_REAL_ID
+			) t ON tr.id=t.FIRST_TENDER_REAL_ID
+			LEFT JOIN (
+			    /** 直通车待收最小还款日*/
+				SELECT c.FIRST_TENDER_REAL_ID,MIN(REPAY_TIME) AS minRepayTime FROM rocky_b_collectionrecord c
+				WHERE c.status=0
+				AND c.USER_ID=#{userId}
+				AND c.FIRST_TENDER_REAL_ID IS NOT NULL
+				AND c.IS_FIRST_BORROW =1 
+				GROUP BY c.FIRST_TENDER_REAL_ID
+			) bc ON tr.id=bc.FIRST_TENDER_REAL_ID
+			WHERE 1=1
+			AND tr.STATUS  =0
+			AND tr.USER_ID =#{userId}
+			AND t.tenderMoney IS NULL
+			AND (bc.minRepayTime is null or CONCAT(DATE_ADD(FROM_UNIXTIME(bc.minRepayTime,'%Y-%m-%d'),INTERVAL -1 DAY),' 22:30:00') > STR_TO_DATE(NOW(),'%Y-%m-%d %H:%i:%S'))
+			<if test="beginTime != null and ''!=beginTime">
+			   and tr.ADDTIME >= #{beginTime} 
+			</if>
+			<if test="endTime != null and ''!=endTime">
+			   and tr.ADDTIME <![CDATA[<= concat(#{endTime},' 23:59:59')]]>
+			</if>				
+		) tr LEFT JOIN (
+			SELECT 
+			       SUM(ROUND(ROUND(re.orderInterest/orderDays,8)*re.occupyDays,2))                                        AS occupyInterest,
+			       SUM(ROUND(ROUND(ROUND(re.orderInterest/orderDays,8)*re.occupyDays,8)*b.APR/100/${yearDays}*re.unOccupyDays,2))     AS interestDiff,
+			       re.FIRST_TENDER_REAL_ID
+			FROM(     
+				SELECT t.id,
+				       FROM_UNIXTIME(IFNULL(bc.REPAY_TIME,t.ADDTIME),'%Y-%m-%d %H:%i:%s')             AS collectionBeginTime,
+				       FROM_UNIXTIME(t.REPAY_TIME,'%Y-%m-%d %H:%i:%s')                                AS collectionEndtime,
+				       NOW()								                                          AS firstTransferAddTime,
+				       CASE WHEN DATEDIFF(DATE_FORMAT(NOW(),'%Y-%m-%d'),FROM_UNIXTIME(IFNULL(bc.REPAY_TIME,t.ADDTIME),'%Y-%m-%d')) &lt; 0 THEN 0 
+						 ELSE  DATEDIFF(DATE_FORMAT(NOW(),'%Y-%m-%d'),FROM_UNIXTIME(IFNULL(bc.REPAY_TIME,t.ADDTIME),'%Y-%m-%d')) END AS occupyDays,
+				       DATEDIFF(FROM_UNIXTIME(t.REPAY_TIME,'%Y-%m-%d'),DATE_FORMAT(NOW(),'%Y-%m-%d')) AS unOccupyDays,
+				       DATEDIFF(FROM_UNIXTIME(t.REPAY_TIME,'%Y-%m-%d'),FROM_UNIXTIME(IFNULL(bc.REPAY_TIME,t.ADDTIME),'%Y-%m-%d')) AS orderDays,
+				       t.INTEREST 	                                                              AS orderInterest,
+				       t.borrow_id,
+				       t.FIRST_TENDER_REAL_ID
+				FROM (
+					SELECT c.*
+					FROM rocky_b_collectionrecord c ,
+					(
+					    SELECT @rn := IF(@borrowId = c.BORROW_ID and @tenderId = c.TENDER_ID and @firstTenderRealId = c.FIRST_TENDER_REAL_ID, @rn+1, 1) AS rownum,
+						   @borrowId := c.BORROW_ID,@tenderId := c.TENDER_ID,@firstTenderRealId := c.FIRST_TENDER_REAL_ID,c.id
+					    FROM rocky_b_collectionrecord c LEFT JOIN (
+					    	   /** 直通车待收最小还款日*/
+					       	   SELECT c.FIRST_TENDER_REAL_ID,MIN(REPAY_TIME) AS minRepayTime FROM rocky_b_collectionrecord c
+							   WHERE c.status=0
+							   AND c.USER_ID=#{userId}
+							   AND c.FIRST_TENDER_REAL_ID IS NOT NULL
+						 	   AND c.IS_FIRST_BORROW =1 
+							   <if test="firstTenderRealId != null">
+								    and c.FIRST_TENDER_REAL_ID = #{firstTenderRealId}
+							   </if>						 	   
+							   GROUP BY c.FIRST_TENDER_REAL_ID
+					   		 ) bc ON (c.FIRST_TENDER_REAL_ID = bc.FIRST_TENDER_REAL_ID),
+							 (SELECT @rn := 1, @borrowId := 0,@tenderId := 0,@firstTenderRealId := 0) X
+					    WHERE c.status=0
+					    AND c.USER_ID=#{userId}
+					    AND c.FIRST_TENDER_REAL_ID IS NOT NULL
+					    AND c.IS_FIRST_BORROW =1
+					    AND (bc.minRepayTime is null or CONCAT(DATE_ADD(FROM_UNIXTIME(bc.minRepayTime,'%Y-%m-%d'),INTERVAL -1 DAY),' 22:30:00') > STR_TO_DATE(NOW(),'%Y-%m-%d %H:%i:%S'))
+						<if test="firstTenderRealId != null">
+						    and c.FIRST_TENDER_REAL_ID = #{firstTenderRealId}
+						</if>					    
+					    ORDER BY c.FIRST_TENDER_REAL_ID,c.BORROW_ID,c.TENDER_ID,c.order
+					) tempc
+					WHERE 1=1
+					AND c.id=tempc.id
+					AND tempc.rownum=1
+				) t 
+				LEFT JOIN rocky_b_collectionrecord bc ON (bc.order=t.order-1 AND bc.BORROW_ID = t.BORROW_ID AND bc.TENDER_ID = t.TENDER_ID AND bc.user_id=t.user_id AND bc.FIRST_TENDER_REAL_ID = t.FIRST_TENDER_REAL_ID)
+			) re,rocky_borrow b
+			WHERE re.borrow_id=b.id
+			GROUP BY re.FIRST_TENDER_REAL_ID
+		) temp ON tr.id=temp.FIRST_TENDER_REAL_ID
+		where 1=1
+		AND tr.PARENT_ID IS NULL
+		<if test="firstTenderRealId != null">
+		    and tr.id = #{firstTenderRealId}
+		</if>
+		ORDER BY tr.ADDTIME DESC
+		
+  	</select>
+  	
+  	<!-- 根据直通车认购记录id得到关联借款的待收统计信息-->
+	<select id="queryFirstTransferBorrowTotal" parameterType="java.lang.Integer" resultType="com.dxjr.portal.first.vo.FirstTransferBorrowTotalVo" >
+			SELECT IFNULL(SUM(c.CAPITAL),0) as firstRepayCapital,
+			       IFNULL(SUM(c.INTEREST),0) as firstRepayInterest,
+			       COUNT(distinct BORROW_ID) as borrowCount
+			FROM rocky_b_collectionrecord c 
+			WHERE c.status=0
+			AND c.FIRST_TENDER_REAL_ID IS NOT NULL
+			AND c.IS_FIRST_BORROW =1
+			AND c.FIRST_TENDER_REAL_ID = #{firstTenderRealId}	
+  	</select>  
+  	
+  	<!-- 保存直通车转让信息 -->
+  	<insert id="saveFirstTransfer" parameterType="com.dxjr.base.entity.FirstTransfer">
+		INSERT INTO t_first_transfer ( 
+			FIRST_TENDER_REAL_ID, 	 FIRST_PERIODS,		FIRST_PERCEIVED_RATE,		TENDER_CAPITAL,		INTEREST, 
+			INTEREST_DIFF, 	         ACCOUNT,		    AWARDS,		                ACCOUNT_REAL,		COEF, 
+			MANAGE_FEE,   		INTEREST_MANAGE_FEE,	VALID_TIME,          		TRANSFER_NAME,		USER_ID, 
+			ADD_TIME, 			     END_TIME,	    	BID_PASSWORD,	     		STATUS,				REMARK, 
+			PLATFORM, 		 ACTUAL_INTEREST,		    AVG_CYCLE,		            AVG_RATE
+		)
+		VALUES	(
+		   #{firstTenderRealId},  	#{firstPeriods},	#{firstPerceivedRate},		#{tenderCapital},	#{interest},
+		   #{interestDiff},			#{account},		    #{awards},					#{accountReal},		#{coef},
+		   #{manageFee},	  #{interestManageFee},	    #{validTime},				#{transferName},	#{userId},
+		   #{addtime},				#{endTime},			#{bidPassword},				#{status},			#{remark},
+		   #{platform},		#{actualInterest},		    #{avgCycle},	            #{avgRate}
+		)
+		<selectKey resultType="java.lang.Integer" order="AFTER" keyProperty="id">  
+		  SELECT LAST_INSERT_ID() AS ID    
+	    </selectKey>
+	</insert>
+	
+	<!-- 查询直通车转让列表-总记录数 -->
+	<select id="queryFirstTransferCount" parameterType="com.dxjr.portal.first.vo.FirstTransferCnd" resultType="java.lang.Integer">
+		SELECT COUNT(FT.ID)
+		FROM T_FIRST_TRANSFER  FT
+		INNER JOIN t_first_tender_real r ON FT.FIRST_TENDER_REAL_ID = r.ID
+		<include refid="queryFirstTransfer_where" />
+		<if test=" beginTime != null and '' != beginTime">
+		 	AND R.ADDTIME >= #{beginTime} 
+		</if>
+		<if test=" endTime != null and '' != endTime">
+		 	AND R.ADDTIME <![CDATA[<= concat(#{endTime},' 23:59:59')]]>
+		</if>
+		<if test="lockedRecordYn != null and lockedRecordYn == 'yes'">
+			FOR UPDATE
+		</if>
+		
+	</select>
+
+	<!-- 查询直通车转让列表 -->
+	<select id="queryFirstTransfer" parameterType="com.dxjr.portal.first.vo.FirstTransferCnd" resultMap="firstTransferDetailResultMap">
+		SELECT 	
+			  TR.ORDERNUM,RM.USERNAME,
+			 <include refid="firstTransferColumn"/>,
+			 ROUND(FT.AWARDS*100/FT.ACCOUNT, 2) as awardApr
+		FROM   T_FIRST_TRANSFER FT
+		INNER JOIN t_first_tender_real TR ON TR.ID = FT.FIRST_TENDER_REAL_ID
+		LEFT JOIN ROCKY_MEMBER RM ON RM.ID = FT.USER_ID
+		<include refid="queryFirstTransfer_where" />
+		<if test="id != null">
+			AND FT.ID = #{id}
+		</if>
+		<!-- 判断排序方式  | 条件的为优先，后面的为默认和其次；-->
+		<if test="orderBy == null or orderBy == ''">
+			ORDER BY FT.ADD_TIME DESC
+		</if>
+		<if test="orderBy == 'accountReal'">
+			ORDER BY FT.ACCOUNT_REAL ${orderType}
+		</if>
+		<if test="orderBy == 'addTime'">
+			ORDER BY FT.ADD_TIME ${orderType}
+		</if>
+		<if test="orderBy == 'awardMoney'">
+			ORDER BY FT.AWARDS ${orderType}
+		</if>
+		<if test="orderBy == 'awardApr'">
+			ORDER BY ROUND(FT.AWARDS*100/FT.ACCOUNT, 2) ${orderType}
+		</if>
+		<if test="lockedRecordYn != null and lockedRecordYn == 'yes'">
+			FOR UPDATE
+		</if>	
+	</select>
+	
+	<!-- 查询直通车转让详细列表 -->
+	<select id="queryTransferById" parameterType="java.lang.Integer" resultMap="firstTransferDetailResultMap">
+		SELECT 
+		       FR.ORDERNUM,
+		       FR.FIRST_BORROW_ID,
+		       FR.USE_MONEY,
+		       RM.USERNAME,
+		       <include refid="firstTransferColumn"/>
+		FROM   T_FIRST_TRANSFER FT
+		       INNER JOIN T_FIRST_TENDER_REAL FR
+		         ON FR.ID = FT.FIRST_TENDER_REAL_ID
+		       LEFT JOIN ROCKY_MEMBER RM
+		         ON RM.ID = FT.USER_ID
+		WHERE  FT.ID = #{transferId}
+		
+	</select>
+
+	<!-- 根据条件分页查询我的账号下直通车转让信息的集合 -->
+	<select id="queryMyFirstTransferList" parameterType="com.dxjr.portal.first.vo.FirstTransferCnd" resultMap="myFirstTransferResultMap">
+		SELECT FT.ID,
+		       FT.ACCOUNT_REAL,
+		       FT.AWARDS,
+		       FT.MANAGE_FEE,
+		       FT.SUCCESS_TIME,
+		       FT.ADD_TIME,
+		       R.ADDTIME		  AS firstOpenTime,
+		       R.ORDERNUM
+		FROM   T_FIRST_TRANSFER FT,t_first_tender_real r
+		<include refid="queryFirstTransfer_where" />
+		AND FT.FIRST_TENDER_REAL_ID = R.ID
+		<if test=" beginTime != null and '' != beginTime">
+		 	AND R.ADDTIME >= #{beginTime} 
+		</if>
+		<if test=" endTime != null and '' != endTime">
+		 	AND R.ADDTIME <![CDATA[<= concat(#{endTime},' 23:59:59')]]>
+		</if>
+		<choose>
+			<when test="transferStatus != null and transferStatus == 4 ">
+				ORDER BY FT.SUCCESS_TIME DESC
+			</when>
+			<when test="transferStatus != null and transferStatus == 2 ">
+				ORDER BY FT.ADD_TIME DESC
+			</when>
+			<otherwise>
+				ORDER BY R.ADDTIME DESC
+			</otherwise>
+		</choose>
+		
+	</select>
+	
+	
+	<!-- 根据条件分页查询我的账号下直通车已转让信息的集合 -->
+	<select id="queryMyFirstTransferedList" parameterType="com.dxjr.portal.first.vo.FirstTransferCnd" resultMap="myFirstTransferResultMap">
+		SELECT FT.ID,
+		       FT.ACCOUNT_REAL,
+		       FT.AWARDS,
+		       FT.MANAGE_FEE,
+		       FT.SUCCESS_TIME,
+		       R.ADDTIME		  AS firstOpenTime,
+		       R.ORDERNUM
+		FROM   T_FIRST_TRANSFER FT
+		       INNER JOIN T_FIRST_SUBSCRIBE FS
+		         ON FS.FIRST_TRANSFER_ID = FT.ID
+		       INNER JOIN T_FIRST_TENDER_REAL R
+		         ON FS.NEW_FIRST_TENDER_REAL_ID = R.ID
+		WHERE FS.STATUS = 3
+		<if test=" transferStatus != null">
+			AND FT.STATUS = #{transferStatus}
+		</if>
+		<if test="userId != null">
+			AND FS.USER_ID = #{userId}
+		</if>
+		<if test=" beginTime != null and '' != beginTime">
+		 	AND R.ADDTIME >= #{beginTime} 
+		</if>
+		<if test=" endTime != null and '' != endTime">
+		 	AND R.ADDTIME <![CDATA[<= concat(#{endTime},' 23:59:59')]]>
+		</if>
+		ORDER BY FT.SUCCESS_TIME DESC
+		
+	</select>
+	
+	<!-- 根据条件分页查询我的账号下直通车已转让信息的集合 -->
+	<select id="queryMyFirstTransferedCount" parameterType="com.dxjr.portal.first.vo.FirstTransferCnd" resultType="java.lang.Integer" >
+		SELECT COUNT(FT.ID)
+		FROM   T_FIRST_TRANSFER FT
+		       INNER JOIN T_FIRST_SUBSCRIBE FS
+		         ON FS.FIRST_TRANSFER_ID = FT.ID
+		       INNER JOIN T_FIRST_TENDER_REAL R
+		         ON FS.NEW_FIRST_TENDER_REAL_ID = R.ID
+		WHERE FS.STATUS = 3
+		<if test=" transferStatus != null">
+			AND FT.STATUS = #{transferStatus}
+		</if>
+		<if test="userId != null">
+			AND FS.USER_ID = #{userId}
+		</if>
+		<if test=" beginTime != null and '' != beginTime">
+		 	AND R.ADDTIME >= #{beginTime} 
+		</if>
+		<if test=" endTime != null and '' != endTime">
+		 	AND R.ADDTIME <![CDATA[<= concat(#{endTime},' 23:59:59')]]>
+		</if>
+		
+	</select>
+	
+   <!-- 更新直通车转让的状态 -->		
+   <update id="updateFirstTransferStatus" parameterType="com.dxjr.base.entity.FirstTransfer" >
+	    update t_first_transfer
+	    <set >
+	      <if test="status != null" >
+	         STATUS = #{status},
+	      </if>
+	      <if test="lastUpdateName != null" >
+	         LAST_UPDATE_NAME = #{lastUpdateName},
+	      </if>
+	      LAST_UPDATE_TIME = CURRENT_TIMESTAMP,
+	    </set>
+	    where ID = #{id}
+  </update>
+  
+  <!-- 根据条件分页查询我的账号下直通车认购信息的集合 -->
+	<select id="queryMyFirstTransferSubscribeList" parameterType="com.dxjr.portal.first.vo.FirstTransferCnd" resultMap="myFirstTransferResultMap">
+		SELECT R.ADDTIME AS firstOpenTime,
+		       R.ORDERNUM,
+		       M.USERNAME,MS.USERNAME AS SUBSCRIBE_USERNAME,
+		       <include refid="firstTransferColumn"/>
+		FROM   T_FIRST_TRANSFER FT
+			   INNER JOIN T_FIRST_SUBSCRIBE FS
+		         ON FS.FIRST_TRANSFER_ID = FT.ID
+		       INNER JOIN T_FIRST_TENDER_REAL R
+		         ON FS.NEW_FIRST_TENDER_REAL_ID = R.ID
+		       INNER JOIN ROCKY_MEMBER M ON M.ID = FT.USER_ID
+		       INNER JOIN ROCKY_MEMBER MS ON MS.ID = FS.USER_ID
+		WHERE FS.STATUS = 3
+		<if test=" transferStatus != null">
+			AND FT.STATUS = #{transferStatus}
+		</if>
+		<if test="userId != null">
+			AND FS.USER_ID = #{userId}
+		</if>
+		<if test=" beginTime != null and '' != beginTime">
+		 	AND R.ADDTIME >= #{beginTime} 
+		</if>
+		<if test=" endTime != null and '' != endTime">
+		 	AND R.ADDTIME <![CDATA[<= concat(#{endTime},' 23:59:59')]]>
+		</if>
+		ORDER BY FT.SUCCESS_TIME DESC
+		
+	</select>
+	
+	<!-- 根据条件分页查询我的账号下直通车认购信息件数 -->
+	<select id="queryMyFirstTransferSubscribeCount" parameterType="com.dxjr.portal.first.vo.FirstTransferCnd" resultType="java.lang.Integer">
+		SELECT COUNT(FT.ID)
+		FROM   T_FIRST_TRANSFER FT
+		       INNER JOIN T_FIRST_SUBSCRIBE FS
+		         ON FS.FIRST_TRANSFER_ID = FT.ID
+		WHERE FS.STATUS = 3
+		<if test=" transferStatus != null">
+			AND FT.STATUS = #{transferStatus}
+		</if>
+		<if test="userId != null">
+			AND FS.USER_ID = #{userId}
+		</if>
+		<if test=" beginTime != null and '' != beginTime">
+		 	AND R.ADDTIME >= #{beginTime} 
+		</if>
+		<if test=" endTime != null and '' != endTime">
+		 	AND R.ADDTIME <![CDATA[<= concat(#{endTime},' 23:59:59')]]>
+		</if>
+	</select>
+	
+	<!-- 根据待收ID查询直通车转让信息  自己查看协议显示全名称 -->
+	<select id="queryMyFirstTransferByCollectionId" parameterType="com.dxjr.portal.first.vo.FirstTransferCnd" resultMap ="firstTransferDetailResultMap">
+		SELECT 
+			C.USER_ID,C.BORROW_ID,M.USERNAME,MS.USERNAME AS SUBSCRIBE_USERNAME,C.FIRST_TENDER_REAL_ID AS TENDER_REAL_ID,FS.USER_ID as subUserId,
+			<include refid="firstTransferColumn"/>
+		FROM   ROCKY_B_COLLECTIONRECORD C
+			   INNER JOIN T_FIRST_SUBSCRIBE FS
+		         ON FS.NEW_FIRST_TENDER_REAL_ID = c.FIRST_TENDER_REAL_ID
+		            AND FS.STATUS = 3
+		       INNER JOIN T_FIRST_TENDER_REAL R
+		         ON R.ID = FS.NEW_FIRST_TENDER_REAL_ID
+		       INNER JOIN T_FIRST_TRANSFER FT
+		         ON FT.FIRST_TENDER_REAL_ID = FS.OLD_FIRST_TENDER_REAL_ID AND FT.`STATUS` = 4
+		       INNER JOIN ROCKY_MEMBER M ON M.ID = FT.USER_ID
+		       INNER JOIN ROCKY_MEMBER MS ON MS.ID = FS.USER_ID
+		WHERE  C.ID = #{collectionId}
+	</select>
+	
+	<!-- 根据认购记录ID查询直通车转让信息 -->
+	<select id="queryMyFirstTransferByRealId" parameterType="com.dxjr.portal.first.vo.FirstTransferCnd" resultMap ="firstTransferDetailResultMap">
+		SELECT M.USERNAME,MS.USERNAME AS SUBSCRIBE_USERNAME,
+			 FR.ADDTIME AS REAL_ADDTIME,
+			 FR.ORDERNUM AS REAL_ORDERNUM,
+			 FR.ACCOUNT AS REAL_ACCOUNT,
+			 FR.USE_MONEY AS REAL_USE_MONEY,
+			<include refid="firstTransferColumn"/>
+		FROM   T_FIRST_TRANSFER FT
+			   INNER JOIN T_FIRST_SUBSCRIBE FS
+			   	ON FT.FIRST_TENDER_REAL_ID = FS.OLD_FIRST_TENDER_REAL_ID AND FS.STATUS = 3
+			   INNER JOIN T_FIRST_TENDER_REAL FR
+		         ON FR.ID = FS.NEW_FIRST_TENDER_REAL_ID
+			   INNER JOIN ROCKY_MEMBER M ON M.ID = FT.USER_ID
+		       INNER JOIN ROCKY_MEMBER MS ON MS.ID = FS.USER_ID
+		WHERE  FT.`STATUS` = 4 AND FS.NEW_FIRST_TENDER_REAL_ID = #{firstTenderRealId}
+	</select>
+	
+	<!-- 根据id查询直通车转让记录并锁定 -->
+	<select id="selectFirstTransferByIdForUpdate" parameterType="java.lang.Integer" resultMap="firstTransferDetailResultMap">
+		SELECT 	
+			 <include refid="firstTransferColumn"/> 
+		FROM T_FIRST_TRANSFER FT
+		where id = #{id} FOR UPDATE
+	</select>
+</mapper>

@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.dxjr.portal.account.mapper.AccountDetailMapper">
+	<!-- 返回的结果集 -->
+	<resultMap type="com.dxjr.portal.account.vo.InvestVo" id="InvestResultMap">
+		<id property="borrowId" column="borrowId" />
+		<result property="borrowName" column="borrowName" />
+		<result property="borrowUserid" column="borrowUserid" />
+		<result property="borrowUsername" column="borrowUsername" />
+		<result property="tenderAccount" column="tenderAccount" />
+		<result property="succcessTime" column="succcessTime" />
+		<result property="tenderType" column="TENDER_TYPE" />
+		<result property="contractNo" column="CONTRACT_NO" />
+		<result property="locklimit" column="LOCK_LIMIT" />
+		<result property="tenderFixType" column="TENDER_TYPE" />
+		<result property="tenderFixAddTime" column="addtime" />
+		<result property="fixborrowId" column="fixBorrowId" />
+	</resultMap>
+	<resultMap type="com.dxjr.portal.account.vo.BbsItemsVo" id="queryBbsItemsListRM">
+		<id property="id" column="ID" />
+		<result property="title" column="TITLE" />
+		<result property="clickNum" column="CLICKNUM" />
+		<result property="createTime" column="CREATETIME" />
+		<result property="columnId" column="COLUMNID" />
+		<result property="status" column="STATUS" />
+		<result property="isScreen" column="ISSCREEN" />
+		<result property="isDelete" column="ISDELETE" />
+		<result property="noteCount" column="noteCount" />
+		<result property="columnName" column="columnName" />
+		<result property="userName" column="userName" />
+		<result property="userIdMD5" column="userIdMD5" />
+	</resultMap>
+
+
+
+	<select id="countInvestVo" parameterType="java.util.Map"
+		resultType="java.lang.Integer">
+		SELECT count(1) FROM (
+		SELECT
+		t.TENDER_TYPE,
+		b.NAME AS borrowName,
+		b.ID AS borrowId,
+		b.USER_ID AS borrowUserid,
+		m.USERNAME AS borrowUsername,
+		t.ACCOUNT AS tenderAccount,
+		FROM_UNIXTIME(t.ADDTIME) AS succcessTime
+		FROM rocky_borrow AS b,
+		rocky_member AS m,
+		rocky_b_tenderrecord AS t
+		WHERE b.USER_ID = m.ID
+		AND t.BORROW_ID = b.ID
+		AND (b.STATUS = 4 OR b.STATUS = 5 OR b.STATUS = 42)
+		AND (b.APPRSTATUS IN (3, 4)
+		OR (b.APPRSTATUS = 2
+		AND b.TIMING_BORROW_TIME
+		IS NOT NULL)) AND t.PARENT_ID IS NULL
+		<if test="userId != null and userId != ''">
+			AND t.USER_ID = #{userId}
+		</if>
+		UNION ALL
+		SELECT
+		t.TENDER_TYPE,
+		b.NAME AS borrowName,
+		b.ID AS borrowId,
+		b.USER_ID AS borrowUserid,
+		m.USERNAME AS borrowUsername,
+		rbs.ACCOUNT AS tenderAccount,
+		FROM_UNIXTIME(t.ADDTIME) AS succcessTime
+		FROM rocky_borrow AS b,
+		rocky_member AS m,
+		rocky_b_tenderrecord AS t,
+		rocky_b_subscribe rbs
+		WHERE b.USER_ID = m.ID
+		AND rbs.TENDER_ID = t.ID
+		AND rbs.STATUS = 3
+		AND t.BORROW_ID = b.ID
+		AND (b.STATUS = 4 OR b.STATUS = 5 OR b.STATUS = 42)
+		AND (b.APPRSTATUS IN (3, 4)
+		OR (b.APPRSTATUS = 2
+		AND b.TIMING_BORROW_TIME
+		IS NOT NULL)) AND t.PARENT_ID IS NOT NULL
+		<if test="userId != null and userId != ''">
+			AND t.USER_ID = #{userId}
+		</if>
+		) AS temp
+		order by succcessTime desc
+	</select>
+
+	<select id="queryInvestVoList" parameterType="java.util.Map"
+		resultMap="InvestResultMap">
+		SELECT * FROM (
+		SELECT
+		t.TENDER_TYPE,
+		b.NAME AS borrowName,
+		b.ID AS borrowId,
+		b.USER_ID AS borrowUserid,
+		m.USERNAME AS borrowUsername,
+		m.USERIDMD5 AS userIdMD5,
+		t.ACCOUNT AS tenderAccount,
+		FROM_UNIXTIME(t.ADDTIME) AS succcessTime
+		FROM rocky_borrow AS b,
+		rocky_member AS m,
+		rocky_b_tenderrecord AS t
+		WHERE b.USER_ID = m.ID
+		AND t.BORROW_ID = b.ID
+		AND (b.STATUS = 4 OR b.STATUS = 5 OR b.STATUS = 42)
+		AND (b.APPRSTATUS IN (3, 4)
+		OR (b.APPRSTATUS = 2
+		AND b.TIMING_BORROW_TIME
+		IS NOT NULL)) AND t.PARENT_ID IS NULL
+		<if test="userId != null and userId != ''">
+			AND t.USER_ID = #{userId}
+		</if>
+		UNION ALL
+		SELECT
+		t.TENDER_TYPE,
+		b.NAME AS borrowName,
+		b.ID AS borrowId,
+		b.USER_ID AS borrowUserid,
+		m.USERNAME AS borrowUsername,
+		m.USERIDMD5 AS userIdMD5,
+		rbs.ACCOUNT AS tenderAccount,
+		FROM_UNIXTIME(t.ADDTIME) AS succcessTime
+		FROM rocky_borrow AS b,
+		rocky_member AS m,
+		rocky_b_tenderrecord AS t,
+		rocky_b_subscribe rbs
+		WHERE b.USER_ID = m.ID
+		AND rbs.TENDER_ID = t.ID
+		AND rbs.STATUS = 3
+		AND t.BORROW_ID = b.ID
+		AND (b.STATUS = 4 OR b.STATUS = 5 OR b.STATUS = 42)
+		AND (b.APPRSTATUS IN (3, 4)
+		OR (b.APPRSTATUS = 2
+		AND b.TIMING_BORROW_TIME
+		IS NOT NULL)) AND t.PARENT_ID IS NOT NULL
+		<if test="userId != null and userId != ''">
+			AND t.USER_ID = #{userId}
+		</if>
+		) AS temp
+		order by succcessTime desc
+	</select>
+
+	<!-- 是否管理员 -->
+	<select id="isCurrentLookerhasPower" parameterType="java.lang.Integer"
+		resultType="java.lang.Integer">
+		SELECT COUNT(*) FROM rocky_member rm INNER JOIN t_bbs_user_group tbug
+		ON rm.ID = tbug.USER_ID
+		INNER JOIN t_bbs_usergroup tbu
+		ON tbug.GROUP_ID =tbu.ID
+		WHERE tbu.STATUS = 0
+		AND tbu.ID = 1
+		AND rm.ID = #{userId}
+	</select>
+
+	<!-- 查询用户发帖列表 账户详情 -->
+	<select id="queryBbsItemsList" resultMap="queryBbsItemsListRM"
+		parameterType="java.util.Map">
+		select
+		i.ID,
+		i.TITLE,
+		i.CLICKNUM,
+		i.CREATETIME,
+		i.COLUMNID,
+		i.STATUS,
+		i.ISSCREEN,
+		i.ISDELETE,
+		(select count(*) from rocky_bbs_notes n where n.ITEMID = i.ID) noteCount,
+		(select a.NAME from rocky_bbs_columns a where a.ID = i.COLUMNID) as
+		columnName,
+		(select m.USERNAME from rocky_member m where m.ID = i.OWNER) userName,
+		(select USERIDMD5 from rocky_member where id=i.OWNER limit 1 ) as userIdMD5
+		from rocky_bbs_items i
+
+		where i.OWNER = #{userId}
+
+		<choose>
+			<when test="isSearchAll != null">
+				and i.STATUS = 0
+			</when>
+			<otherwise>
+				and i.STATUS = 0
+				and i.ISDELETE = 0
+			</otherwise>
+		</choose>
+		order by i.CREATETIME desc
+	</select>
+
+	<!-- 统计发帖数量 -->
+	<select id="countBbsItemsList" resultType="java.lang.Integer"
+		parameterType="java.util.Map">
+		select
+		count(*)
+		from rocky_bbs_items i
+
+		where i.OWNER = #{userId}
+		<choose>
+			<when test="isSearchAll != null">
+				and i.STATUS = 0
+			</when>
+			<otherwise>
+				and i.STATUS = 0
+				and i.ISDELETE = 0
+			</otherwise>
+		</choose>
+		order by i.CREATETIME desc
+	</select>
+	<!-- 查询人加入中和收益中定期宝 -->
+ <select id="queryFixVoList" parameterType="java.util.Map" resultMap="InvestResultMap">
+	SELECT
+	fixBorrow.ID as fixBorrowId,fixBorrow.CONTRACT_NO,fixBorrow.LOCK_LIMIT,
+	detail.TENDER_TYPE,detail.ADDTIME,fixBorrow.PUBLISH_TIME,detail.ACCOUNT as tenderAccount
+	from t_fix_borrow fixBorrow LEFT JOIN
+	(SELECT TENDER_TYPE,ACCOUNT,ADDTIME,USER_ID,fix_borrow_id,STATUS from
+	t_fix_tender_detail b 
+	<if test="userId != null and userId != ''">
+	  where user_id=#{userId}
+	</if>
+	  )
+	detail on (fixBorrow.id = detail.fix_borrow_id)
+	where  detail.STATUS in(0,1,3) 
+	<if test="userId != null and userId != ''">
+	   and detail.USER_ID=#{userId} 
+	</if>
+	order by detail.addtime DESC
+</select>	
+<!-- 查询人加入中和收益中定期宝总数 -->
+ <select id="queryFixVoCount" parameterType="java.util.Map" resultType="java.lang.Integer">
+	SELECT count(1)
+	from t_fix_borrow fixBorrow LEFT JOIN
+	(SELECT TENDER_TYPE,ADDTIME,USER_ID,fix_borrow_id,STATUS from
+	t_fix_tender_detail b 
+	<if test="userId != null and userId != ''">
+	  where user_id=#{userId}
+	</if>
+	  )
+	detail on (fixBorrow.id = detail.fix_borrow_id)
+	where  detail.STATUS in(0,1,3) 
+	<if test="userId != null and userId != ''">
+	   and detail.USER_ID=#{userId} 
+	</if>
+</select>	
+</mapper>  

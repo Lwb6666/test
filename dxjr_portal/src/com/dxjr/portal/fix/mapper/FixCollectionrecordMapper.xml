@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.dxjr.portal.fix.mapper.FixCollectionrecordMapper">
+	<resultMap id="fixCollectionrecordMap" type="com.dxjr.base.entity.FixCollectionrecord">
+		<result property="id" column="ID" />
+		<result property="userId" column="USER_ID" />
+		<result property="fixTenderRealId" column="FIX_TENDER_REAL_ID" />
+		<result property="status" column="STATUS" />
+		<result property="repayTime" column="REPAY_YESTIME" />
+		<result property="repayYestime" column="REPAY_TIME" />
+		<result property="repayAccount" column="REPAY_ACCOUNT" />
+		<result property="repayYesaccount" column="REPAY_YESACCOUNT" />
+		<result property="interest" column="INTEREST" />
+		<result property="capital" column="CAPITAL" />
+		<result property="lateDays" column="LATE_DAYS" />
+		<result property="lateInterest" column="LATE_INTEREST" />
+		<result property="addTime" column="ADDTIME" />
+		<result property="addip" column="ADDIP" />
+	</resultMap>
+
+<!-- 新增投资人待收记录 -->
+<insert id="insertFixCollectionrecord" parameterType="com.dxjr.base.entity.FixCollectionrecord">
+		INSERT INTO t_fix_collectionrecord ( 
+		FIX_BORROW_ID,
+		USER_ID,
+		FIX_TENDER_REAL_ID,
+		STATUS,
+		REPAY_TIME,
+		REPAY_ACCOUNT,
+		INTEREST,
+		CAPITAL,
+		ADDTIME,
+		ADDIP
+		) VALUES (
+        #{fixBorrowId},
+        #{userId},
+        #{fixTenderRealId},
+        #{status},
+        #{repayTime},
+        #{repayAccount},
+        #{interest},
+        #{capital},
+        now(),
+        #{addip}
+		)
+	<selectKey resultType="java.lang.Integer" order="AFTER" keyProperty="id">  
+      	    SELECT LAST_INSERT_ID() AS ID    
+   	</selectKey>	
+</insert>
+
+	<select id="getFixCollectionrecordByTenderRealId" parameterType="java.lang.Integer" resultType="java.math.BigDecimal">
+		SELECT IFNULL(SUM(INTEREST), 0) FROM t_fix_collectionrecord WHERE FIX_TENDER_REAL_ID = #{id} AND `STATUS` = 0;
+	</select>
+</mapper>	

@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dxjr.portal.electronbill.mapper.AccountStatementMapper" >
+
+	<resultMap id="BaseResultMap" type="com.dxjr.portal.electronbill.vo.AccountStatement" >
+		<id column="id" property="id" jdbcType="INTEGER" />
+		<result column="user_id" property="userId" jdbcType="INTEGER" />
+		<result column="year" property="year" jdbcType="INTEGER" />
+		<result column="month" property="month" jdbcType="TINYINT" />
+		<result column="interst" property="interst" jdbcType="DECIMAL" />
+		<result column="total_interst" property="totalInterst" jdbcType="DECIMAL" />
+		<result column="late_interest" property="lateInterest" jdbcType="DECIMAL" />
+		<result column="award_money" property="awardMoney" jdbcType="DECIMAL" />
+		<result column="stock_money" property="stockMoney" jdbcType="DECIMAL" />
+		<result column="transfer_diff" property="transferDiff" jdbcType="DECIMAL" />
+		<result column="other_total_income" property="otherTotalIncome" jdbcType="DECIMAL" />
+		<result column="total_income" property="totalIncome" jdbcType="DECIMAL" />
+		<result column="interest_repay" property="interestRepay" jdbcType="DECIMAL" />
+		<result column="interest_cost" property="interestCost" jdbcType="DECIMAL" />
+		<result column="late_interest_repay" property="lateInterestRepay" jdbcType="DECIMAL" />
+		<result column="recharge_fee" property="rechargeFee" jdbcType="DECIMAL" />
+		<result column="cash_cost" property="cashCost" jdbcType="DECIMAL" />
+		<result column="vip_cost" property="vipCost" jdbcType="DECIMAL" />
+		<result column="borrow_manage_fee" property="borrowManageFee" jdbcType="DECIMAL" />
+		<result column="draw_deduct_fee" property="drawDeductFee" jdbcType="DECIMAL" />
+		<result column="transfer_manage_fee" property="transferManageFee" jdbcType="DECIMAL" />
+		<result column="total_expenditure" property="totalExpenditure" jdbcType="DECIMAL" />
+		<result column="net_income" property="netIncome" jdbcType="DECIMAL" />
+		<result column="tender_count" property="tenderCount" jdbcType="INTEGER" />
+		<result column="avg_apr" property="avgApr" jdbcType="DECIMAL" />
+		<result column="tender_account" property="tenderAccount" jdbcType="DECIMAL" />
+		<result column="total_tender_account" property="totalTenderAccount" jdbcType="DECIMAL" />
+		<result column="tender_rate" property="tenderRate" jdbcType="DECIMAL" />
+		<result column="bbs_point" property="bbsPoint" jdbcType="INTEGER" />
+		<result column="bbs_point_money" property="bbsPointMoney" jdbcType="DECIMAL" />
+		<result column="bbs_items" property="bbsItems" jdbcType="INTEGER" />
+		<result column="bbs_notes" property="bbsNotes" jdbcType="INTEGER" />
+		<result column="bbs_be_notes" property="bbsBeNotes" jdbcType="INTEGER" />
+		<result column="bbs_category_items" property="bbsCategoryItems" jdbcType="INTEGER" />
+		<result column="add_by" property="addBy" jdbcType="INTEGER" />
+		<result column="add_time" property="addTime" jdbcType="TIMESTAMP" />
+		<result column="remark" property="remark" jdbcType="VARCHAR" />
+		<result column="fix_interest" property="fixInterest" jdbcType="DECIMAL" />
+	</resultMap>
+	
+	<sql id="Base_Column_List" >
+		id, user_id, year, month, interst, total_interst, late_interest, award_money, stock_money, 
+		transfer_diff, other_total_income, total_income, interest_repay, interest_cost, late_interest_repay, 
+		recharge_fee, cash_cost, vip_cost, borrow_manage_fee, draw_deduct_fee, transfer_manage_fee, 
+		total_expenditure, net_income, tender_count, avg_apr, tender_account, total_tender_account, 
+		tender_rate, bbs_point, bbs_point_money, bbs_items, bbs_notes, 
+		bbs_be_notes, bbs_category_items,fix_interest
+	</sql>
+	
+	<select id="selectByUserId" parameterType="java.util.Map" resultMap="BaseResultMap">
+		select 
+		<include refid="Base_Column_List" />
+		from t_account_statement
+		where user_id = #{userId}
+		  and `year` = #{year}
+		  and `month` = #{month}
+	</select>
+	
+	<select id="selectMonthlyInterstList" parameterType="java.util.Map" resultType="com.dxjr.portal.electronbill.vo.MonthlyInterst">
+		select t1.`month`, ifnull(t2.interst, 0) as interst from (
+			select date_format((date(concat(#{year}, '-', #{month}, '-01'))- interval (@rn := @rn + 1) - 1 month), '%Y-%m') 'month'
+			from rocky_b_collectionrecord, (select @rn := 0) x limit 12
+		) t1
+		left join (
+			select
+				date_format(if((t.IS_VIP = 1 and c.ADVANCETIME is not null), c.ADVANCETIME, from_unixtime(c.REPAY_YESTIME, '%Y-%m-%d %H:%i:%S')), '%Y-%m') 'month',
+				sum(c.REPAY_YESACCOUNT - c.CAPITAL) interst
+			from rocky_b_collectionrecord c, rocky_b_tenderrecord t, rocky_borrow b
+			where c.TENDER_ID = t.ID
+			and t.BORROW_ID = b.ID
+			and t.USER_ID = #{userId}
+			and t.`STATUS` in (-2,1,2)
+			and c.`STATUS` in (1,2,3)
+			group by date_format(if((t.IS_VIP = 1 and c.ADVANCETIME is not null), c.ADVANCETIME, from_unixtime(c.REPAY_YESTIME, '%Y-%m-%d %H:%i:%S')), '%Y-%m')
+		) t2 on t1.`month` = t2.`month`
+		where t1.`month` >= '2015-01'
+		order by t1.`month` asc
+	</select>
+	
+	<select id="insert" parameterType="java.util.Map" statementType="CALLABLE">  
+		{call insert_account_statement (
+			#{userId,mode=IN,jdbcType=INTEGER},
+			#{year,mode=IN,jdbcType=INTEGER},
+			#{month,mode=IN,jdbcType=INTEGER},
+			#{msg,mode=OUT,jdbcType=VARCHAR}
+		)}
+	</select>
+</mapper>

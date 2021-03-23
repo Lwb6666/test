@@ -1,0 +1,857 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.dxjr.portal.tzjinterface.mapper.InvitationBorrowMapper">
+	<!-- 返回的结果集 -->
+	<resultMap type="com.dxjr.portal.tzjinterface.vo.InvitationBorrowVo" id="InvitationBorrowResultMap">
+		<result property="platId" 		  column="platId" />
+		<result property="bid"            column="bid" />
+		<result property="type"	          column="type" />
+		<result property="isSale"	      column="isSale" />
+		<result property="countDownTime"  column="countDownTime" />
+		<result property="title" 		  column="title" />
+		<result property="desc" 		  column="desc" />
+		<result property="name" 		  column="name" />
+		<result property="amount" 		  column="amount" />
+		<result property="period"	      column="period" />
+		<result property="periodUnit"	  column="periodUnit" />			
+		<result property="rate"	          column="rate" />	
+		<result property="reward"	      column="reward" />	
+		<result property="returnType"	  column="returnType" />
+		<result property="progress"	      column="progress" />
+		<result property="bidUrl"	      column="bidUrl" />	
+		<result property="is_circulation" column="is_circulation" />			
+	</resultMap>
+	
+	<!-- 投标记录结果集 -->
+	<resultMap id="TenderRecordAggVo"  	type="com.dxjr.portal.tzjinterface.vo.TenderRecordAggVo">
+	    <result property="bid" column="bid" />
+		<association property="subject" javaType="com.dxjr.portal.tzjinterface.vo.BorrowVo">			
+			<result property="title" column="title" />
+			<result property="rate" column="rate" />
+			<result property="period" column="period" />
+			<result property="periodUnit" column="periodUnit" />
+			<result property="name" column="name" />
+			<result property="time" column="time" />
+			<result property="fullTime" column="fullTime" />
+			<result property="amount" column="amount" />
+			<result property="desc" column="desc" />
+			<result property="detail" column="detail" />
+			<result property="returnType" column="returnType" />
+			<result property="returnAssue" column="returnAssue" />
+			<result property="bid" column="bid" />
+			<result property="type" column="type" />
+			<result property="status" column="status" />
+			<result property="isCirculation" column="isCirculation" />
+		</association>
+		<collection property="bidlist" ofType="com.dxjr.portal.tzjinterface.vo.TenderRecordVo">			
+			<result property="username" column="username" />
+			<result property="usernamep" column="usernamep" />
+			<result property="oid" column="oid" />
+			<result property="bidAmount" column="bidAmount" />
+			<result property="amount" column="amount2" />
+			<result property="type" column="tenderType" />
+			<result property="time" column="time1" />
+			<result property="tId" column="TID" />
+			<result property="income" column="income" />
+			<result property="tenderUserId" column="tenderUserId" />
+			<result property="arp" column="arp"/>
+			<result property="timeLimit" column="timeLimit"/>
+			<result property="style" column="style"/>
+			<result property="isTransfer" column="isTransfer"/>
+		</collection>			 
+	</resultMap>
+	
+	<!-- 标的状态结果集 -->
+	<resultMap id="BorrowStateAggResultMap" type="com.dxjr.portal.tzjinterface.vo.BorrowStateChangedVo">		
+		<result property="bid" column="bid" />
+		<result property="status" column="status" />
+	</resultMap>
+			
+	
+  	<!-- 根据条件查询记录集合  CONCAT('http://www.dxjr.com/toubiao/', rb.id, '.html') AS bidurl, -->
+	<select id="queryBorrowList" resultMap="InvitationBorrowResultMap" >
+		                    SELECT		                    
+		                    	  'gcjr' AS platId,
+                                  rb.id AS bid,
+                                  CASE
+                                      WHEN rb.AREA_TYPE = 1 THEN '1'									 
+                                      ELSE '5'
+                                  END AS type,
+                                  CASE
+                                      WHEN NOW()<![CDATA[>]]>rb.PUBLISH_TIME THEN '0'
+                                      ELSE '1'
+                                  END AS isSale,
+								  IFNULL(CASE
+                                      WHEN TIMESTAMPDIFF(SECOND,NOW(),rb.PUBLISH_TIME)<![CDATA[<]]>0 THEN 0
+                                      ELSE TIMESTAMPDIFF(SECOND,NOW(),rb.PUBLISH_TIME)
+                                  END,0) AS countDownTime,
+                                  rb.NAME AS title,
+								  rb.CONTENT AS `desc`,
+								  rra.REALNAME AS `name`,
+                                  rb.ACCOUNT AS amount,
+                                  rb.TIME_LIMIT AS period,
+                                  CASE
+                                      WHEN rb.BORROWTYPE = 4 THEN '秒还'
+                                      WHEN rb.BORROWTYPE <![CDATA[<>]]> 4 AND rb.STYLE <![CDATA[<>]]> 4 THEN '月'
+                                      WHEN rb.BORROWTYPE <![CDATA[<>]]> 4 AND rb.STYLE = 4 THEN '天' ELSE ' '
+                                  END AS periodUnit,                                  
+                                  rb.APR AS rate,
+                                  case 
+                                      WHEN rb.AWARD = 0 THEN '0'
+                                      ELSE CONCAT('按投标金额比例奖励,比例为:  ',FUNDS) END AS reward,
+								  CASE
+                                      WHEN rb.STYLE = 0 THEN '没有限制'
+                                      WHEN rb.STYLE = 1 THEN '等额本息'
+                                      WHEN rb.STYLE = 2 THEN '按月付息到期还本'
+                                      WHEN rb.STYLE = 3 THEN '到期还本付息' ELSE '按天还款'
+                                  END AS returnType,
+								  ROUND(rb.ACCOUNT_YES / rb.ACCOUNT* 100, 2)  progress,
+                                  CONCAT('http://www.dxjr.com/toubiao/', rb.id, '.html') AS bidUrl,
+                                  '0' AS is_circulation		                    	  
+                                FROM rocky_borrow rb
+                                  LEFT JOIN rocky_member rm ON rb.user_id = rm.id                                    
+                                  LEFT JOIN rocky_b_repaymentrecord re  ON (rb.id = re.BORROW_ID AND rb.STATUS <![CDATA[>=]]> 4) 
+                                  LEFT JOIN rocky_realname_appro rra ON rb.USER_ID=rra.USER_ID                                                            
+                                WHERE rb.STATUS IN (1, 2, 4, 5, 42)
+                                AND rb.IS_AUTOTENDER = 0
+                                AND rb.BORROWTYPE != 4
+                                AND ((rb.APPRSTATUS <![CDATA[>]]> 2) OR (rb.APPRSTATUS = 2 AND FROM_UNIXTIME(TIMING_BORROW_TIME, '%Y-%m-%d %H:%i:00') <![CDATA[>=]]> NOW()))
+                                AND rb.`STATUS` = 2                            
+								
+							UNION ALL
+								
+								SELECT		                    
+		                    	  'gcjr' AS platId,
+                                  fix.id AS bid,
+                                  CASE
+                                      WHEN fix.AREA_TYPE = 1 THEN '1'									 
+                                      ELSE '5'
+                                  END AS type,
+                                  CASE
+                                      WHEN NOW()<![CDATA[>]]>fix.PUBLISH_TIME THEN '0'
+                                      ELSE '1'
+                                  END AS isSale,
+								  CASE
+                                      WHEN TIMESTAMPDIFF(SECOND,NOW(),fix.PUBLISH_TIME)<![CDATA[<]]>0 THEN 0
+                                      ELSE TIMESTAMPDIFF(SECOND,NOW(),fix.PUBLISH_TIME)
+                                  END AS countDownTime,								   
+                                  CONCAT('定期宝', fix.CONTRACT_NO) AS title,
+								  fix.REMARK AS `desc`,
+								  '管理员' AS `name`,
+                                  fix.PLAN_ACCOUNT AS amount,
+                                  fix.LOCK_LIMIT AS period,
+                                  '月' AS periodUnit,                                  
+                                  fix.APR AS rate,
+                                  '0' AS reward,
+								  '到期还本付息' AS returnType,
+								  ROUND(fix.ACCOUNT_YES / fix.PLAN_ACCOUNT* 100, 2)  progress,
+                                  CONCAT('http://www.dxjr.com/dingqibao/', fix.id, '.html') AS bidUrl,
+                                  '0' AS is_circulation		                    	  
+                                FROM (SELECT * from (
+			(select *,1 as sort1,1 as sort2,6 as sort3, 1 as sort4 from t_fix_borrow where AREA_TYPE = 1 AND `STATUS` = 3 ORDER BY `STATUS` ASC,ACCOUNT_YES/PLAN_ACCOUNT DESC,PUBLISH_TIME DESC, ADDTIME DESC)
+		    UNION
+			(select * from ((select *,1 as sort1,1 as sort2,1 as sort3, 1 as sort4 from t_fix_borrow where `STATUS`=3 AND LOCK_LIMIT=1 and AREA_TYPE <![CDATA[<>]]> 1 AND NOW()  <![CDATA[>]]>  PUBLISH_TIME ORDER BY ACCOUNT_YES/PLAN_ACCOUNT DESC,PUBLISH_TIME DESC, ADDTIME ASC LIMIT 1)
+			 UNION
+			 (select *,1 as sort1,1 as sort2,1 as sort3,2 as sort4 from t_fix_borrow where `STATUS`=3 AND LOCK_LIMIT=1 and AREA_TYPE <![CDATA[<>]]> 1 AND NOW()  <![CDATA[<]]>  PUBLISH_TIME ORDER BY PUBLISH_TIME ASC, ADDTIME ASC LIMIT 1)) a order by sort4 limit 1)
+			UNION
+			(select * from ((select *,1 as sort1,1 as sort2,1 as sort3, 1 as sort4 from t_fix_borrow where `STATUS`=3 AND LOCK_LIMIT=3 and AREA_TYPE <![CDATA[<>]]> 1 AND NOW()  <![CDATA[>]]>  PUBLISH_TIME ORDER BY ACCOUNT_YES/PLAN_ACCOUNT DESC,PUBLISH_TIME DESC, ADDTIME ASC LIMIT 1)
+			 UNION
+			 (select *,1 as sort1,1 as sort2,1 as sort3,2 as sort4 from t_fix_borrow where `STATUS`=3 AND LOCK_LIMIT=3 and AREA_TYPE <![CDATA[<>]]> 1 AND NOW()  <![CDATA[<]]>  PUBLISH_TIME ORDER BY PUBLISH_TIME ASC, ADDTIME ASC LIMIT 1)) a order by sort4 limit 1)
+			UNION
+			(select * from ((select *,1 as sort1,1 as sort2,1 as sort3, 1 as sort4 from t_fix_borrow where `STATUS`=3 AND LOCK_LIMIT=6 and AREA_TYPE <![CDATA[<>]]> 1 AND NOW()  <![CDATA[>]]>  PUBLISH_TIME ORDER BY ACCOUNT_YES/PLAN_ACCOUNT DESC,PUBLISH_TIME DESC, ADDTIME ASC LIMIT 1)
+			 UNION
+			 (select *,1 as sort1,1 as sort2,1 as sort3,2 as sort4 from t_fix_borrow where `STATUS`=3 AND LOCK_LIMIT=6 and AREA_TYPE <![CDATA[<>]]> 1 AND NOW()  <![CDATA[<]]>  PUBLISH_TIME ORDER BY PUBLISH_TIME ASC, ADDTIME ASC LIMIT 1)) a order by sort4 limit 1)
+			UNION
+			(select * from ((select *,1 as sort1,1 as sort2,1 as sort3, 1 as sort4 from t_fix_borrow where `STATUS`=3 AND LOCK_LIMIT=12 and AREA_TYPE <![CDATA[<>]]> 1 AND NOW()  <![CDATA[>]]>  PUBLISH_TIME ORDER BY ACCOUNT_YES/PLAN_ACCOUNT DESC,PUBLISH_TIME DESC, ADDTIME ASC LIMIT 1)
+			 UNION
+			 (select *,1 as sort1,1 as sort2,1 as sort3,2 as sort4 from t_fix_borrow where `STATUS`=3 AND LOCK_LIMIT=12 and AREA_TYPE <![CDATA[<>]]> 1 AND NOW()  <![CDATA[<]]>  PUBLISH_TIME ORDER BY PUBLISH_TIME ASC, ADDTIME ASC LIMIT 1)) a order by sort4 limit 1)
+		)tfb ORDER BY sort1,sort2 desc,sort3 desc,`STATUS`,SUCCESS_TIME DESC,LOCK_LIMIT) fix 
+  	</select>
+  	
+  	<select id="queryTenderRecord" parameterType="com.dxjr.portal.tzjinterface.vo.TzjTenderRecordCnd" resultMap="TenderRecordAggVo">
+		(SELECT
+		DISTINCT
+		rb.NAME AS title,
+		rb.APR AS arp,
+		rb.TIME_LIMIT AS timeLimit,
+		rb.STYLE AS style,
+		rb.APR AS rate,
+		rb.TIME_LIMIT AS period,
+		CASE
+            WHEN rb.AREA_TYPE = 1 THEN '1'									 
+            ELSE '5'
+        END AS type,
+		CASE
+		WHEN
+		rb.BORROWTYPE = 4 THEN '秒还'
+		WHEN
+		rb.BORROWTYPE <![CDATA[<>]]> 4 AND rb.STYLE <![CDATA[<>]]> 4
+		THEN '月'
+		WHEN rb.BORROWTYPE <![CDATA[<>]]> 4
+		AND rb.STYLE = 4 THEN '天' ELSE ' '
+		END
+		AS periodUnit,
+		(SELECT
+		rm.username
+		FROM rocky_member rm
+		WHERE rm.id =
+		rb.user_id) AS NAME,
+		UNIX_TIMESTAMP(rb.ADDTIME) AS time,
+		rb.SUCCESS_TIME AS fullTime,
+		rb.ACCOUNT AS amount,
+		rb.`USE` AS `desc`,
+		rb.CONTENT AS detail,
+		CASE
+		WHEN rb.STYLE = 0 THEN
+		'没有限制'
+		WHEN rb.STYLE = 1 THEN '等额本息'
+		WHEN
+		rb.STYLE = 2 THEN '按月付息到期还本'
+		WHEN rb.STYLE = 3 THEN '到期还本付息' ELSE
+		'按天还款'
+		END AS returnType,
+		'本金保障' AS
+		returnAssue,
+		CASE
+		WHEN (select count(*) from rocky_b_transfer where `STATUS` in(2,3,4) and BORROW_ID=rb.ID)>0 THEN '1'
+		ELSE '0'
+		END AS isCirculation,
+		rb.id AS bid,
+		CASE 
+			WHEN rb.status=4 THEN 0
+			WHEN (rb.status=5 or rb.status=42) THEN 1
+			WHEN rb.status=2 THEN 4
+			WHEN rb.status=-1 THEN 5
+			WHEN rb.status=-2 THEN 6
+			WHEN rb.status=-3 THEN 7
+	    	ELSE 12
+	    END AS status,
+		rbt.BORROW_ID,
+		rbt.id AS
+		TID,
+		tmb.user_name AS username,
+		tmb.user_namep AS usernamep,
+		rbt.id AS oid,
+		rbt.ACCOUNT AS
+		bidAmount,
+		rbt.ACCOUNT AS
+		amount2,
+		CASE 
+			WHEN rbt.TENDER_TYPE=1 THEN '自动投标'		
+	    	ELSE '手动投标'
+	    END AS tenderType,
+		rbt.user_id
+		AS tenderUserId,
+		rbt.ADDTIME AS time1,
+		(SELECT
+		IFNULL(SUM(rbc.INTEREST),
+		0)
+		FROM rocky_b_collectionrecord rbc
+		WHERE
+		rbc.user_id = rm.id AND
+		rbc.BORROW_ID = rb.id AND rbc.TENDER_ID =
+		rbt.id) AS income, CASE WHEN rbt.PARENT_ID IS NULL THEN 0
+    	ELSE  1
+    	END  AS isTransfer 
+		FROM rocky_borrow rb
+		INNER JOIN rocky_b_tenderrecord rbt ON rb.id = rbt.BORROW_ID 
+		INNER JOIN tzj_member_binding tmb ON tmb.user_id = rbt.user_id
+		INNER JOIN rocky_member rm ON rm.id = tmb.user_id AND rm.type = 0		
+		WHERE tmb.DR = '1' AND tmb.IS_SUCCESS = 1 AND rbt.ADDTIME > tmb.ADD_TIME
+		and rbt.`STATUS` in(1,2) and rbt.PARENT_ID IS NULL
+		<if test=" startTime !=null and startTime !='' " >
+	       and rbt.ADDTIME <![CDATA[>=]]> #{startTime}
+	    </if>
+	    <if test=" endTime !=null and endTime !='' " >
+	       and rbt.ADDTIME <![CDATA[<=]]> #{endTime}
+	    </if>
+	    <if test=" username !=null and username !='' " >
+	       and tmb.user_name = #{username}
+	    </if>
+	    <if test=" usernamep !=null and usernamep !='' " >
+	       and tmb.user_namep = #{usernamep}
+	    </if>
+	    )
+	    
+	    UNION ALL
+	    
+	    (SELECT
+		DISTINCT
+		rb.BORROW_NAME AS title,
+		rb.CUR_APR AS arp,
+		rb.TIME_LIMIT_REAL AS timeLimit,
+		rb.BORROW_STYLE AS style,
+		rb.CUR_APR AS rate,
+		rb.TIME_LIMIT_REAL AS period,
+		'5' AS type,
+		CASE WHEN rb.BORROW_TYPE = 4 THEN '秒还'
+		WHEN rb.BORROW_TYPE <![CDATA[<>]]> 4 AND rb.BORROW_STYLE <![CDATA[<>]]> 4 THEN '月'
+		WHEN rb.BORROW_TYPE <![CDATA[<>]]> 4 AND rb.BORROW_STYLE = 4 THEN '天' ELSE ' ' END AS periodUnit,
+		(SELECT rm.username FROM rocky_member rm WHERE rm.id = rb.user_id) AS NAME,
+		UNIX_TIMESTAMP(rb.ADD_TIME) AS time,
+		UNIX_TIMESTAMP(rb.SUCCESS_TIME) AS fullTime,
+		rb.ACCOUNT_REAL AS amount,
+		rb.REMARK AS `desc`,
+		rb.REMARK AS detail,
+		CASE WHEN rb.BORROW_STYLE = 0 THEN '没有限制'
+		WHEN rb.BORROW_STYLE = 1 THEN '等额本息'
+		WHEN rb.BORROW_STYLE = 2 THEN '按月付息到期还本'
+		WHEN rb.BORROW_STYLE = 3 THEN '到期还本付息' 
+		ELSE '按天还款' END AS returnType,
+		'本金保障' AS returnAssue,
+		'1' AS isCirculation,
+		rb.id AS bid,
+		CASE 
+			WHEN t_rb.status=4 THEN 0
+			WHEN (t_rb.status=5 or t_rb.status=42) THEN 1
+			WHEN t_rb.status=2 THEN 4
+			WHEN t_rb.status=-1 THEN 5
+			WHEN t_rb.status=-2 THEN 6
+			WHEN t_rb.status=-3 THEN 7
+	    ELSE 12 END AS status,
+		rbt.TRANSFER_ID,
+		rbt.id AS TID,
+		tmb.user_name AS username,
+		tmb.user_namep AS usernamep,
+		rbt.id AS oid,
+		rbt.ACCOUNT AS bidAmount,
+		rbt.ACCOUNT AS amount2,
+		CASE WHEN rbt.SUBSCRIBE_TYPE=1 THEN '自动投标'		
+	  ELSE '手动投标' END AS tenderType,
+		rbt.user_id AS tenderUserId,
+		UNIX_TIMESTAMP(rbt.ADD_TIME) AS time1,
+		rbt.REPAYMENT_INTEREST AS income,
+		1 AS isTransfer 
+		FROM rocky_b_transfer rb
+		INNER JOIN rocky_borrow t_rb on rb.BORROW_ID=t_rb.ID
+		INNER JOIN rocky_b_subscribe rbt ON rb.id = rbt.TRANSFER_ID 
+		INNER JOIN tzj_member_binding tmb ON tmb.user_id = rbt.user_id
+		INNER JOIN rocky_member rm ON rm.id = tmb.user_id AND rm.type = 0		
+		WHERE tmb.DR = '1' AND tmb.IS_SUCCESS = 1 AND rbt.ADD_TIME > FROM_UNIXTIME(tmb.ADD_TIME)
+		and rbt.`STATUS` =3			
+		<if test=" startTime !=null and startTime !='' " >
+	       and rbt.ADD_TIME <![CDATA[>=]]> FROM_UNIXTIME(#{startTime})
+	    </if>
+	    <if test=" endTime !=null and endTime !='' " >
+	       and rbt.ADD_TIME <![CDATA[<=]]> FROM_UNIXTIME(#{endTime})
+	    </if>
+	    <if test=" username !=null and username !='' " >
+	       and tmb.user_name = #{username}
+	    </if>
+	    <if test=" usernamep !=null and usernamep !='' " >
+	       and tmb.user_namep = #{usernamep}
+	    </if>		
+	    )
+	    
+	    UNION ALL
+
+		(SELECT
+		DISTINCT
+		CONCAT('定期宝', rb.CONTRACT_NO) AS title,
+		rb.APR AS arp,
+		rb.LOCK_LIMIT AS timeLimit,
+		3 AS style,
+		rb.APR AS rate,
+		rb.LOCK_LIMIT AS period,
+		'5' AS type,
+		'月' AS periodUnit,
+		'管理员' AS NAME,
+		UNIX_TIMESTAMP(rb.ADDTIME) AS time,
+		UNIX_TIMESTAMP(rb.SUCCESS_TIME) AS fullTime,
+		rb.PLAN_ACCOUNT AS amount,
+		rb.REMARK AS `desc`,
+		rb.CONTENT AS detail,
+		'到期还本付息' AS returnType,
+		'本金保障' AS returnAssue,
+		'0' AS isCirculation,
+		rb.id AS bid,		
+		CASE 
+		WHEN rb.status=5 THEN 0
+		WHEN rb.status=7 THEN 1
+		WHEN rb.status=-3 THEN 2
+		WHEN rb.status=8 THEN 3
+		WHEN rb.status=3 THEN 4
+		WHEN rb.status=-1 THEN 5
+		WHEN rb.status=-2 THEN 6
+    ELSE 12
+    END AS status,
+		rbt.FIX_BORROW_ID,
+		rbt.id AS TID,
+		tmb.user_name AS username,
+		tmb.user_namep AS usernamep,
+		rbt.id AS oid,
+		rbt.ACCOUNT AS bidAmount,
+		rbt.ACCOUNT AS amount2,
+		CASE 
+		WHEN rbt.TENDER_TYPE=1 THEN '自动投宝'		
+		ELSE '手动投宝'
+		END AS tenderType,
+		rbt.user_id AS tenderUserId,
+		UNIX_TIMESTAMP(rbt.ADDTIME) AS time1,
+		0 AS income, 
+		0 AS isTransfer 
+		FROM t_fix_borrow rb
+		INNER JOIN t_fix_tender_detail rbt ON rb.id = rbt.FIX_BORROW_ID 
+		INNER JOIN tzj_member_binding tmb ON tmb.user_id = rbt.user_id
+		INNER JOIN rocky_member rm ON rm.id = tmb.user_id AND rm.type = 0
+		WHERE tmb.DR = '1' AND tmb.IS_SUCCESS = 1 AND rbt.ADDTIME > FROM_UNIXTIME(tmb.add_time)
+		and rbt.`STATUS` in(1,3) 
+		<if test=" startTime !=null and startTime !='' " >
+	       and rbt.ADDTIME <![CDATA[>=]]> FROM_UNIXTIME(#{startTime})
+	    </if>
+	    <if test=" endTime !=null and endTime !='' " >
+	       and rbt.ADDTIME <![CDATA[<=]]> FROM_UNIXTIME(#{endTime})
+	    </if>
+	    <if test=" username !=null and username !='' " >
+	       and tmb.user_name = #{username}
+	    </if>
+	    <if test=" usernamep !=null and usernamep !='' " >
+	       and tmb.user_namep = #{usernamep}
+	    </if>
+	)
+	</select>
+	
+	<select id="queryStatusChangedBorrow" parameterType="com.dxjr.portal.tzjinterface.vo.TzjTenderRecordCnd" resultMap="BorrowStateAggResultMap">
+		(SELECT DISTINCT rb.ID AS bid,
+			CASE 
+				WHEN rb.status=4 THEN 0
+				WHEN (rb.status=5 or rb.status=42) THEN 1
+				WHEN rb.status=2 THEN 4
+				WHEN rb.status=-1 THEN 5
+				WHEN rb.status=-2 THEN 6
+				WHEN rb.status=-3 THEN 7
+		    ELSE 12
+		    END AS status		
+		FROM rocky_borrow rb
+		where 1=1 
+		<if test=" type == '0'.toString() " >
+	       and rb.PUBLISH_TIME <![CDATA[>=]]> #{startTime} and rb.PUBLISH_TIME <![CDATA[<=]]> #{endTime}
+	    </if>
+	    <if test=" type == '1'.toString() and bidStr!=null and bidStr!='' " >
+	       and rb.ID in (${bidStr})
+	    </if>)
+	    
+	    UNION ALL
+	    
+		(SELECT DISTINCT rb.ID AS bid,
+			CASE 
+				WHEN (rb.`STATUS`=2 or rb.`STATUS`=3) THEN 4
+		    	ELSE 3
+		    END AS status		
+			FROM rocky_b_transfer rb
+			where 1=1 and rb.`STATUS` in(2,3,4)
+			<if test=" type == '0'.toString() " >
+		       and rb.ADD_TIME <![CDATA[>=]]> FROM_UNIXTIME(#{startTime}) and rb.ADD_TIME <![CDATA[<=]]> FROM_UNIXTIME(#{endTime})
+		    </if>
+		    <if test=" type == '1'.toString() and bidStr!=null and bidStr!='' " >
+		       and rb.ID in (${bidStr})
+		    </if>)
+	    
+	    UNION ALL
+	    
+	    (SELECT DISTINCT rb.ID AS bid,
+			CASE 
+				WHEN rb.status=5 THEN 0
+				WHEN rb.status=7 THEN 1
+				WHEN rb.status=-3 THEN 2
+				WHEN rb.status=8 THEN 3
+				WHEN rb.status=3 THEN 4
+				WHEN rb.status=-1 THEN 5
+				WHEN rb.status=-2 THEN 6
+			    ELSE 12
+		    END AS status		
+			FROM t_fix_borrow rb
+			where 1=1 
+			<if test=" type == '0'.toString() " >
+		       and rb.PUBLISH_TIME <![CDATA[>=]]> FROM_UNIXTIME(#{startTime}) and rb.PUBLISH_TIME <![CDATA[<=]]> FROM_UNIXTIME(#{endTime})
+		    </if>
+		    <if test=" type == '1'.toString() and bidStr!=null and bidStr!='' " >
+		       and rb.ID in (${bidStr})
+		    </if>)
+	</select>
+	
+	<!-- 查询投之家绑定用户结果集 -->
+	<resultMap id="borrowResultMap" type="com.dxjr.portal.tzjinterface.entity.BidInfo">
+	    <result property="id" column="id" />
+	    <result property="url" column="url" />
+	    <result property="title" column="title" />
+	    <result property="desc" column="desc" />
+	    <result property="borrower" column="borrower" />
+		<result property="borrowAmount" column="borrowAmount" />
+	    <result property="remainAmount" column="remainAmount" />
+	    <result property="minInvestAmount" column="minInvestAmount" />
+	    <result property="period" column="period" />
+	    <result property="originalRate" column="orginalRate" />
+	    <result property="rewardRate" column="awardReate" />
+	    <result property="status" column="status" />
+	    <result property="repayment" column="repayment" />
+	    <result property="type" column="type" />
+	    <result property="prop" column="prop" />
+	    <result property="createAt" column="createAt" />
+	    <result property="publishAt" column="publishAt" />	
+	    <result property="closeAt" column="closeAt" />	
+	    <result property="fullAt" column="fullAt" />	
+	    <result property="repayDate" column="repayDay" />			 
+	</resultMap>
+	
+	<!-- 标的信息查询-->
+	<select id="queryBorrowListByCnd" parameterType="com.dxjr.portal.tzjinterface.vo.TzjQueryCnd" resultMap="borrowResultMap" >
+		select * from (
+				SELECT                    	  
+						rb.id AS id,
+						CONCAT('http://www.dxjr.com/toubiao/', rb.id, '.html') AS url,
+						rb.NAME AS title,
+						rb.CONTENT AS `desc`,
+						rra.REALNAME AS `borrower`,
+						rb.ACCOUNT AS borrowAmount,
+						(rb.ACCOUNT-rb.ACCOUNT_YES) AS remainAmount,
+						rb.LOWEST_ACCOUNT as minInvestAmount,
+						CONCAT(rb.TIME_LIMIT, 
+							CASE
+								WHEN rb.STYLE = 4 THEN 'd' ELSE 'm'
+							END
+						) AS period,
+						rb.APR AS originalRate,
+						0 as rewardRate,
+						CASE
+							WHEN rb.STATUS = 4 THEN 0	
+							WHEN rb.STATUS = 5 or rb.STATUS = 42 THEN 1	
+							WHEN rb.STATUS = 2 THEN 3	
+							WHEN rb.STATUS = -1 THEN 4	
+							WHEN rb.STATUS = -2 THEN 5
+							WHEN rb.STATUS = 3 THEN 6
+							ELSE 99
+						END 
+						as `status`,
+						CASE
+								WHEN rb.STYLE = 0 THEN '没有限制'
+								WHEN rb.STYLE = 1 THEN '等额本息'
+								WHEN rb.STYLE = 2 THEN '按月付息到期还本'
+								WHEN rb.STYLE = 3 THEN '到期还本付息' ELSE '按天还款'
+						END AS repayment,
+						CASE
+								WHEN rb.AREA_TYPE = 1 THEN 101	
+								WHEN rb.BORROWTYPE = 3 THEN 2	
+								ELSE 0
+						END AS type,
+						CASE
+								WHEN rb.MORTGAGE_TYPE = 1 THEN '房抵'	
+								WHEN rb.MORTGAGE_TYPE = 2 THEN '车抵'	
+								WHEN rb.MORTGAGE_TYPE = 3 THEN '民间抵'	
+								ELSE '其他'
+						END AS prop,
+						DATE_FORMAT(rb.ADDTIME,'%Y-%m-%d %H:%i:%S') as createAt,
+						FROM_UNIXTIME(PUBLISH_TIME,'%Y-%m-%d %H:%i:%S') as publishAt,
+						DATE_FORMAT(DATE_ADD(FROM_UNIXTIME(PUBLISH_TIME),INTERVAL VALID_TIME DAY),'%Y-%m-%d %H:%i:%S') as closeAt,
+						FROM_UNIXTIME(SUCCESS_TIME,'%Y-%m-%d %H:%i:%S') as fullAt,
+						FROM_UNIXTIME(END_TIME,'%Y-%m-%d %H:%i:%S') as repayDate    	  
+						FROM rocky_borrow rb
+						LEFT JOIN rocky_member rm ON rb.user_id = rm.id                                     
+						LEFT JOIN rocky_realname_appro rra ON rb.USER_ID=rra.USER_ID                                                            
+						WHERE rb.STATUS IN (2,3,4,5,-1,-2,42)
+						AND rb.IS_AUTOTENDER = 0
+						AND rb.BORROWTYPE != 4
+			UNION ALL
+					SELECT							
+						CONCAT('Z_', rbt.id) AS id,
+						CONCAT('http://www.dxjr.com/zhaiquan/', rbt.id, '.html') AS url,
+						rbt.TRANSFER_NAME AS title,
+						rbt.TRANSFER_CONTENT AS `desc`,
+						rra.REALNAME AS `borrower`,
+						rbt.ACCOUNT_REAL AS borrowAmount,
+						(rbt.ACCOUNT_REAL-rbt.ACCOUNT_YES) AS remainAmount,
+						rbt.LOWEST_ACCOUNT as minInvestAmount,
+						CONCAT(rbt.TIME_LIMIT_REAL, 
+							CASE
+									WHEN rbt.BORROW_STYLE = 4 THEN 'd' ELSE 'm'
+							END
+						) AS period,
+						rbt.BORROW_APR AS originalRate,
+						0 as rewardRate,
+						CASE
+							WHEN rbt.STATUS = 4 THEN 0	
+							WHEN rb.STATUS = 5 or rb.STATUS = 42 THEN 1	
+							WHEN rbt.STATUS = 2 THEN 3	
+							WHEN rbt.STATUS = 5 THEN 4	
+							WHEN rbt.STATUS = 6 THEN 5
+							ELSE 99
+						END 
+						as `status`,
+						CASE
+								WHEN rbt.BORROW_STYLE = 0 THEN '没有限制'
+								WHEN rbt.BORROW_STYLE = 1 THEN '等额本息'
+								WHEN rbt.BORROW_STYLE = 2 THEN '按月付息到期还本'
+								WHEN rbt.BORROW_STYLE = 3 THEN '到期还本付息' ELSE '按天还款'
+						END AS repayment,
+						1 AS type,
+						CASE
+								WHEN rb.MORTGAGE_TYPE = 1 THEN '房抵'	
+								WHEN rb.MORTGAGE_TYPE = 2 THEN '车抵'	
+								WHEN rb.MORTGAGE_TYPE = 3 THEN '民间抵'	
+								ELSE '其他'
+						END AS prop,
+						DATE_FORMAT(rbt.ADD_TIME,'%Y-%m-%d %H:%i:%S') as createAt,
+						DATE_FORMAT(rbt.ADD_TIME,'%Y-%m-%d %H:%i:%S') as publishAt,
+						DATE_FORMAT(rbt.END_TIME,'%Y-%m-%d %H:%i:%S') as closeAt,
+						DATE_FORMAT(rbt.SUCCESS_TIME,'%Y-%m-%d %H:%i:%S') as fullAt,
+						FROM_UNIXTIME(rb.END_TIME,'%Y-%m-%d %H:%i:%S') as repayDate
+						FROM rocky_b_transfer rbt
+						LEFT JOIN rocky_borrow rb ON rbt.BORROW_ID = rb.id
+						LEFT JOIN rocky_realname_appro rra ON rb.USER_ID=rra.USER_ID											
+						WHERE rbt.STATUS IN (2,3,4,5,6)
+			UNION ALL
+				SELECT		                    
+					fix.id AS id,
+					CONCAT('http://www.dxjr.com/dingqibao/', fix.id, '.html') AS url,
+					CONCAT('定期宝', fix.CONTRACT_NO) AS title,
+					fix.REMARK AS `desc`,
+					'平台' AS `borrower`,
+					fix.PLAN_ACCOUNT AS borrowAmount,
+					(fix.PLAN_ACCOUNT-fix.ACCOUNT_YES) as remainAmount,
+					fix.LOWEST_ACCOUNT as minInvestAmount,
+					CONCAT(fix.LOCK_LIMIT, 'm') AS period,
+					fix.APR AS originalRate,
+					0 as rewardRate,
+					CASE
+						WHEN fix.STATUS = 5 or fix.STATUS = 8 or fix.STATUS = 9 or fix.STATUS = 10 THEN 0	
+						WHEN fix.STATUS = 7 THEN 1	
+						WHEN fix.STATUS = 3 THEN 3	
+						WHEN fix.STATUS = -1 THEN 4	
+						WHEN fix.STATUS = -2 THEN 5
+						WHEN fix.STATUS = 4 THEN 6
+						ELSE 99
+					END 
+					as `status`,
+					'到期还本付息' AS repayment,
+					CASE
+						WHEN fix.AREA_TYPE = 1 THEN 101		
+						ELSE 1000
+					END AS type,
+					'定期宝产品' AS prop,
+					DATE_FORMAT(fix.ADDTIME,'%Y-%m-%d %H:%i:%S') as createAt,
+					DATE_FORMAT(fix.PUBLISH_TIME,'%Y-%m-%d %H:%i:%S') as publishAt,
+					DATE_FORMAT(fix.END_TIME,'%Y-%m-%d %H:%i:%S') as closeAt,
+					DATE_FORMAT(fix.SUCCESS_TIME,'%Y-%m-%d %H:%i:%S') as fullAt,
+					DATE_FORMAT(fix.LOCK_ENDTIME,'%Y-%m-%d %H:%i:%S') as repayDate                    	  
+			    FROM t_fix_borrow fix 
+					where STATUS in(3,4,5,7,8,9,10,-1,-2)
+			) taAll WHERE 1=1 
+			<if test="arrayValStr != null and arrayValStr != ''" >
+	        	and taAll.id in(${arrayValStr})
+	      	</if>
+			<if test="startTime != null" >
+	        	and createAt<![CDATA[>=]]>#{startTime}
+	      	</if>
+	      	<if test="endTime != null" >
+	        	and createAt<![CDATA[<=]]>#{endTime}
+	      	</if>				
+	</select>
+	
+	<!-- 查询投资记录结果集 -->
+	<resultMap id="tenderRecordResultMap" type="com.dxjr.portal.tzjinterface.entity.InvestInfo">
+	    <result property="id" column="id" />
+	    <result property="bid" column="bid" />
+	    <result property="burl" column="burl" />
+	    <result property="username" column="platUsername" />
+	    <result property="amount" column="amount" />
+		<result property="actualAmount" column="actualAmount" />
+	    <result property="income" column="income" />
+	    <result property="investAt" column="investAt" />
+	    <result property="repayAt" column="repayAt" />
+		<result property="tags" column="tags" javaType="[Ljava.lang.String;"></result>
+		<!--<collection property="tags"  resultMap="tags" />-->
+	</resultMap>
+	 <!--<resultMap id="tags" type="java.lang.String">-->
+        <!--<result property="tags" column="tags" />-->
+    <!--</resultMap>-->
+	<select id="queryTenderRecordListByCnd" parameterType="com.dxjr.portal.tzjinterface.vo.TzjQueryCnd" resultMap="tenderRecordResultMap">
+		select * from (
+				(SELECT
+				DISTINCT
+				rbt.id as id,
+				rbt.borrow_id as bid,
+				CONCAT('http://www.dxjr.com/toubiao/', rbt.borrow_id, '.html') AS burl,
+				tmb.user_namep as username,
+				tmb.user_name as tzjUsername,
+				rm.USERNAME as platUsername,
+				rbt.ACCOUNT AS amount,
+				rbt.ACCOUNT AS actualAmount,
+				rbt.INTEREST as income,		
+				FROM_UNIXTIME(rbt.ADDTIME,'%Y-%m-%d %H:%i:%S') as investAt,
+				FROM_UNIXTIME(rb.END_TIME,'%Y-%m-%d %H:%i:%S') as repayAt,
+				CASE
+                   WHEN rbt.PLATFORM=2 THEN CONCAT('wap',',','android')
+                   WHEN rbt.PLATFORM=3 THEN CONCAT('wap',',','android')
+                   WHEN rbt.PLATFORM=4 THEN CONCAT('wap',',','ios') 						 
+                   ELSE 'pc' END AS tags
+				FROM rocky_borrow rb
+				INNER JOIN rocky_b_tenderrecord rbt ON rb.id = rbt.BORROW_ID 
+				INNER JOIN tzj_member_binding tmb ON tmb.user_id = rbt.user_id
+				INNER JOIN rocky_member rm ON rm.id = tmb.user_id 	
+				WHERE tmb.DR = '1' AND tmb.IS_SUCCESS = 1 AND rbt.ADDTIME > tmb.ADD_TIME
+				and rbt.`STATUS` in(1,2) and rbt.PARENT_ID IS NULL)
+		UNION ALL
+				(SELECT
+				DISTINCT
+				CONCAT('Z_', rbt.id) as id,
+				CONCAT('Z_', rbt.TRANSFER_ID) as bid,
+				CONCAT('http://www.dxjr.com/zhaiquan/', rbt.TRANSFER_ID, '.html') AS burl,
+			    tmb.user_namep as username,
+				tmb.user_name as tzjUsername,
+				rm.USERNAME as platUsername,
+				rbt.ACCOUNT AS amount,
+				rbt.ACCOUNT AS actualAmount,
+				rbt.REPAYMENT_INTEREST as income,
+				DATE_FORMAT(rbt.ADD_TIME,'%Y-%m-%d %H:%i:%S') as investAt,
+				FROM_UNIXTIME(borrow.END_TIME,'%Y-%m-%d %H:%i:%S') as repayAt,
+				CASE
+                   WHEN rbt.PLATFORM=2 THEN CONCAT('wap',',','android')
+                   WHEN rbt.PLATFORM=3 THEN CONCAT('wap',',','android')
+                   WHEN rbt.PLATFORM=4 THEN CONCAT('wap',',','ios') 						 
+                   ELSE 'pc' END AS tags
+				FROM rocky_b_transfer rb
+				INNER JOIN rocky_borrow borrow on rb.BORROW_ID=borrow.ID
+				INNER JOIN rocky_b_subscribe rbt ON rb.id = rbt.TRANSFER_ID 
+				INNER JOIN tzj_member_binding tmb ON tmb.user_id = rbt.user_id
+				INNER JOIN rocky_member rm ON rm.id = tmb.user_id 
+				WHERE tmb.DR = '1' AND tmb.IS_SUCCESS = 1 AND rbt.ADD_TIME > FROM_UNIXTIME(tmb.add_time)
+				and rbt.`STATUS`=3)
+		UNION ALL
+				(SELECT
+				DISTINCT
+				CONCAT('D_', rbt.id) as id,
+				rbt.fix_borrow_id as bid,
+				CONCAT('http://www.dxjr.com/dingqibao/', rbt.fix_borrow_id, '.html') AS burl,
+				tmb.user_namep as username,
+				tmb.user_name as tzjUsername,
+				rm.USERNAME as platUsername,
+				rbt.ACCOUNT AS amount,
+				rbt.ACCOUNT AS actualAmount,
+				ROUND(rbt.ACCOUNT*rb.APR/100/12*rb.LOCK_LIMIT, 2) as income,
+				DATE_FORMAT(rbt.ADDTIME,'%Y-%m-%d %H:%i:%S') as investAt,
+				DATE_FORMAT(rb.LOCK_ENDTIME,'%Y-%m-%d %H:%i:%S') as repayAt,
+				CASE
+                   WHEN rbt.PLATFORM=2 THEN CONCAT('wap',',','android')
+                   WHEN rbt.PLATFORM=3 THEN CONCAT('wap',',','android')
+                   WHEN rbt.PLATFORM=4 THEN CONCAT('wap',',','ios') 						 
+                   ELSE 'pc' END AS tags
+				FROM t_fix_borrow rb
+				INNER JOIN t_fix_tender_detail rbt ON rb.id = rbt.FIX_BORROW_ID 
+				INNER JOIN tzj_member_binding tmb ON tmb.user_id = rbt.user_id
+				INNER JOIN rocky_member rm ON rm.id = tmb.user_id 
+				WHERE tmb.DR = '1' AND tmb.IS_SUCCESS = 1 AND rbt.ADDTIME > FROM_UNIXTIME(tmb.add_time)
+				and rbt.`STATUS` in(1,3) 
+			 )
+		) tabAll where 1=1		
+		<if test=" type == '1'.toString() and arrayValStr!=null and arrayValStr!='' " >
+	       and tabAll.id in (${arrayValStr})
+	    </if>
+	    <if test=" type == '2'.toString() and arrayValStr!=null and arrayValStr!='' " >
+	       and tabAll.bid in (${arrayValStr})
+	    </if>
+	    <if test=" type == '3'.toString() and arrayValStr!=null and arrayValStr!='' " >
+	       and tabAll.tzjUsername in (${arrayValStr})
+	    </if>
+	    <if test="startTime != null" >
+        	and tabAll.investAt<![CDATA[>=]]>#{startTime}
+      	</if>
+      	<if test="endTime != null" >
+        	and tabAll.investAt<![CDATA[<=]]>#{endTime}
+      	</if>
+	</select>
+	
+	<!-- 查询投资记录结果集 -->
+	<resultMap id="repayInfoResultMap" type="com.dxjr.portal.tzjinterface.entity.RepayInfo">
+	    <result property="id" column="id" />
+	    <result property="investId" column="investId" />
+	    <result property="bid" column="bid" />
+	    <result property="username" column="platUsername" />
+	    <result property="amount" column="amount" />
+	    <result property="rate" column="rate" />
+		<result property="income" column="income" />
+	    <result property="type" column="type" />
+	    <result property="repayAt" column="repayAt" />		 
+	</resultMap>
+	
+	<select  id="queryRepayInfoListByCnd" parameterType="com.dxjr.portal.tzjinterface.vo.TzjQueryCnd" resultMap="repayInfoResultMap">
+		select * from (
+				(SELECT
+				DISTINCT
+				rbc.id as id,
+				rbt.ID as investId,
+				rbt.borrow_id as bid,
+				tmb.user_name as username,
+				rm.USERNAME as platUsername,
+				rbc.REPAY_YESACCOUNT as amount,
+				rb.APR AS rate,
+				rbc.INTEREST AS income,		
+				FROM_UNIXTIME(rbc.REPAY_YESTIME,'%Y-%m-%d %H:%i:%S') as repayAt,
+				0 as type
+				FROM rocky_borrow rb
+				INNER JOIN rocky_b_tenderrecord rbt ON rb.ID = rbt.BORROW_ID
+				INNER JOIN rocky_b_collectionrecord rbc ON rb.id = rbc.BORROW_ID and rbc.TENDER_ID=rbt.ID and rbc.USER_ID=rbt.USER_ID
+				INNER JOIN tzj_member_binding tmb ON tmb.user_id = rbc.user_id
+				INNER JOIN rocky_member rm ON rm.id = tmb.user_id AND rm.type = 0					
+				WHERE tmb.DR = '1' AND tmb.IS_SUCCESS = 1 AND rbt.ADDTIME > tmb.ADD_TIME
+				and rbt.`STATUS` in(1,2) and rbc.`STATUS` in(1,2,3) and rbt.PARENT_ID IS NULL)
+		UNION ALL
+				(SELECT
+				DISTINCT
+				rbc.id as id,
+				CONCAT('Z_', rbt.id) as investId,
+				CONCAT('Z_', rbt.TRANSFER_ID) as bid,
+				tmb.user_name as username,
+				rm.USERNAME as platUsername,
+				rbc.REPAY_YESACCOUNT as amount,
+				rb.BORROW_APR AS rate,
+				rbc.INTEREST AS income,		
+				FROM_UNIXTIME(rbc.REPAY_YESTIME,'%Y-%m-%d %H:%i:%S') as repayAt,
+				1 as type
+				FROM rocky_b_transfer rb
+				INNER JOIN rocky_b_subscribe rbt ON rb.id = rbt.TRANSFER_ID
+				INNER JOIN rocky_b_collectionrecord rbc on rbc.BORROW_ID=rb.BORROW_ID and rbc.TENDER_ID=rbt.TENDER_ID	and rbc.USER_ID=rbt.USER_ID	 
+				INNER JOIN tzj_member_binding tmb ON tmb.user_id = rbt.user_id
+				INNER JOIN rocky_member rm ON rm.id = tmb.user_id AND rm.type = 0	
+				WHERE tmb.DR = '1' AND tmb.IS_SUCCESS = 1 AND rbt.ADD_TIME > FROM_UNIXTIME(tmb.add_time)
+				and rbt.`STATUS`=3 and rbc.`STATUS` in(1,2,3))
+		UNION ALL
+				(SELECT
+				DISTINCT
+				CONCAT('D_', rbt.id) as id,
+				CONCAT('D_', rbt.id) as investId,
+				rbt.fix_borrow_id as bid,
+				tmb.user_name as username,
+				rm.USERNAME as platUsername,
+				ROUND(rbt.ACCOUNT+(rbt.ACCOUNT*rb.APR/100/12*rb.LOCK_LIMIT), 2) as amount,
+				rb.APR as rate,
+				ROUND(rbt.ACCOUNT*rb.APR/100/12*rb.LOCK_LIMIT, 2) as income,
+				DATE_FORMAT(rbc.REPAY_YESTIME,'%Y-%m-%d %H:%i:%S') as repayAt,
+				0 as type
+				FROM t_fix_borrow rb
+				INNER JOIN t_fix_tender_detail rbt ON rb.id = rbt.FIX_BORROW_ID 
+				INNER JOIN t_fix_collectionrecord rbc on rbc.FIX_BORROW_ID=rb.ID and rbc.FIX_TENDER_REAL_ID=rbt.FIX_TENDER_REAL_ID	and rbc.USER_ID=rbt.USER_ID	 
+				INNER JOIN tzj_member_binding tmb ON tmb.user_id = rbt.user_id
+				INNER JOIN rocky_member rm ON rm.id = tmb.user_id AND rm.type = 0
+				WHERE tmb.DR = '1' AND tmb.IS_SUCCESS = 1 AND rbt.ADDTIME > FROM_UNIXTIME(tmb.add_time)
+				and rbt.`STATUS` in(1,3) and rbc.`STATUS` = 1
+			 )
+		) tabAll where 1=1
+		<if test=" type == '1'.toString() and arrayValStr!=null and arrayValStr!='' " >
+	       and tabAll.id in (${arrayValStr})
+	    </if>
+	    <if test=" type == '2'.toString() and arrayValStr!=null and arrayValStr!='' " >
+	       and tabAll.bid in (${arrayValStr})
+	    </if>
+	    <if test=" type == '3'.toString() and arrayValStr!=null and arrayValStr!='' " >
+	       and tabAll.username in (${arrayValStr})
+	    </if>
+	    <if test="startTime != null" >
+        	and tabAll.repayAt<![CDATA[>=]]>#{startTime}
+      	</if>
+      	<if test="endTime != null" >
+        	and tabAll.repayAt<![CDATA[<=]]>#{endTime}
+      	</if>
+	</select>
+  	
+</mapper>  

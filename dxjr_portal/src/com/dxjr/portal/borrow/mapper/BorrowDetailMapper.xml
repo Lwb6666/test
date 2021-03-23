@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dxjr.portal.borrow.mapper.BorrowDetailMapper">
+	<resultMap id="borrowDetailBaseResultMap" type="com.dxjr.portal.borrow.vo.BorrowDetailVo">
+		<id column="ID" 						property="id"/>
+		<result column="USER_ID" 				property="userId" />
+		<result column="NAME" 					property="name" />
+		<result column="STATUS" 				property="status" />
+		<result column="APPRSTATUS"				property="apprstatus" />
+		<result column="ORDER" 				    property="order" />
+		<result column="BORROWTYPE" 			property="borrowtype" />
+		<result column="REPAYMENT_ACCOUNT"		property="repaymentAccount"	/>
+		<result column="MONTHLY_REPAYMENT" 		property="monthlyRepayment" />
+		<result column="REPAYMENT_YESACCOUNT" 	property="repaymentYesaccount"/>
+		<result column="REPAYMENT_YESINTEREST" 	property="repaymentYesinterest" />
+		<result column="SUCCESS_TIME" 			property="successTime" />
+		<result column="END_TIME" 				property="endTime" />
+		<result column="BORROW_USE" 			property="borrowUse"  />
+		<result column="TIME_LIMIT" 			property="timeLimit"  />
+		<result column="STYLE" 					property="style" />
+		<result column="ACCOUNT" 				property="account"  />
+		<result column="ACCOUNT_YES" 			property="accountYes"  />
+		<result column="TENDER_TIMES" 			property="tenderTimes" />
+		<result column="APR" 					property="apr"  />
+		<result column="LOWEST_ACCOUNT"			property="lowestAccount" />
+		<result column="MOST_ACCOUNT" 			property="mostAccount"  />
+		<result column="VALID_TIME" 			property="validTime" />
+		<result column="AWARD" 					property="award" />
+		<result column="FUNDS" 					property="funds" />
+		<result column="CONTENT" 				property="content" />
+		<result column="SENDMESSAGE" 			property="sendmessage"  />
+		<result column="ADDTIME" 				property="addtime" />
+		<result column="ADDIP" 					property="addip"  />
+		<result column="CANCEL_USER" 			property="cancelUser"  />
+		<result column="CANCEL_TIME" 			property="cancelTime"  />
+		<result column="CANCEL_REMARK" 			property="cancelRemark" />
+		<result column="UUID" 					property="uuid" />
+		<result column="CONTRACT_NO" 			property="contractNo"  />
+		<result column="BID_PASSWORD" 			property="bidPassword" />
+		<result column="IS_AUTOTENDER" 			property="isAutotender"/>
+		<result column="REMARK" 				property="remark" />
+		<result column="PLEDGE_TYPE" 			property="pledgeType"  />
+		<result column="TIMING_BORROW_TIME"		property="timingBorrowTime" />
+		<result column="PUBLISH_TIME" 			property="publishTime" />
+		<result column="product_type" 			property="productType" />
+		<result column="borrow_use" 			property="borrowUse" />
+		<result column="credit_rating" 			property="creditRating" />
+		<result column="AREA_TYPE" 				property="areaType" />
+		<result column="AREA_CHANGE_TIME" 		property="areaChangeTime" />
+	</resultMap>
+	
+	<!-- 根据id查询借款标详情（用于投标）ResultMap -->
+	<resultMap id="borrowDetailResultMap" type="com.dxjr.portal.borrow.vo.BorrowDetailVo" extends="borrowDetailBaseResultMap">
+		<result column="username"				property="username"/>
+		<result column="is_custody"				property="isCustody"/>
+		
+		<result column="isNotice"				property="isNotice"/>
+		<result column="account_auth"				property="accountAuth"/>
+		
+	</resultMap>
+		
+	<!--借款标基本列 -->
+	<sql id="borrowDetailBaseColumn">
+		b.ID,
+		b.USER_ID,
+		b.NAME,
+		b.STATUS,
+		b.APPRSTATUS,
+		b.ORDER,
+		b.BORROWTYPE,
+		b.REPAYMENT_ACCOUNT,
+		b.MONTHLY_REPAYMENT,
+		b.REPAYMENT_YESACCOUNT,
+		b.REPAYMENT_YESINTEREST,
+		b.SUCCESS_TIME,
+		b.END_TIME,
+		b.USE,
+		b.TIME_LIMIT,
+		b.STYLE,
+		b.ACCOUNT,
+		b.ACCOUNT_YES,
+		b.TENDER_TIMES,
+		b.APR,
+		b.LOWEST_ACCOUNT,
+		b.MOST_ACCOUNT,
+		b.VALID_TIME,
+		b.AWARD,
+		b.FUNDS,
+		b.CONTENT,
+		b.SENDMESSAGE,
+		b.ADDTIME,
+		b.ADDIP,
+		b.CANCEL_USER,
+		b.CANCEL_TIME,
+		b.CANCEL_REMARK,
+		b.UUID,
+		b.CONTRACT_NO,
+		b.BID_PASSWORD,
+		b.IS_AUTOTENDER,
+		b.REMARK,
+		b.PLEDGE_TYPE,
+		b.TIMING_BORROW_TIME,
+		b.PUBLISH_TIME,
+		b.product_type,
+		b.borrow_use,
+		b.credit_rating,
+		b.AREA_TYPE,
+		b.AREA_CHANGE_TIME,
+		b.is_custody,
+	    b.isNotice,
+		b.account_auth
+	</sql>
+
+	<!-- 根据id查询借款标详情（用于投标）-->
+	<select id="selectBorrowDetailByBorrowId" resultMap="borrowDetailResultMap"
+		parameterType="java.lang.Integer">
+		select m.USERNAME                   AS username,
+			<include refid="borrowDetailBaseColumn" />
+		from rocky_borrow b,rocky_member m
+		where 1=1
+		AND b.USER_ID = m.ID 
+		AND b.ID = #{borrowId}
+		AND ((
+		b.status in (1,2,4,5,6,7,42) AND (b.APPRSTATUS in (0,3,4) OR (b.APPRSTATUS = 2 AND b.TIMING_BORROW_TIME is not null))
+		) or b.status in(-1,-2,-3))
+	</select>
+		<!-- 根据借款标id查询借款标详情（用于后台审核时查看借款标详情）-->
+	<select id="selectBorrowDetail" resultMap="borrowDetailResultMap"
+		parameterType="java.lang.Integer">
+		select m.USERNAME                   AS username,
+			<include refid="borrowDetailBaseColumn" />
+		from rocky_borrow b,rocky_member m
+		where 1=1
+		AND b.USER_ID = m.ID 
+		AND b.ID = #{borrowId}
+		AND b.status in (1,2,3,4,5,6,7,42,-1,-2,-3) 
+	</select>
+
+	<!-- 根据借款标id查询待还统计数据（用于投标）-->
+	<select id="selectBorrowDetailRepayByBorrowId" resultType="com.dxjr.portal.borrow.vo.BorrowDetailRepayVo"	>
+		SELECT CASE(b.STYLE)
+	               WHEN 4 THEN 1
+	               WHEN 3 THEN 1
+	               ELSE b.TIME_LIMIT - r.ORDER +1       
+	           END 					AS remainPeriods,
+	           r.REPAYMENT_TIME		AS repaymentTime,
+	           r.STATUS AS  status
+		FROM rocky_b_repaymentrecord r,
+		     rocky_borrow b
+		WHERE r.BORROW_ID = b.id
+		AND r.STATUS IN (0,4)
+		AND r.BORROW_ID = #{borrowId}
+		ORDER BY r.ORDER 
+		LIMIT 1
+	</select>
+	
+		<!-- 根据借款标id查询待还本息总额（用于投标）-->
+	<select id="selectRepayTotal" resultType="java.math.BigDecimal"	>
+		SELECT ROUND(SUM(REPAYMENT_ACCOUNT),2) 
+		FROM rocky_b_repaymentrecord
+		WHERE 1=1
+		AND BORROW_ID = #{borrowId}
+		AND STATUS IN (0,4)
+	</select>
+	
+		<!-- 根据借款标id查询已还本息总额（用于投标）-->
+	<select id="queryHavePayTotal" resultType="java.math.BigDecimal"	>
+		SELECT ROUND(SUM(REPAYMENT_YESACCOUNT),2) 
+		FROM rocky_b_repaymentrecord
+		WHERE 1=1
+		AND BORROW_ID = #{borrowId}
+		AND STATUS = 1
+	</select>
+	
+	<!-- 根据借款标id查询已垫付数据（用于投标）-->
+	<select id="queryBorrowDetailWebPayById" resultType="com.dxjr.portal.borrow.vo.BorrowDetailWebPayVo"	>
+		SELECT r.ORDER		AS webPayOrder,
+               r.ADVANCETIME	AS advanceTime,
+	           ROUND(r.ADVANCE_YESACCOUNT,2)	AS advanceYesAccount,
+	           r.WEBSTATUS AS webStatus
+		FROM rocky_b_repaymentrecord r
+		WHERE 1=1
+		AND r.STATUS = 0
+		AND r.WEBSTATUS IN (1,5)
+		AND r.BORROW_ID = #{borrowId}
+		ORDER BY r.ORDER 
+		LIMIT 1
+	</select>
+	
+	<!--根据借款者id统计借款总额和借款笔数-->
+	<select id="queryBorrowDetailCrediByMemberId" parameterType="java.lang.Integer"	resultType="com.dxjr.portal.borrow.vo.BorrowDetailCreditVo">  
+		SELECT 
+			(SELECT COUNT(1) FROM ROCKY_BORROW WHERE USER_ID=#{memberId} and status >=4 AND PLEDGE_TYPE=1)AS borrowCount,
+			(SELECT ROUND(SUM(ACCOUNT),2) FROM ROCKY_BORROW WHERE USER_ID=#{memberId} and status >=4 AND PLEDGE_TYPE=1)AS borrowAccount,
+			(SELECT ROUND(SUM(ACCOUNT),2) FROM ROCKY_BORROW WHERE USER_ID=#{memberId} and status >=2 AND PLEDGE_TYPE=1)AS creditMoney
+		 FROM DUAL
+	</select>
+
+</mapper>

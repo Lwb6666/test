@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.dxjr.portal.account.mapper.DrawLogRecordMapper">
+		<!-- 返回的结果集 -->
+	<resultMap type="com.dxjr.portal.account.vo.TurnDrawLogVO" id="drawLogRecordResultMap">
+		<id property="id" column="id" />
+		<result property="Id" 							column="ID" />
+		<result property="userId"						column="USER_ID"/>
+		<result property="money" 						column="MONEY" />
+		<result property="addtime"				  		column="ADDTIME"/>
+		<result property="remark"  						column="REMARK"/>
+		<result property="credited" 					column="credited"/>
+		<result property="fee" 							column="fee"/>
+		<result property="status" 						column="status"/>
+	</resultMap>
+	
+		<sql id="accountBaseColumn">
+		  	   rm.ID,
+				  d.USER_ID,
+				  d.MONEY,
+				  rm.USERNAME,
+				  d.ADDIP,
+				  d.ADDTIME,
+				  d.REMARK,
+				  d.FEE,
+				  d.CREDITED,
+				  d.STATUS 	
+	</sql>
+	
+		<!-- 封装查询条件 -->
+	<sql id="account_Where_Clause">
+		<if test="userId != null and userId != '' ">
+			and rm.ID =#{userId} 
+		</if>
+		<if test="startTime != null and startTime != ''">
+			and d.ADDTIME <![CDATA[>=]]> #{startTime}
+		</if>
+		<if test="endTime != null and endTime != ''">
+			and d.ADDTIME <![CDATA[<=]]> #{endTime}
+		</if>
+	</sql>
+	
+	
+	<select id="countDrawLogRecord" parameterType="java.util.Map" resultType="java.lang.Integer" >
+		select COUNT(1) 
+		FROM t_todraw_log d
+  INNER JOIN rocky_member rm
+    ON d.user_id = rm.id 
+		where 1=1
+		<include refid="account_Where_Clause"/>
+  	</select>
+  	
+   <select id="queryDrawLogRecordList" parameterType="java.util.Map" resultMap="drawLogRecordResultMap" >
+		select 
+		<include refid="accountBaseColumn"/> 
+		FROM t_todraw_log d
+  INNER JOIN rocky_member rm
+    ON d.user_id = rm.id 
+		where 1=1
+		<include refid="account_Where_Clause"/>
+		ORDER BY d.ID DESC
+  	</select>
+  	
+  	<select id="queryOneMonthDrawLogRecordList" parameterType="java.util.Map" resultMap="drawLogRecordResultMap" >
+		select 
+		<include refid="accountBaseColumn"/> 
+		FROM t_todraw_log d
+  INNER JOIN rocky_member rm
+    ON d.user_id = rm.id 
+		where 1=1
+		<include refid="account_Where_Clause"/>
+		ORDER BY d.ID DESC
+  	</select>
+	
+</mapper>  

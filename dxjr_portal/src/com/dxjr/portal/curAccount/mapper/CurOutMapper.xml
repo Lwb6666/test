@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dxjr.portal.curAccount.mapper.CurOutMapper" >
+  <resultMap id="BaseResultMap" type="com.dxjr.portal.curAccount.entity.CurOut" >
+    <id column="ID" property="id" jdbcType="INTEGER" />
+    <result column="USER_ID" property="userId" jdbcType="INTEGER" />
+    <result column="TARGET_ID" property="targetId" jdbcType="INTEGER" />
+    <result column="TYPE" property="type" jdbcType="INTEGER" />
+    <result column="ACCOUNT" property="account" jdbcType="DECIMAL" />
+    <result column="USE_MONEY" property="useMoney" jdbcType="DECIMAL" />
+    <result column="NO_USE_MONEY" property="noUseMoney" jdbcType="DECIMAL" />
+    <result column="DRAW_MONEY" property="drawMoney" jdbcType="DECIMAL" />
+    <result column="NO_DRAW_MONEY" property="noDrawMoney" jdbcType="DECIMAL" />
+    <result column="ADDUSER" property="adduser" jdbcType="INTEGER" />
+    <result column="ADDTIME" property="addtime" jdbcType="TIMESTAMP" />
+    <result column="ADDIP" property="addip" jdbcType="VARCHAR" />
+    <result column="PLATFORM" property="platform" jdbcType="INTEGER" />
+    <result column="REMARK" property="remark" jdbcType="VARCHAR" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    ID, USER_ID, TARGET_ID, TYPE, ACCOUNT, USE_MONEY, NO_USE_MONEY, DRAW_MONEY, NO_DRAW_MONEY, ADDUSER, ADDTIME, 
+    ADDIP, PLATFORM, REMARK
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from t_cur_out
+    where ID = #{id,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from t_cur_out
+    where ID = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.dxjr.portal.curAccount.entity.CurOut" >
+    insert into t_cur_out (ID, USER_ID, TARGET_ID, 
+      TYPE, ACCOUNT, USE_MONEY, 
+      NO_USE_MONEY, DRAW_MONEY, NO_DRAW_MONEY, ADDUSER, ADDTIME, 
+      ADDIP, PLATFORM, REMARK
+      )
+    values (#{id,jdbcType=INTEGER}, #{userId,jdbcType=INTEGER}, #{targetId,jdbcType=INTEGER}, 
+      #{type,jdbcType=INTEGER}, #{account,jdbcType=DECIMAL}, #{useMoney,jdbcType=DECIMAL}, 
+      #{noUseMoney,jdbcType=DECIMAL}, #{drawMoney,jdbcType=DECIMAL}, #{noDrawMoney,jdbcType=DECIMAL}, 
+      #{adduser,jdbcType=INTEGER}, #{addtime,jdbcType=TIMESTAMP}, 
+      #{addip,jdbcType=VARCHAR}, #{platform,jdbcType=INTEGER}, #{remark,jdbcType=VARCHAR}
+      )
+      <selectKey resultType="java.lang.Integer" order="AFTER" keyProperty="id">  
+   	    SELECT LAST_INSERT_ID() AS ID    
+      </selectKey>
+  </insert>
+  <insert id="insertSelective" parameterType="com.dxjr.portal.curAccount.entity.CurOut" >
+    insert into t_cur_out
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        ID,
+      </if>
+      <if test="userId != null" >
+        USER_ID,
+      </if>
+      <if test="targetId != null" >
+        TARGET_ID,
+      </if>
+      <if test="type != null" >
+        TYPE,
+      </if>
+      <if test="account != null" >
+        ACCOUNT,
+      </if>
+      <if test="useMoney != null" >
+        USE_MONEY,
+      </if>
+      <if test="noUseMoney != null" >
+        NO_USE_MONEY,
+      </if>
+      <if test="drawMoney != null" >
+        DRAW_MONEY,
+      </if>
+      <if test="noDrawMoney != null" >
+        NO_DRAW_MONEY,
+      </if>
+      <if test="adduser != null" >
+        ADDUSER,
+      </if>
+      <if test="addtime != null" >
+        ADDTIME,
+      </if>
+      <if test="addip != null" >
+        ADDIP,
+      </if>
+      <if test="platform != null" >
+        PLATFORM,
+      </if>
+      <if test="remark != null" >
+        REMARK,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="userId != null" >
+        #{userId,jdbcType=INTEGER},
+      </if>
+      <if test="targetId != null" >
+        #{targetId,jdbcType=INTEGER},
+      </if>
+      <if test="type != null" >
+        #{type,jdbcType=INTEGER},
+      </if>
+      <if test="account != null" >
+        #{account,jdbcType=DECIMAL},
+      </if>
+      <if test="useMoney != null" >
+        #{useMoney,jdbcType=DECIMAL},
+      </if>
+      <if test="noUseMoney != null" >
+        #{noUseMoney,jdbcType=DECIMAL},
+      </if>
+      <if test="drawMoney != null" >
+        #{drawMoney,jdbcType=DECIMAL},
+      </if>
+      <if test="noDrawMoney != null" >
+        #{noDrawMoney,jdbcType=DECIMAL},
+      </if>
+      <if test="adduser != null" >
+        #{adduser,jdbcType=INTEGER},
+      </if>
+      <if test="addtime != null" >
+        #{addtime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="addip != null" >
+        #{addip,jdbcType=VARCHAR},
+      </if>
+      <if test="platform != null" >
+        #{platform,jdbcType=INTEGER},
+      </if>
+      <if test="remark != null" >
+        #{remark,jdbcType=VARCHAR},
+      </if>
+    </trim>
+    <selectKey resultType="java.lang.Integer" order="AFTER" keyProperty="id">  
+   	    SELECT LAST_INSERT_ID() AS ID    
+    </selectKey>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.dxjr.portal.curAccount.entity.CurOut" >
+    update t_cur_out
+    <set >
+      <if test="userId != null" >
+        USER_ID = #{userId,jdbcType=INTEGER},
+      </if>
+      <if test="targetId != null" >
+        TARGET_ID = #{targetId,jdbcType=INTEGER},
+      </if>
+      <if test="type != null" >
+        TYPE = #{type,jdbcType=INTEGER},
+      </if>
+      <if test="account != null" >
+        ACCOUNT = #{account,jdbcType=DECIMAL},
+      </if>
+      <if test="useMoney != null" >
+        USE_MONEY = #{useMoney,jdbcType=DECIMAL},
+      </if>
+      <if test="noUseMoney != null" >
+        NO_USE_MONEY = #{noUseMoney,jdbcType=DECIMAL},
+      </if>
+      <if test="drawMoney != null" >
+        DRAW_MONEY = #{drawMoney,jdbcType=DECIMAL},
+      </if>
+      <if test="noDrawMoney != null" >
+        NO_DRAW_MONEY = #{noDrawMoney,jdbcType=DECIMAL},
+      </if>
+      <if test="adduser != null" >
+        ADDUSER = #{adduser,jdbcType=INTEGER},
+      </if>
+      <if test="addtime != null" >
+        ADDTIME = #{addtime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="addip != null" >
+        ADDIP = #{addip,jdbcType=VARCHAR},
+      </if>
+      <if test="platform != null" >
+        PLATFORM = #{platform,jdbcType=INTEGER},
+      </if>
+      <if test="remark != null" >
+        REMARK = #{remark,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where ID = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.dxjr.portal.curAccount.entity.CurOut" >
+    update t_cur_out
+    set USER_ID = #{userId,jdbcType=INTEGER},
+      TARGET_ID = #{targetId,jdbcType=INTEGER},
+      TYPE = #{type,jdbcType=INTEGER},
+      ACCOUNT = #{account,jdbcType=DECIMAL},
+      USE_MONEY = #{useMoney,jdbcType=DECIMAL},
+      NO_USE_MONEY = #{noUseMoney,jdbcType=DECIMAL},
+      DRAW_MONEY = #{drawMoney,jdbcType=DECIMAL},
+      NO_DRAW_MONEY = #{noDrawMoney,jdbcType=DECIMAL},
+      ADDUSER = #{adduser,jdbcType=INTEGER},
+      ADDTIME = #{addtime,jdbcType=TIMESTAMP},
+      ADDIP = #{addip,jdbcType=VARCHAR},
+      PLATFORM = #{platform,jdbcType=INTEGER},
+      REMARK = #{remark,jdbcType=VARCHAR}
+    where ID = #{id,jdbcType=INTEGER}
+  </update>
+  
+  <!-- 根据userId和date查询转出到普通可用余额的记录 -->
+  <select id="queryCountByUserIdAndDate" resultType="java.lang.Integer" >
+  	 SELECT count(id) FROM t_cur_out 
+  	 WHERE TYPE = 0 AND USER_ID = #{userId} AND DATE_FORMAT(ADDTIME,'%Y-%m-%d') = DATE_FORMAT(#{date}, '%Y-%m-%d')
+  </select>
+  
+  <!-- 根据userId和type查询活期宝最新一条转出记录 -->
+  <select id="queryCurOutLastByUserIdAndType" resultMap="BaseResultMap" >
+  	 SELECT <include refid="Base_Column_List" /> FROM t_cur_out 
+  	 WHERE TYPE = #{type} AND USER_ID = #{userId} AND ACCOUNT = #{account} order by id desc limit 1
+  </select>
+</mapper>

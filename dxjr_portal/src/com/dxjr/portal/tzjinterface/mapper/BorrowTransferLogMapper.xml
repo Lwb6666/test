@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.dxjr.portal.tzjinterface.mapper.BorrowTransferLogMapper">
+	
+	<!-- 返回的结果集 -->
+	<resultMap type="com.dxjr.portal.tzjinterface.vo.BorrowTransferLogVo" id="InvitationBorrowResultMap">
+		<id property="bId"              column="bid" />
+		<result property="platId" 		column="platid" />
+		<result property="title" 		column="title" />
+		<result property="amount" 		column="amount" />
+		<result property="period"	    column="period" />
+		<result property="periodUnit"	column="periodunit" />	
+		<result property="bidType"	    column="bidtype" />	
+		<result property="rate"	        column="rate" />	
+		<result property="reward"	    column="reward" />	
+		<result property="bidUrl"	    column="bidurl" />	
+		<result property="bidProcess"	column="bidprocess" />	
+		<result property="returnType"	column="returntype" />	
+	</resultMap>
+	
+	<insert id="insertBorrowTransferLogVo">
+	INSERT INTO tzj_borrow_transfer_log( FK_BORROW_ID, ADD_TIME, TS, DR, IS_SUCCESS, MESSAGE, STATUS) 
+
+                                 SELECT 
+                                  rb.id AS bid,
+                                  UNIX_TIMESTAMP(SYSDATE()),
+                                   UNIX_TIMESTAMP(SYSDATE()),
+                                  '1',1,'记录可投标数据',
+                                  rb.STATUS  
+                                FROM rocky_borrow rb
+                                  LEFT JOIN rocky_member rm
+                                    ON rb.user_id = rm.id
+                                  LEFT JOIN rocky_b_repaymentrecord re
+                                    ON (rb.id = re.BORROW_ID AND rb.STATUS >= 4)
+                                
+                                WHERE rb.STATUS IN (1, 2, 4, 5, 42)
+                                AND rb.IS_AUTOTENDER = 0
+                                AND rb.BORROWTYPE != 4
+                                AND (
+                                
+                                (rb.APPRSTATUS > 2)
+                                OR
+                                
+                                (rb.APPRSTATUS = 2 AND FROM_UNIXTIME(TIMING_BORROW_TIME, '%Y-%m-%d %H:%i:00') >= NOW())
+                                )
+                                AND rb.`STATUS` = 2
+                                GROUP BY rb.id
+                                
+                                ORDER BY rb.STATUS ASC, FIELD(BORROWTYPE, 2, 5, 1, 4, 3),
+                                
+                                APR DESC,
+                                
+                                bid DESC
+	</insert>		
+	
+  	
+  	
+</mapper>  

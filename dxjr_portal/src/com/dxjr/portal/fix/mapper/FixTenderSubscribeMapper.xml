@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dxjr.portal.fix.mapper.FixTenderSubscribeMapper">
+	<resultMap id="BaseResultMap" type="com.dxjr.portal.fix.vo.FixTenderSubscribeVo">
+		<id column="ID" property="id" />
+		<result column="FIX_BORROW_TRANSFER_ID" property="fixBorrowTransferId" />
+		<result column="FIX_TENDER_TRANSFER_ID" property="fixTenderTransferId" />
+		<result column="OLD_FIX_BORROW_ID" property="oldFixBorrowId" />
+		<result column="NEW_FIX_BORROW_ID" property="newFixBorrowId" />
+		<result column="TENDER_ID" property="tenderId" />
+		<result column="BORROW_ID" property="borrowId" />
+		<result column="ACCOUNT" property="account" />
+		<result column="STATUS" property="status" />
+		<result column="ADDTIME" property="addtime" />
+		<result column="ADDUSER" property="adduser" />
+		<result column="ADD_IP" property="addIp" />
+		<result column="ADD_MAC" property="addMac" />
+		<result column="PLATFORM" property="platform" />
+		<result column="TRANSFER_CONTRACT_NO" property="transferContractNo" />
+		<result column="TRANSFER_BORROW_NAME" property="transferBorrowName" />
+		<result column="SUBSCRIBE_CONTRACT_NO" property="subscribeContractNo" />
+		<result column="SUBSCRIBE_BORROW_NAME" property="subscribeBorrowName" />
+		<result column="REMARK" property="remark" />
+		<result column="accountReal" property="accountReal" />
+		<result column="accountSum" property="accountSum" />
+		<result column="TIME_LIMIT" property="timeLimit" />
+		<result column="STYLE" property="style" />
+		<result column="APR" property="apr" />
+		<result column="accountReal" property="accountReal" />
+		<result column="accountSum" property="accountSum" />
+	</resultMap>
+	<sql id="Base_Column_List">
+		fts.ID, fts.FIX_BORROW_TRANSFER_ID,
+		fts.FIX_TENDER_TRANSFER_ID, fts.OLD_FIX_BORROW_ID,
+		fts.NEW_FIX_BORROW_ID,
+		fts.TENDER_ID, fts.BORROW_ID,
+		fts.ACCOUNT,
+		fts.STATUS, fts.ADDTIME, fts.ADDUSER, fts.ADD_IP, fts.ADD_MAC,
+		fts.PLATFORM,
+		fts.TRANSFER_CONTRACT_NO,
+		fts.TRANSFER_BORROW_NAME,
+		fts.SUBSCRIBE_CONTRACT_NO, fts.SUBSCRIBE_BORROW_NAME, fts.REMARK
+	</sql>
+	
+	<!-- 根据转让ID和状态获取认购记录 -->
+	<select id="queryTenderSubscribeListByTransferId" parameterType="com.dxjr.portal.fix.vo.FixTenderTransferCnd"
+		resultMap="BaseResultMap">
+		SELECT
+		<include refid="Base_Column_List" />
+		,ftt.ACCOUNT_REAL as accountReal
+		FROM t_fix_tender_subscribe fts
+		INNER JOIN t_fix_tender_transfer ftt on ftt.ID = fts.FIX_TENDER_TRANSFER_ID
+		WHERE fts.`STATUS` = #{status}
+		AND ftt.FIX_BORROW_TRANSFER_ID = #{fixBorrowTransferId}
+		ORDER BY
+		fts.TENDER_ID
+		FOR UPDATE
+	</select>
+	
+	<!-- 根据ID修改认购状态为认购失败 -->
+	<update id="updateStatusForSubFailureById" parameterType="com.dxjr.portal.fix.vo.FixTenderSubscribeVo">
+		update t_fix_tender_subscribe set `STATUS` = 2,REMARK = #{remark}  where ID = #{id}		
+	</update>
+
+</mapper>

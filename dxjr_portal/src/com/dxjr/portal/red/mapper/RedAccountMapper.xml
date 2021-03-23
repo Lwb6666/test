@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.dxjr.portal.red.mapper.RedAccountMapper">
+
+<resultMap type="com.dxjr.portal.red.entity.RedAccount" id="redAccountMap">
+	<id 	property="id" 				column="id" />
+	<result property="userId" 			column="user_id" />
+	<result property="usebizId"		    column="USEBIZ_ID" />
+	<result property="usebizId"			column="USEBIZ_ID" />
+	<result property="usebizType"		column="USEBIZ_TYPE" />
+	<result property="redType"			column="RED_TYPE" />
+	<result property="addTime"			column="ADD_TIME" />
+	<result property="openTime"			column="OPEN_TIME" />
+	<result property="endTime"			column="END_TIME" />
+	<result property="freezeTime"		column="FREEZE_TIME" />
+	<result property="useTime"			column="USE_TIME" />
+	<result property="lastUpdateTime"	column="LAST_UPDATE_TIME" />
+	<result property="inviterId"		column="INVITER_ID" />
+</resultMap>
+<resultMap type="com.dxjr.portal.red.entity.RedRule" id="redRuleMap">
+	<id 	property="id" 				column="ID" />
+	<result property="redType" 			column="RED_TYPE" />
+	<result property="redMoney"		    column="RED_MONEY" />
+	<result property="useType"			column="USE_TYPE" />
+	<result property="useNew"		column="USE_NEW" />
+	<result property="useApp"			column="USE_APP" />
+	<result property="useMonth"			column="USE_MONTH" />
+	<result property="useMultiple"			column="USE_MULTIPLE" />
+	<result property="useBidType"			column="USE_BID_TYPE" />
+	<result property="useAuto"		column="USE_AUTO" />
+</resultMap>
+<!-- 查询所有 -->
+<select id="getAll" resultMap="redAccountMap">
+	select * from t_red_envelop_account
+</select>
+
+<!-- 根据ID查询 -->
+<select id="getById" parameterType="Integer" resultMap="redAccountMap">
+	select * from t_red_envelop_account where id=#{id}
+</select>
+<select id="getByIdForUpdate" parameterType="Integer" resultMap="redAccountMap">
+	select * from t_red_envelop_account where id=#{id} for update
+</select>
+
+<!-- 查询我可使用的红包,每种面额取到期日最近的一个 -->
+<select id="getMyReds" resultMap="redAccountMap" parameterType="Integer">
+	SELECT * from t_red_envelop_account WHERE USER_ID=#{userId} AND `STATUS`=2 GROUP BY MONEY ORDER BY END_TIME ASC,MONEY DESC LIMIT 10
+</select>
+
+<!-- 获取某个业务使用的红包 -->
+<select id="getBizReds" resultMap="redAccountMap" parameterType="Integer">
+	SELECT * from t_red_envelop_account WHERE USEBIZ_ID=#{usebizId} AND USEBIZ_TYPE=#{usebizType} AND `STATUS`=#{status}
+</select>
+
+<!-- 新增 -->
+<insert id="add" parameterType="com.dxjr.portal.red.entity.RedAccount" >
+	insert into t_red_envelop_account(USER_ID,RED_TYPE,MONEY,ADD_TIME,END_TIME,STATUS,FLAG,INVITER_ID,REMARK,LAST_UPDATE_TIME)
+	values(#{userId},#{redType},#{money},now(),date_add(now(),interval 30 day),#{status},0,#{inviterId},#{remark},#{lastUpdateTime})
+<selectKey resultType="java.lang.Integer" order="AFTER" keyProperty="id">  
+	SELECT LAST_INSERT_ID() AS ID    
+</selectKey>
+</insert>
+
+<!-- 根据红包Id和推荐人Id查询红包是否存在 liutao  20151103-->
+<select id="isExistRed" parameterType="com.dxjr.base.entity.Member" resultType="java.lang.Integer">
+	select count(1) from t_red_envelop_account where  (STATUS=1 or status=2) and id=#{redId}
+	and USER_ID=#{inviterid}
+</select>
+
+<!-- 显示未开启和未使用的红包。 -->
+<select id="queryOpenRed" parameterType="java.lang.Integer" resultMap="redAccountMap">
+  select t.*,IF(t.USE_MONTH=9999,CONCAT('单笔满',t.MONEY*100,'的定期宝可用'),IF(t.USE_MONTH=12,CONCAT('单笔满',t.MONEY*100,'的12月宝可用'),CONCAT('单笔满',t.MONEY*100,'的',t.USE_MONTH,'月及以上期限可用'))) as openCondition from 
+   (SELECT a.*,USE_MONTH  FROM t_red_envelop_account a join t_red_rule r on a.RED_TYPE=r.RED_TYPE and a.MONEY=r.RED_MONEY
+    WHERE (a.STATUS = 1 OR a.STATUS = 2)
+    AND a.user_id =#{userId} order by r.USE_MONTH+0 ) t group by t.id order by t.add_time desc;
+</select>
+<!-- 显示已过期、已冻结、已使用红包。 -->
+<select id="queryExpiredRed"  parameterType="com.dxjr.portal.red.entity.RedAccountCnd"  resultMap="redAccountMap">
+   select * from t_red_envelop_account where !(STATUS=1 or status=2) and user_id=#{userId}
+   order by FREEZE_TIME desc,USE_TIME desc, END_TIME desc
+</select>
+<!-- 统计已过期、已冻结、已使用红包的数量-->
+<select id="queryExpiredRedCount"  parameterType="com.dxjr.portal.red.entity.RedAccountCnd" resultType="java.lang.Integer" >
+   select count(*) from t_red_envelop_account where !(STATUS=1 or status=2) and user_id=#{userId}
+</select>
+<!-- 提示是否有小红点状态 -->
+<select id="queryRedDotState" parameterType="java.lang.Integer" resultMap="redAccountMap">
+	   select * from t_red_envelop_account 
+	where USER_id=#{userId} and flag=0 and (`STATUS`=1 or `STATUS` =2)
+	 order by ADD_TIME,use_time LIMIT 1
+</select>
+<!-- 更新小红点状态为 1 -->
+<select id="updateRedDotState" parameterType="java.lang.Integer">
+	   update t_red_envelop_account
+	set flag=1
+	where USER_id=#{userId} and flag=0 and (`STATUS`=1 or `STATUS` =2)
+</select>
+<update id="updateByPrimaryKeySelective" parameterType="com.dxjr.portal.red.entity.RedAccount" >
+    update t_red_envelop_account
+    <set >
+      <if test="userId != null" >
+        USER_ID = #{userId,jdbcType=INTEGER},
+      </if>
+      <if test="usebizId != null" >
+        USEBIZ_ID = #{usebizId,jdbcType=INTEGER},
+      </if>
+      <if test="redType != null" >
+        RED_TYPE = #{redType,jdbcType=INTEGER},
+      </if>
+      <if test="money != null" >
+        MONEY = #{money,jdbcType=DECIMAL},
+      </if>
+      <if test="addTime != null" >
+        ADD_TIME = #{addTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="openTime != null" >
+        OPEN_TIME = #{openTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="endTime != null" >
+        END_TIME = #{endTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="freezeTime != null" >
+        FREEZE_TIME = #{freezeTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="useTime != null" >
+        USE_TIME = #{useTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="status != null" >
+        STATUS = #{status,jdbcType=INTEGER},
+      </if>
+      <if test="lastUpdateTime != null" >
+        LAST_UPDATE_TIME = #{lastUpdateTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="flag != null" >
+        FLAG = #{flag,jdbcType=INTEGER},
+      </if>
+      <if test="inviterId != null" >
+        INVITER_ID = #{inviterId,jdbcType=INTEGER},
+      </if>
+      <if test="remark != null" >
+        REMARK = #{remark,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where ID = #{id,jdbcType=INTEGER}
+  </update>
+  <!-- 查询已使用红包金额总和 liutao 20151103 -->
+	<select id="queryRedMoneyTotal" parameterType="com.dxjr.portal.red.entity.RedAccountCnd"
+		resultType="java.math.BigDecimal">
+		select IFNULL(sum(money),0) from t_red_envelop_account where STATUS=4 and user_id=#{userId} 
+			<if test="year != null and year != '' and month != '' and month != ''">
+			and	DATE_FORMAT(USE_TIME,'%Y-%m') =CONCAT(#{year,jdbcType=VARCHAR},'-',#{month,jdbcType=VARCHAR})
+			</if>
+	</select>
+	
+	
+	<!-- 获取符合使用规则的红包 -->
+	<select id="getMyRuleReds" resultMap="redAccountMap" parameterType="java.util.Map">
+			SELECT * from t_red_envelop_account ra WHERE ra.USER_ID=#{userid} 
+			and 
+			exists 
+			(select 1 from t_red_rule ru
+			 where ru.RED_TYPE= ra.RED_TYPE and ru.RED_MONEY=ra.MONEY 
+			       and ru.USE_TYPE =1 and (ru.USE_MONTH=#{limit} OR ru.USE_MONTH=9999) )
+			AND `STATUS`=2 GROUP BY MONEY ORDER BY MONEY DESC,END_TIME ASC LIMIT 10
+	</select>
+<select id="queryRedRule" resultMap="redRuleMap" parameterType="com.dxjr.portal.red.entity.RedAccountCnd">
+		SELECT * from t_red_rule WHERE 1=1
+		 <if test="redType != null " >
+      and  RED_TYPE = #{redType,jdbcType=VARCHAR}
+      </if>
+       <if test="redMoney != null" >
+     and   RED_MONEY = #{redMoney,jdbcType=VARCHAR}
+      </if>
+       <if test="redMonth != null" >
+     and   (USE_MONTH = #{redMonth,jdbcType=VARCHAR} OR USE_MONTH=9999)
+      </if>
+</select>
+</mapper>

@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dxjr.portal.transfer.mapper.BSubscribeMapper">
+
+	<resultMap id="BaseResultMap" type="com.dxjr.portal.transfer.entity.BSubscribe">
+		<id column="ID" property="id" jdbcType="INTEGER" />
+		<result column="USER_ID" property="userId" jdbcType="INTEGER" />
+		<result column="TRANSFER_ID" property="transferId" jdbcType="INTEGER" />
+		<result column="BORROW_ID" property="borrowId" jdbcType="INTEGER" />
+		<result column="ACCOUNT" property="account" jdbcType="DECIMAL" />
+		<result column="REPAYMENT_CAPITAL" property="repaymentCapital" jdbcType="DECIMAL" />
+		<result column="REPAYMENT_INTEREST" property="repaymentInterest" jdbcType="DECIMAL" />
+		<result column="REPAYMENT_ACCOUNT" property="repaymentAccount" jdbcType="DECIMAL" />
+		<result column="DRAW_MONEY" property="drawMoney" jdbcType="DECIMAL" />
+		<result column="NO_DRAW_MONEY" property="noDrawMoney" jdbcType="DECIMAL" />
+		<result column="USER_LEVEL" property="userLevel" jdbcType="VARCHAR" />
+		<result column="RATIO" property="ratio" jdbcType="VARCHAR" />
+		<result column="IS_VIP" property="isVip" jdbcType="BIT" />
+		<result column="STATUS" property="status" jdbcType="BIT" />
+		<result column="ADD_TIME" property="addTime" jdbcType="TIMESTAMP" />
+		<result column="ADD_IP" property="addIp" jdbcType="VARCHAR" />
+		<result column="ADD_MAC" property="addMac" jdbcType="VARCHAR" />
+		<result column="SUBSCRIBE_TYPE" property="subscribeType" jdbcType="BIT" />
+		<result column="AUTOTENDER_ORDER" property="autotenderOrder" jdbcType="INTEGER" />
+		<result column="AUTOTENDER_ORDER_REMARK" property="autotenderOrderRemark" jdbcType="VARCHAR" />
+	</resultMap>
+
+	<resultMap id="BaseResultVoMap" type="com.dxjr.portal.transfer.vo.BsubscribeVo"  extends="BaseResultMap">
+	   <result column="username" property="userName" jdbcType="VARCHAR" />
+	   <result column="transferUserName" property="transferUserName" jdbcType="VARCHAR" />
+	   <result column="isTransfer" property="isTransfer" jdbcType="INTEGER" />
+	   <result column="TENDER_ID" property="tenderId" />
+	   <result column="FIRST_TENDER_REAL_ID" property="firstTenderRealId" />
+	   <result column="oldFixId" property="oldFixId" />
+	   <result column="newFixId" property="newFixId" />
+	   <result column="firstStatus" property="firstStatus" />
+	   <result column="parentId" property="parentId" />	      
+	</resultMap>
+	
+	
+	
+	<sql id="Base_Column_List">
+		ID, USER_ID, TRANSFER_ID, BORROW_ID, ACCOUNT,
+		REPAYMENT_CAPITAL,
+		REPAYMENT_INTEREST,
+		REPAYMENT_ACCOUNT, DRAW_MONEY,
+		NO_DRAW_MONEY, USER_LEVEL, RATIO, IS_VIP, STATUS,
+		ADD_TIME, ADD_IP,
+		ADD_MAC, SUBSCRIBE_TYPE, AUTOTENDER_ORDER,
+		AUTOTENDER_ORDER_REMARK
+	</sql>
+	
+	<select id="selectById" resultMap="BaseResultMap" parameterType="java.lang.Integer">
+		select
+		<include refid="Base_Column_List" />
+		from rocky_b_subscribe
+		where ID = #{id,jdbcType=INTEGER}
+	</select>
+	
+	<insert id="insert" parameterType="com.dxjr.portal.transfer.entity.BSubscribe">
+		insert into rocky_b_subscribe
+		(ID, USER_ID, TRANSFER_ID,
+		BORROW_ID, ACCOUNT, REPAYMENT_CAPITAL,
+		REPAYMENT_INTEREST, REPAYMENT_ACCOUNT, DRAW_MONEY,
+		NO_DRAW_MONEY,
+		USER_LEVEL, RATIO,
+		IS_VIP, STATUS, ADD_TIME, ADD_IP,
+		ADD_MAC,
+		SUBSCRIBE_TYPE, AUTOTENDER_ORDER,
+		AUTOTENDER_ORDER_REMARK)
+		values
+		(#{id,jdbcType=INTEGER}, #{userId,jdbcType=INTEGER},
+		#{transferId,jdbcType=INTEGER},
+		#{borrowId,jdbcType=INTEGER},
+		#{account,jdbcType=DECIMAL}, #{repaymentCapital,jdbcType=DECIMAL},
+		#{repaymentInterest,jdbcType=DECIMAL},
+		#{repaymentAccount,jdbcType=DECIMAL}, #{drawMoney,jdbcType=DECIMAL},
+		#{noDrawMoney,jdbcType=DECIMAL}, #{userLevel,jdbcType=VARCHAR},
+		#{ratio,jdbcType=VARCHAR},
+		#{isVip,jdbcType=BIT},
+		#{status,jdbcType=BIT}, #{addTime,jdbcType=TIMESTAMP},
+		#{addIp,jdbcType=VARCHAR},
+		#{addMac,jdbcType=VARCHAR},
+		#{subscribeType,jdbcType=BIT}, #{autotenderOrder,jdbcType=INTEGER},
+		#{autotenderOrderRemark,jdbcType=VARCHAR})
+	</insert>
+	
+	
+	
+      <select id="querySubscribesByTransferId"  	   parameterType="java.lang.Integer"   resultMap="BaseResultVoMap"    >
+              SELECT m.userName,USER_LEVEL,ACCOUNT, ADD_TIME,s.platform,s.USER_ID as userId
+                 from   rocky_b_subscribe s  left join rocky_member m on  s.USER_ID=m.id 
+			  where s.STATUS in (3,1)  and  s.TRANSFER_ID=#{transferId} order by add_time desc 
+      </select>
+        
+	 <select id="queryCountSubscribesByTransferId"  	   parameterType="java.lang.Integer"  resultType="java.lang.Integer"    >
+               SELECT count(1)  from   rocky_b_subscribe s    where  s.STATUS in (3,1)  and  s.TRANSFER_ID=#{transferId}
+      </select>
+      
+      
+       <select id="queryBorrowSubscribesByBorrowId"  	   parameterType="java.lang.Integer"   resultMap="BaseResultVoMap"    >
+			SELECT * from(
+				SELECT   s.ADD_TIME, (select username from rocky_member where id=t.user_id) transferUserName ,  m.userName,s.account,s.TRANSFER_ID, 0 as isTransfer,0 as oldFixId,0 as newFixId
+                 from   rocky_b_subscribe s  left join rocky_member m on  s.USER_ID=m.id
+                 left join rocky_b_transfer t on s.TRANSFER_ID=t.id
+			  where s.STATUS=3     and s.BORROW_ID=#{borrowId}
+				UNION ALL
+				SELECT fs.ADD_TIME,(select username from rocky_member where id=ft.user_id) transferUserName,m.userName,ftb.account as account,fs.FIRST_TRANSFER_ID as TRANSFER_ID,1 as isTransfer,0 as oldFixId,0 as newFixId
+				  from t_first_subscribe fs 
+				  INNER JOIN t_first_transfer ft ON ft.ID = fs.FIRST_TRANSFER_ID 
+				  INNER JOIN rocky_member m on  fs.USER_ID=m.id
+				  INNER JOIN t_first_transfer_borrow ftb on fs.FIRST_TRANSFER_ID  = ftb.FIRST_TRANSFER_ID and ftb.BORROW_ID = #{borrowId}
+				  WHERE fs.`STATUS` = 3
+				UNION ALL
+				 SELECT fixs.ADDTIME,CONCAT('定期宝（',fixs.TRANSFER_CONTRACT_NO,')') transferUserName,case when fixs.USER_TYPE = 2 then (select username from rocky_member where id=fixs.USER_ID) else CONCAT('定期宝（',fixs.SUBSCRIBE_CONTRACT_NO,')') end userName,fixs.account as account,fixs.FIX_BORROW_TRANSFER_ID as TRANSFER_ID,2 as isTransfer,fixs.OLD_FIX_BORROW_ID as oldFixId,fixs.NEW_FIX_BORROW_ID as newFixId
+				  from t_fix_tender_subscribe fixs 				  				  
+				  WHERE fixs.`STATUS` = 3 and fixs.BORROW_ID=#{borrowId}
+			)tmp
+			
+			order by tmp.Add_TIME desc
+      </select>
+      
+      
+       <select id="queryCountBorrowSubscribesByBorrowId"  	   parameterType="java.lang.Integer"  resultType="java.lang.Integer"    >
+              SELECT COUNT(1) from(
+				SELECT   s.ADD_TIME, (select username from rocky_member where id=t.user_id) transferUserName ,  m.userName,s.account,s.TRANSFER_ID
+                 from   rocky_b_subscribe s  left join rocky_member m on  s.USER_ID=m.id
+                 left join rocky_b_transfer t on s.TRANSFER_ID=t.id
+			  where s.STATUS=3     and s.BORROW_ID=#{borrowId}
+				UNION ALL
+				SELECT fs.ADD_TIME,(select username from rocky_member where id=ft.user_id) transferUserName,m.userName,ftb.account as account,fs.FIRST_TRANSFER_ID as TRANSFER_ID
+				  from t_first_subscribe fs 
+				  INNER JOIN t_first_transfer ft ON ft.ID = fs.FIRST_TRANSFER_ID 
+				  INNER JOIN rocky_member m on  fs.USER_ID=m.id
+				  INNER JOIN t_first_transfer_borrow ftb on fs.FIRST_TRANSFER_ID  = ftb.FIRST_TRANSFER_ID and ftb.BORROW_ID = #{borrowId}
+				  WHERE fs.`STATUS` = 3
+			)tmp
+      </select>
+      
+      
+        <select id="queryCountTransferinfosByBorrowId"  	   parameterType="java.lang.Integer"   resultType="java.lang.Integer"    >
+             SELECT   count(1)   FROM 
+             (SELECT DISTINCT USER_ID ,TENDER_ID, FIRST_TENDER_REAL_ID,  ADD_TIME,  userName,  ACCOUNT,USER_LEVEL ,isTransfer,firstStatus,parentId
+							from (SELECT  t.USER_ID ,T.ID AS TENDER_ID,T.FIRST_TENDER_REAL_ID AS FIRST_TENDER_REAL_ID, FROM_UNIXTIME( t.ADDTIME) ADD_TIME,  m1.userName, IF(t.PARENT_ID IS NULL, t.ACCOUNT, 
+								(SELECT s.ACCOUNT FROM rocky_b_subscribe s WHERE s.TENDER_ID = t.ID)) ACCOUNT,t.USER_LEVEL , IF(t.parent_id IS NULL,0,1)  isTransfer,tfs_temp.`STATUS` firstStatus,t.PARENT_ID parentId   FROM rocky_b_tenderrecord t  
+								left join rocky_member m1 on  t.USER_ID=m1.id  
+								left join (
+								select tfs.NEW_FIRST_TENDER_REAL_ID,tfs.`STATUS` from t_first_subscribe tfs 
+								left join t_first_transfer_borrow tftb on tfs.FIRST_TRANSFER_ID=tftb.FIRST_TRANSFER_ID
+								where tftb.BORROW_ID=#{borrowId}
+								) tfs_temp on t.FIRST_TENDER_REAL_ID=tfs_temp.NEW_FIRST_TENDER_REAL_ID 
+								WHERE t.BORROW_ID = #{borrowId}  AND t.STATUS in(0,1,2) and  t.TENDER_TYPE !=3
+									union all 
+									 SELECT t.USER_ID ,T.ID AS TENDER_ID,'', t.ADDTIME ADD_TIME, m1.userName, t.account ACCOUNT,'' , 2 isTransfer,NULL firstStatus,NULL parentId FROM t_fix_tender_user t
+									 left join rocky_member m1 on t.USER_ID=m1.id
+									 left join t_fix_tender_subscribe fixs on t.TENDER_ID=fixs.TENDER_ID AND fixs.`STATUS`=3 
+									 WHERE t.BORROW_ID = #{borrowId} AND t.STATUS =1 
+									) a) tt
+        </select>
+      
+        <select id="queryTransferinfosByBorrowId"  	   parameterType="java.util.Map"   resultMap="BaseResultVoMap"    >
+                
+	SELECT DISTINCT USER_ID ,TENDER_ID, FIRST_TENDER_REAL_ID,  ADD_TIME,  userName,  ACCOUNT,USER_LEVEL ,isTransfer,firstStatus,parentId
+	
+	 from (
+	SELECT  t.USER_ID ,T.ID AS TENDER_ID,T.FIRST_TENDER_REAL_ID AS FIRST_TENDER_REAL_ID, FROM_UNIXTIME( t.ADDTIME) ADD_TIME,  m1.userName, IF(t.PARENT_ID IS NULL, t.ACCOUNT, IF((SELECT s.ACCOUNT FROM rocky_b_subscribe s WHERE s.TENDER_ID = t.ID) IS NULL, (SELECT ACCOUNT FROM t_fix_tender_subscribe s WHERE s.TENDER_ID  = t.ID),(SELECT s.ACCOUNT FROM rocky_b_subscribe s WHERE s.TENDER_ID = t.ID))) ACCOUNT,
+	t.USER_LEVEL , IF(t.parent_id IS NULL,0,IF((SELECT ACCOUNT FROM t_fix_tender_subscribe s WHERE s.TENDER_ID  = t.ID) IS NULL, 1, 2)) isTransfer,
+	tfs_temp.`STATUS` firstStatus,t.PARENT_ID parentId    FROM rocky_b_tenderrecord t  
+	left join rocky_member m1 on  t.USER_ID=m1.id   
+	left join (
+	select tfs.NEW_FIRST_TENDER_REAL_ID,tfs.`STATUS` from t_first_subscribe tfs 
+	left join t_first_transfer_borrow tftb on tfs.FIRST_TRANSFER_ID=tftb.FIRST_TRANSFER_ID
+	where tftb.BORROW_ID=#{borrowId}
+	) tfs_temp on t.FIRST_TENDER_REAL_ID=tfs_temp.NEW_FIRST_TENDER_REAL_ID
+	WHERE t.BORROW_ID = #{borrowId}  AND t.STATUS in(0,1,2) and  t.TENDER_TYPE !=3
+	                 
+	union all 
+	 SELECT t.USER_ID ,T.ID AS TENDER_ID,'', t.ADDTIME ADD_TIME, m1.userName, t.account ACCOUNT,'' , IF(fixs.id IS NULL, 3, 2) isTransfer,NULL firstStatus,NULL parentId FROM t_fix_tender_user t
+	 left join rocky_member m1 on t.USER_ID=m1.id
+	 left join t_fix_tender_subscribe fixs on t.TENDER_ID=fixs.TENDER_ID AND fixs.`STATUS`=3
+	 WHERE t.BORROW_ID = #{borrowId} AND t.STATUS =1   
+	) a
+                 
+
+  ORDER by a.ADD_TIME DESC,a.TENDER_ID DESC
+        </select>
+      
+      
+       <select id="querySumAccountByUserId"  	   parameterType="com.dxjr.portal.transfer.vo.TransferCnd"  resultType="java.lang.String"    >
+              select sum(ACCOUNT) from rocky_b_subscribe
+				where USER_ID = #{userId}  and TRANSFER_ID =#{transferId};
+      </select>
+	 
+	 <sql id="Subscribes_Column_List">
+		s.ID, s.USER_ID, s.TRANSFER_ID, s.BORROW_ID, s.ACCOUNT,
+		s.REPAYMENT_CAPITAL,
+		s.REPAYMENT_INTEREST,
+		s.REPAYMENT_ACCOUNT, s.DRAW_MONEY,
+		s.NO_DRAW_MONEY, s.USER_LEVEL, s.RATIO, s.IS_VIP, s.STATUS,
+		s.ADD_TIME, s.ADD_IP,
+		s.ADD_MAC, s.SUBSCRIBE_TYPE, s.AUTOTENDER_ORDER,
+		s.AUTOTENDER_ORDER_REMARK
+	 </sql>
+	
+	  <select id="querySubscribesListByTransferId"  parameterType="java.lang.Integer" resultMap="BaseResultVoMap"    >
+         SELECT <include refid="Subscribes_Column_List" />, m.USERNAME as username
+		 from rocky_b_subscribe s left join rocky_member m on  s.USER_ID=m.id
+		 where s.STATUS in (3,1) AND s.TRANSFER_ID = #{transferId,jdbcType=INTEGER} order by add_time desc
+      </select>
+      
+      <select id="querySubscribesSumByTransferId"  parameterType="java.lang.Integer" resultType="java.math.BigDecimal"    >
+         SELECT sum(s.ACCOUNT)
+		 from rocky_b_subscribe s 
+		 where s.STATUS in (3,1) AND s.TRANSFER_ID = #{transferId,jdbcType=INTEGER}
+      </select>
+      
+      <!-- 根据userId查询认购债权记录数量 -->
+      <select id="querySubscribesCountByUserId"  parameterType="java.lang.Integer" resultType="java.lang.Integer"    >
+         SELECT count(s.id)
+		 from rocky_b_subscribe s 
+		 where s.USER_ID = #{userId,jdbcType=INTEGER}
+      </select>
+      
+      <!-- 查询userId和transferId查询该用户所认购的最后一笔债权认购记录 -->
+      <select id="querySubscribesLastByUserIdAndTransferId" resultMap="BaseResultVoMap" >
+	     SELECT <include refid="Base_Column_List" />
+		 FROM rocky_b_subscribe 
+		 WHERE TRANSFER_ID= #{transferId} AND USER_ID = #{userId} AND ACCOUNT = #{account} order by id desc limit 1
+ 	  </select>
+</mapper>

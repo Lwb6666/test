@@ -1,0 +1,379 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.dxjr.portal.repayment.mapper.BRepaymentRecordMapper">
+	
+	<!-- 待还结果集 -->
+	<resultMap type="com.dxjr.portal.repayment.vo.BRepaymentRecordVo" id="bRepaymentRecordVoResultMap">
+		<id property="id" column="id" />
+		<result property="status" 					column="STATUS" />
+		<result property="webstatus" 				column="WEBSTATUS" />
+		<result property="order" 					column="ORDER" />
+		<result property="borrowId" 				column="BORROW_ID" />
+		<result property="repaymentTime"	    	column="REPAYMENT_TIME" />
+		<result property="repaymentTime2"	    	column="REPAYMENT_TIME_2" />
+		<result property="repaymentYestime"  		column="REPAYMENT_YESTIME" />
+		<result property="repaymentAccount"			column="REPAYMENT_ACCOUNT"/>
+		<result property="repaymentYesaccount" 		column="REPAYMENT_YESACCOUNT"/>		
+		<result property="lateDays" 				column="LATE_DAYS" />
+		<result property="lateInterest" 			column="LATE_INTEREST" />
+		<result property="interest" 				column="INTEREST" />
+		<result property="capital" 					column="CAPITAL" />
+		<result property="addtime" 					column="ADDTIME" />
+		<result property="addip" 					column="ADDIP" />
+		<result property="userId" 					column="USER_ID" />
+		<result property="advancetime" 				column="ADVANCETIME" />
+		<result property="advanceYesAmount" 		column="ADVANCE_YESACCOUNT" />
+		<result property="afterwebpayLateDay" 		column="AFTERWEBPAY_LATE_DAY" />
+		<result property="isRepairInterest" 		column="IS_REPAIR_INTEREST" />
+		<result property="repairInterestTime" 		column="REPAIR_INTEREST_TIME" />
+		<result property="sumRepaymentAccount" 		column="sumRepaymentAccount" />
+		<result property="sumCapital" 				column="sumCapital" />
+		<result property="sumInterest" 				column="sumInterest" />
+		<result property="sumLateInterest" 			column="sumLateInterest" />
+		<result property="timeLimit" 				column="time_limit" />
+		<result property="apr" 						column="apr" />
+		<result column="NAME" 						property="name" />
+		<result column="borrowId" 					property="borrowId" />
+		<result column="style" 						property="style" />
+		<result column="creditRating" 				property="creditRating" />
+		<result column="BORROWTYPE" 				property="borrowType" />
+	</resultMap>
+	
+	  	<!-- 待还记录关联借款信息map -->
+  	<resultMap id="repaymentBorrowMap" type="com.dxjr.portal.repayment.vo.RepaymentBorrowVo">
+		<result column="ID" 						property="id"  />
+		<result column="STATUS" 					property="status" />
+		<result column="NAME" 						property="name" />
+		<result column="BORROWTYPE" 				property="borrowType"  />
+		<result column="USER_ID" 					property="userId" />
+		<result column="REPAYMENT_ACCOUNT" 			property="account" />
+		<result column="APR" 						property="apr" />
+		<result column="STYLE" 						property="style"  />
+		<result column="VALID_TIME" 				property="validTime" />
+		<result column="ADDTIME" 					property="addTime" />
+		<result column="repamentId" 				property="repamentId"/>
+		<result column="REPAYMENTSTATUS" 			property="repamentStatus" />
+		<result column="REPAYMENTWEBSTATUS" 		property="repamentWebStatus" />	
+		<result column="ADVANCE_YESACCOUNT" 		property="advanceYesAmount" />	
+		<result column="ADVANCETIME" 		        property="advancetime" />
+	</resultMap>
+	
+	<!--待还基本列 -->
+	<sql id="bRepaymentRecordBaseColumn">
+		r.ID, 
+		r.STATUS, 
+		r.WEBSTATUS, 
+		r.ORDER, 
+		r.BORROW_ID, 
+		r.REPAYMENT_TIME, 
+		r.REPAYMENT_YESTIME, 
+		r.REPAYMENT_ACCOUNT,
+		r.REPAYMENT_YESACCOUNT,		
+		CASE WHEN r.status = 0 AND TIMESTAMPDIFF(DAY,DATE_FORMAT(FROM_UNIXTIME(r.REPAYMENT_TIME),'%Y-%m-%d'),CURDATE()) > 0 THEN
+			TIMESTAMPDIFF(DAY,DATE_FORMAT(FROM_UNIXTIME(r.REPAYMENT_TIME),'%Y-%m-%d'),CURDATE())
+		ELSE
+			r.LATE_DAYS
+		END LATE_DAYS,
+		CASE WHEN r.status = 0 AND TIMESTAMPDIFF(DAY,DATE_FORMAT(FROM_UNIXTIME(r.REPAYMENT_TIME),'%Y-%m-%d'),CURDATE()) > 0 THEN
+			round(r.REPAYMENT_ACCOUNT*0.002*TIMESTAMPDIFF(DAY,DATE_FORMAT(FROM_UNIXTIME(r.REPAYMENT_TIME),'%Y-%m-%d'),CURDATE()),2)
+		ELSE
+			r.LATE_INTEREST
+		END LATE_INTEREST,
+		r.INTEREST,
+		r.CAPITAL,
+		r.ADDTIME,
+		r.ADDIP,
+		r.USER_ID,
+		r.ADVANCETIME,
+		r.ADVANCE_YESACCOUNT,
+		r.AFTERWEBPAY_LATE_DAY,
+		r.IS_REPAIR_INTEREST,
+		r.REPAIR_INTEREST_TIME
+	</sql>
+  	
+  	<!-- :根据id获得待还记录 -->
+	<select id="queryBRepaymentRecordById" parameterType="java.lang.Integer" resultMap="bRepaymentRecordVoResultMap" >
+		SELECT  
+			 <include refid="bRepaymentRecordBaseColumn"/>
+		FROM rocky_b_repaymentrecord r
+		WHERE r.id = #{id}
+  	</select>  	
+  	
+  	<!-- 根据id获得待还记录并锁定 -->
+	<select id="queryBRepaymentRecordByIdForupdate" parameterType="java.lang.Integer" resultMap="bRepaymentRecordVoResultMap" >
+		SELECT  
+			 <include refid="bRepaymentRecordBaseColumn"/>
+		FROM rocky_b_repaymentrecord r
+		WHERE r.id = #{id} for update
+  	</select>  	  	
+  	
+  	 <!-- 根据借款标id获得待还记录集合 -->
+	<select id="queryBRepaymentRecordByBorrowId" parameterType="java.lang.Integer" resultMap="bRepaymentRecordVoResultMap" >
+		SELECT  
+			 <include refid="bRepaymentRecordBaseColumn"/>
+		FROM 
+			rocky_b_repaymentrecord r
+		Inner join 
+			ROCKY_BORROW b on b.id = r.BORROW_ID
+		WHERE 
+			r.BORROW_ID = #{borrowId}
+		ORDER BY 
+			r.ID ASC
+  	</select> 
+  	
+  	<!-- 根据当前用户分页查询待还记录 -->
+	<select id="selectRepayments" resultMap="repaymentBorrowMap">
+		SELECT b.ID,
+			   b.STATUS,
+			   b.NAME,
+			   b.BORROWTYPE,
+			   b.USER_ID,
+			   b.REPAYMENT_ACCOUNT,
+			   b.APR,
+			   b.STYLE,
+			   b.VALID_TIME,
+			   b.ADDTIME,
+		 	   r.id				AS repamentId,
+		 	   r.`STATUS`		AS repamentStatus,
+		 	   r.WEBSTATUS 		AS repamentWebStatus
+		FROM rocky_borrow b 
+		LEFT JOIN rocky_b_repaymentrecord r ON b.ID = r.borrow_id 
+		LEFT JOIN rocky_borrow_approved a ON	b.ID = a.BORROW_ID 
+		WHERE 1=1
+		AND a.`STATUS` = 4 
+		AND b.`STATUS` IN (4,5,42) 
+		AND b.USER_ID = #{userId}
+	</select>
+	
+	<!-- 查询当前用户的待还记录数量 -->
+	<select id="selectRepaymentsCount" resultType="java.lang.Integer">
+		SELECT count(1) FROM rocky_borrow b
+		LEFT JOIN rocky_b_repaymentrecord r ON b.ID = r.borrow_id 
+		LEFT JOIN rocky_borrow_approved a ON b.ID = a.BORROW_ID 
+		WHERE 1=1
+		AND a.`STATUS` = 4 
+		AND b.`STATUS` IN (4,5,42) 
+		and b.USER_ID =	#{userId} 
+	</select>  
+	
+	<sql id="repayment_Where_Clause">
+		<if test="id != null">
+			AND r.id =#{id}
+		</if>
+		<if test="userId != null ">
+			AND r.USER_ID = #{userId}
+		</if>
+		<if test="status != null">
+			AND r.status = #{status}
+		</if>
+		<if test="beginTime != null and beginTime != ''">
+			AND r.REPAYMENT_TIME <![CDATA[>=]]> #{beginTime}
+		</if>
+		<if test="endTime != null and endTime != ''">
+			AND r.REPAYMENT_TIME <![CDATA[<=]]> #{endTime}
+		</if>
+		<if test="webStatus != null">
+			AND r.webStatus = #{webStatus}
+		</if>
+		<if test="borrowId != null">
+			AND r.borrow_Id = #{borrowId}
+		</if>
+	</sql>
+	
+	<!-- 待还列表   -->
+	<select id="queryRepaymentList" parameterType="com.dxjr.portal.repayment.vo.RepaymentRecordCnd" resultMap="bRepaymentRecordVoResultMap">
+		SELECT 
+			FROM_UNIXTIME(r.REPAYMENT_YESTIME) as REPAYMENT_TIME_2,
+			rb.name name,
+			rb.time_limit time_Limit,
+			rb.apr apr,
+			rb.id borrowId,
+			rb.style style,
+            RB.credit_rating AS creditRating,
+            RB.BORROWTYPE ,
+			<include refid="bRepaymentRecordBaseColumn"/> 		
+		FROM 
+			ROCKY_B_REPAYMENTRECORD r,
+			ROCKY_BORROW RB
+		WHERE r.BORROW_ID = RB.ID
+		<include refid="repayment_Where_Clause"/>
+		<if test="borrowName != null and borrowName !=''">
+			AND RB.NAME LIKE  CONCAT(#{borrowName}, '%' )
+		</if>
+		
+		ORDER BY 
+		<if test="orderByOrder == 'Y'.toString()">
+			r.order desc,
+		</if>
+		<!--fateson edit  使用ASC 是怕影响其他地方 ，这里还款计划按照 order 升序  -->
+		<if test="orderByOrder == 'ASC'.toString()">
+			r.order asc,
+		</if>
+		 r.status asc,r.REPAYMENT_YESTIME desc , r.REPAYMENT_TIME asc
+	</select>	
+	
+	<!-- 待还列表记录数   -->
+	<select id="queryRepaymentCount" parameterType="com.dxjr.portal.repayment.vo.RepaymentRecordCnd" resultType="java.lang.Integer">
+		SELECT 
+			count(1)		
+		FROM 
+			ROCKY_B_REPAYMENTRECORD r,
+			ROCKY_BORROW RB
+		WHERE r.BORROW_ID = RB.ID
+		<include refid="repayment_Where_Clause"/>
+		<if test="borrowName != null and borrowName !=''">
+			AND RB.NAME LIKE  CONCAT(#{borrowName}, '%' )
+		</if>
+	</select>	
+	
+	<!-- 统计还款总额、本金总额、利息总额、罚息总额等数据项 -->
+	<select id="repaymentRecordTongji" parameterType="com.dxjr.portal.repayment.vo.RepaymentRecordCnd" resultType="java.util.Map">
+		SELECT SUM(r.REPAYMENT_ACCOUNT) repaymentAccountTotal,SUM(r.CAPITAL) capitalTotal,SUM(r.INTEREST) interestTotal,
+		SUM(r.LATE_INTEREST) lateInterestTotal FROM (
+		SELECT r.REPAYMENT_ACCOUNT,r.CAPITAL,r.INTEREST,
+		CASE WHEN r.status = 0 AND TIMESTAMPDIFF(DAY,DATE_FORMAT(FROM_UNIXTIME(r.REPAYMENT_TIME),'%Y-%m-%d'),CURDATE()) > 0 THEN
+			round(r.REPAYMENT_ACCOUNT*0.002*TIMESTAMPDIFF(DAY,DATE_FORMAT(FROM_UNIXTIME(r.REPAYMENT_TIME),'%Y-%m-%d'),CURDATE()),2)
+		ELSE
+			r.LATE_INTEREST
+		END LATE_INTEREST
+		FROM ROCKY_B_REPAYMENTRECORD r,ROCKY_BORROW RB
+		WHERE r.BORROW_ID = RB.ID 
+		<include refid="repayment_Where_Clause"/>
+		<if test="borrowName != null and borrowName !=''">
+			AND RB.NAME LIKE  CONCAT(#{borrowName}, '%' )
+		</if>
+		) r
+	</select>
+  	
+	<!-- 查询本期还款期数之前未还记录数量   -->
+	<select id="queryBeforeOrderUnPayCount" resultType="java.lang.Integer">
+	  <![CDATA[
+		SELECT COUNT(r.ID) 
+		FROM rocky_b_repaymentrecord r
+		WHERE r.STATUS = 0
+		AND r.ORDER < #{order}
+		AND r.BORROW_ID = #{borrowId}
+	  ]]>
+	</select>	  	
+	
+	<!-- 待还各项总额  -->
+	<select id="querySums" parameterType="java.util.Map" resultMap="bRepaymentRecordVoResultMap">
+		SELECT 
+			ifnull(SUM(r.REPAYMENT_ACCOUNT),0) sumRepaymentAccount,	
+			ifnull(SUM(r.CAPITAL),0) sumCapital,
+			ifnull(SUM(r.interest),0) sumInterest,
+			ifnull(SUM(r.late_interest),0) sumLateInterest
+		FROM 
+			ROCKY_B_REPAYMENTRECORD r 
+		LEFT JOIN 
+			ROCKY_BORROW RB ON r.BORROW_ID = RB.ID
+		WHERE 1=1 
+		
+		<if test="borrowStatus != null and borrowStatus != ''.toString()">
+			 AND rb.status = #{borrowStatus}
+		</if>
+		
+		<if test="webStatus != null and webStatus != ''.toString()">
+			 AND r.webStatus = #{webStatus}
+		</if>
+		
+		<if test="borrowId != null and borrowId != ''.toString()">
+			 AND r.borrow_Id = #{borrowId}
+		</if>
+		
+		<if test="status != null and status != ''.toString()">
+			 AND r.status = #{status}
+		</if>
+		
+		<if test="keyword != null and keyword != ''.toString()">
+			 AND RB.NAME LIKE  CONCAT('%', #{keyword}, '%' )
+		</if>
+		
+		<if test="userID != null and userID != ''.toString()">
+			 AND r.USER_ID = #{userID}
+		</if>
+		
+		<if test="beginTime != null and beginTime != ''.toString()">
+			AND cast(r.REPAYMENT_TIME as signed) &gt; #{beginTime}
+		</if>
+		
+		<if test="endTime != null and endTime != ''.toString()">
+			AND cast(r.REPAYMENT_TIME as signed)*1000 &lt; #{endTime}
+		</if>
+		
+		ORDER BY 
+		<if test="orderByOrder == 'Y'.toString()">
+			r.order desc,
+		</if>
+		r.status asc, r.REPAYMENT_TIME asc 
+	</select>
+	
+	<!--根据id更新还款记录-->
+  <update id="updateBReaymentRecordById" parameterType="com.dxjr.base.entity.BRepaymentRecord" >
+    update ROCKY_B_REPAYMENTRECORD
+    <set >
+      <if test="status != null" >
+        STATUS = #{status},
+      </if>
+      <if test="webstatus != null" >
+        WEBSTATUS = #{webstatus},
+      </if> 
+      <if test="userId != null" >
+        USER_ID = #{userId},
+      </if> 
+      <if test="order != null" >
+        `ORDER` = #{order},
+      </if>  
+      <if test="borrowId != null" >
+        BORROW_ID = #{borrowId},
+      </if>
+      <if test="repaymentTime != null and repaymentTime != ''" >
+        REPAYMENT_TIME = #{repaymentTime},
+      </if>  
+      <if test="repaymentYestime != null and repaymentYestime != ''" >
+        REPAYMENT_YESTIME = #{repaymentYestime},
+      </if>
+      <if test="repaymentAccount != null" >
+        REPAYMENT_ACCOUNT = #{repaymentAccount},
+      </if>  
+      <if test="repaymentYesaccount != null" >
+        REPAYMENT_YESACCOUNT = #{repaymentYesaccount},
+      </if>
+      <if test="lateDays != null" >
+        LATE_DAYS = #{lateDays},
+      </if>  
+      <if test="lateInterest != null" >
+        LATE_INTEREST = #{lateInterest},
+      </if>
+      <if test="interest != null" >
+        INTEREST = #{interest},
+      </if>  
+      <if test="capital != null" >
+        CAPITAL = #{capital},
+      </if>
+      <if test="addtime != null and addtime != ''" >
+        ADDTIME = #{addtime},
+      </if>  
+      <if test="addip != null and addip != ''" >
+        ADDIP = #{addip},
+      </if>
+      <if test="advancetime != null" >
+        ADVANCETIME = #{advancetime},
+      </if>  
+      <if test="advanceYesAmount != null" >
+        ADVANCE_YESACCOUNT = #{advanceYesAmount},
+      </if>
+      <if test="afterwebpayLateDay != null" >
+        AFTERWEBPAY_LATE_DAY = #{afterwebpayLateDay},
+      </if>  
+      <if test="isRepairInterest != null" >
+        IS_REPAIR_INTEREST = #{isRepairInterest},
+      </if>  
+      <if test="repairInterestTime != null" >
+        REPAIR_INTEREST_TIME = #{repairInterestTime},
+      </if>          
+    </set>
+    where ID = #{id}
+  </update>
+</mapper>  

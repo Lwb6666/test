@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.dxjr.wx.account.mapper.WxRedAccountMapper">
+
+<resultMap type="com.dxjr.wx.account.vo.WxRedAccountVo" id="redAccountMap">
+	<id 	property="id" 				column="id" />
+	<result property="userId" 			column="user_id" />
+	<result property="usebizId"		    column="USEBIZ_ID" />
+	<result property="usebizId"			column="USEBIZ_ID" />
+	<result property="usebizType"		column="USEBIZ_TYPE" />
+	<result property="redType"			column="RED_TYPE" />
+	<result property="addTime"			column="ADD_TIME" />
+	<result property="openTime"			column="OPEN_TIME" />
+	<result property="endTime"			column="END_TIME" />
+	<result property="freezeTime"		column="FREEZE_TIME" />
+	<result property="useTime"			column="USE_TIME" />
+	<result property="lastUpdateTime"	column="LAST_UPDATE_TIME" />
+	<result property="inviterId"		column="INVITER_ID" />
+</resultMap>
+
+<!-- 显示未开启和未使用的红包。 -->
+<select id="queryOpenRed" parameterType="java.lang.Integer" resultMap="redAccountMap">
+   select * from t_red_envelop_account where (STATUS=1 or status=2) and user_id=#{userId} order by ADD_TIME desc limit 0,10
+</select>
+<!-- 显示已过期、已冻结、已使用红包。 -->
+<select id="queryByExpiredRed"  parameterType="java.lang.Integer" resultMap="redAccountMap">
+   select * from t_red_envelop_account where !(STATUS=1 or status=2) and user_id=#{userId}
+   order by FREEZE_TIME desc,USE_TIME desc, END_TIME desc limit 0,10
+</select>
+<!-- 统计可使用红包的数量-->
+<select id="queryOpenRedCount"  parameterType="java.lang.Integer" resultType="java.lang.Integer" >
+   select count(*) from t_red_envelop_account where (STATUS=1 or status=2) and user_id=#{userId} order by ADD_TIME desc
+</select>
+
+<!-- 统计可使用红包的数量  likang-->
+<select id="queryTotalRed"  parameterType="com.dxjr.wx.account.vo.WxRedAccountVo" resultType="java.lang.Integer" >
+   select count(*) from t_red_envelop_account where (STATUS=1 or status=2) and user_id=#{userId} order by ADD_TIME desc
+</select>
+<!-- 显示未开启和未使用的红包。likang -->
+<select id="queryRedByPage" parameterType="com.dxjr.wx.account.vo.WxRedAccountVo" resultMap="redAccountMap">
+ select t.*,IF(t.USE_MONTH=9999,CONCAT('单笔满',t.MONEY*100,'的定期宝可用'),IF(t.USE_MONTH=12,CONCAT('单笔满',t.MONEY*100,'的12月宝可用'),CONCAT('单笔满',t.MONEY*100,'的',t.USE_MONTH,'月及以上期限可用'))) as openCondition from 
+   (SELECT a.*,USE_MONTH  FROM t_red_envelop_account a join t_red_rule r on a.RED_TYPE=r.RED_TYPE and a.MONEY=r.RED_MONEY
+    WHERE (a.STATUS = 1 OR a.STATUS = 2)
+    AND a.user_id =#{userId} order by r.USE_MONTH+0 ) t group by t.id order by t.add_time desc
+</select>
+
+<!-- 统计不可使用红包的数量  likang-->
+<select id="queryTotalCloseRed"  parameterType="com.dxjr.wx.account.vo.WxRedAccountVo" resultType="java.lang.Integer" >
+   select count(*) from t_red_envelop_account where !(STATUS=1 or status=2) and user_id=#{userId} order by FREEZE_TIME desc,USE_TIME desc, END_TIME desc
+</select>
+<!-- 显示不可使用的红包。likang -->
+<select id="queryCloseRedByPage" parameterType="com.dxjr.wx.account.vo.WxRedAccountVo" resultMap="redAccountMap">
+   select * from t_red_envelop_account where !(STATUS=1 or status=2) and user_id=#{userId} order by FREEZE_TIME desc,USE_TIME desc, END_TIME desc
+</select>
+</mapper>

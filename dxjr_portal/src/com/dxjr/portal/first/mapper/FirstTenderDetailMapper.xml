@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.dxjr.portal.first.mapper.FirstTenderDetailMapper">
+	
+	<!-- 结果集 -->
+	<resultMap type="com.dxjr.portal.first.vo.FirstTenderDetailVo" id="firstTenderDetailResultMap">
+		<id property="id" column="id" />
+		<result property="userId" 					column="USER_ID" />
+		<result property="firstBorrowId" 			column="FIRST_BORROW_ID" />
+		<result property="status" 					column="STATUS" />
+		<result property="account" 					column="ACCOUNT" />
+		<result property="addtime"	    			column="ADDTIME" />
+		<result property="addIp"  					column="ADDIP" />
+		<result property="drawMoney"				column="DRAW_MONEY"/>
+		<result property="noDrawMoney" 				column="NO_DRAW_MONEY"/>		
+		<result property="version" 					column="VERSION" />
+		<result property="firstTenderRealId" 		column="FIRST_TENDER_REAL_ID" />
+	</resultMap>
+	
+	<resultMap type="com.dxjr.portal.first.vo.FirstTenderDetailVo" id="firstTenderDetailMemberResultMap" extends="firstTenderDetailResultMap">
+		<result property="username"                 column="username"/>
+		<result property="userEmail"				column="userEmail"/>
+	</resultMap>
+	<resultMap type="com.dxjr.portal.first.vo.FirstTenderDetailVo" id="firstTenderDetailBorrowResultMap" extends="firstTenderDetailResultMap">
+		<result property="planAccount"                 column="planAccount"/>
+		<result property="firstBorrowName" 			   column="firstBorrowName"/>
+	</resultMap>
+		
+	<!-- 返回的帐号结果集 -->
+	<resultMap type="com.dxjr.portal.account.vo.AccountVo" id="accountResultMap">
+		<id property="id" column="id" />
+		<result property="userId" 					column="USER_ID" />
+		<result property="total" 					column="TOTAL" />
+		<result property="useMoney" 				column="USE_MONEY" />
+		<result property="noUseMoney" 				column="NO_USE_MONEY" />
+		<result property="collection"	    		column="COLLECTION" />
+		<result property="netvalue"  				column="NETVALUE" />
+		<result property="firstBorrowUseMoney" 		column="FIRST_BORROW_USE_MONEY" />
+		<result property="version"					column="VERSION"/>
+		<result property="drawMoney"				column="DRAW_MONEY"/>
+		<result property="noDrawMoney" 				column="NO_DRAW_MONEY"/>		
+	</resultMap>
+	
+	<!--基本列 -->
+	<sql id="firstTenderDetailBaseColumn">
+		fd.ID, 
+		fd.USER_ID, 
+		fd.FIRST_BORROW_ID, 
+		fd.STATUS, 
+		fd.ACCOUNT, 
+		fd.ADDTIME, 
+		fd.ADDIP, 
+		fd.DRAW_MONEY,
+		fd.NO_DRAW_MONEY,		
+		fd.VERSION,
+		fd.FIRST_TENDER_REAL_ID
+	</sql>
+	
+		<!-- 封装查询条件 -->
+	<sql id="firstTenderDetail_Where_Clause">
+		<if test="id != null">
+			and fd.id =#{id}
+		</if>
+		<if test="status != null">
+			and fd.STATUS = #{status}
+		</if>
+		<if test="version != null and version != ''">
+			and fd.VERSION = #{version}
+		</if>
+		<if test="firstBorrowId != null ">
+			and fd.FIRST_BORROW_ID = #{firstBorrowId}
+		</if>	
+		<if test="userId != null ">
+			and fd.USER_ID = #{userId}
+		</if>
+		<if test="firstTenderRealId != null ">
+			and fd.FIRST_TENDER_REAL_ID = #{firstTenderRealId}
+		</if>
+		<!-- 只查询未解锁的开通记录 -->
+		<if test="firstTenderRealStatus != null">
+			AND (fd.FIRST_TENDER_REAL_ID IS NULL OR 
+			      (fd.FIRST_TENDER_REAL_ID IS NOT NULL
+			        AND fd.FIRST_TENDER_REAL_ID IN(
+			            SELECT id FROM t_first_tender_real r WHERE r.id = fd.FIRST_TENDER_REAL_ID  AND r.STATUS = #{firstTenderRealStatus}
+			        )
+			      )
+			)			
+		</if>
+	</sql>
+	
+	  	<!-- 根据条件查询记录集合 -->
+	<select id="queryFirstTenderDetailList" parameterType="com.dxjr.portal.first.vo.FirstTenderDetailCnd" resultMap="firstTenderDetailMemberResultMap" >
+		SELECT
+		 	 m.username 		as username,
+		     m.email 		    as userEmail,		
+	         <include refid="firstTenderDetailBaseColumn"/>
+		FROM t_first_tender_detail fd,rocky_member m
+		where 1=1
+	     <include refid="firstTenderDetail_Where_Clause"/>
+	     and fd.USER_ID = m.id
+	     order by fd.id desc
+  	</select>
+  	
+  		  	<!--  根据条件查询优先计划开通明细信息,投标直通车列表——查看明细 -->
+	<select id="queryFirstTenderDetail" parameterType="com.dxjr.portal.first.vo.FirstTenderDetailCnd" resultMap="firstTenderDetailBorrowResultMap" >
+		SELECT
+			fb.PLAN_ACCOUNT AS planAccount,
+			fb.name	        AS firstBorrowName,
+	         <include refid="firstTenderDetailBaseColumn"/>
+		FROM t_first_tender_detail fd, t_first_borrow fb 
+		where 1=1
+	     <include refid="firstTenderDetail_Where_Clause"/>
+	     AND fd.FIRST_BORROW_ID = fb.ID
+	     order by fd.id desc
+  	</select>
+  	  		  	<!--  根据条件统计优先计划开通明细信息,投标直通车列表——查看明细总数 -->
+	<select id="countFirstTenderDetail" parameterType="com.dxjr.portal.first.vo.FirstTenderDetailCnd" resultType="java.lang.Integer" >
+		SELECT
+			count(fd.id)
+		FROM t_first_tender_detail fd, t_first_borrow fb 
+		where 1=1
+	     <include refid="firstTenderDetail_Where_Clause"/>
+	     AND fd.FIRST_BORROW_ID = fb.ID
+  	</select>
+  	
+  	<!-- 根据条件查询记录数量-->
+	<select id="queryFirstTenderDetailCount" parameterType="com.dxjr.portal.first.vo.FirstTenderDetailCnd" resultType="java.lang.Integer" >
+		select count(fd.id)
+		from
+			t_first_tender_detail fd
+		where 1=1
+		<include refid="firstTenderDetail_Where_Clause"/>
+  	</select>
+  	
+  	<!-- 根据直通车id找到投标明细中的用户帐号 -->
+	<select id="queryAccountListForUpdateByFirstId" parameterType="java.lang.Integer" resultMap="accountResultMap" >
+		SELECT  
+			a.ID, 
+			a.USER_ID, 
+			a.TOTAL, 
+			a.USE_MONEY, 
+			a.NO_USE_MONEY, 
+			a.COLLECTION, 
+			a.NETVALUE, 
+			a.FIRST_BORROW_USE_MONEY,
+			a.VERSION,
+			a.DRAW_MONEY,
+			a.NO_DRAW_MONEY	
+		FROM rocky_account a
+		WHERE a.user_id IN (
+			SELECT DISTINCT user_id FROM t_first_tender_detail
+			WHERE FIRST_BORROW_ID=#{firstBorrowId}
+		)
+		FOR UPDATE
+  	</select>  	
+  	
+  	<!-- 根据直通车id更新指定状态 -->
+  	<update id="updateStatusByFirstBorrowId">
+  		update t_first_tender_detail
+  		set STATUS = #{status},
+  		    VERSION = REPLACE(UUID(),'-','')
+  		where 1=1
+  		and FIRST_BORROW_ID=#{firstBorrowId}
+  	</update>
+  	
+  	<!-- 更新关联的最终记录id -->
+  	<update id="updateRealIdByFirstBorrowId">
+  		UPDATE t_first_tender_detail d,t_first_tender_real r
+		SET FIRST_TENDER_REAL_ID = r.id
+		where d.FIRST_BORROW_ID = r.FIRST_BORROW_ID
+		AND d.USER_ID = r.USER_ID 
+		AND r.`STATUS` = 0
+		AND r.FIRST_BORROW_ID = #{firstBorrowId}
+  	</update>
+  	
+  	<!-- 根据userId查询开通直通车的总额 -->
+  	<select id="seletAccountTotalByUserId" parameterType="java.lang.Integer" resultType="java.lang.Integer" >
+		SELECT SUM(ACCOUNT) FROM t_first_tender_detail WHERE USER_ID = #{userId};
+  	</select> 
+</mapper>  

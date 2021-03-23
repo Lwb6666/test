@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dxjr.portal.autoInvestConfig.mapper.FixAutoInvestMapper" >
+  <resultMap id="BaseResultMap" type="com.dxjr.portal.autoInvestConfig.entity.FixAutoInvest" >
+    <id column="id" property="id"   />
+    <result column="user_id" property="userId"   />
+    <result column="auto_tender_type" property="autoTenderType"  />
+    <result column="tender_money" property="tenderMoney"   />
+    <result column="fix_limit" property="fixLimit"   />
+    <result column="is_use_cur" property="isUseCur"  />
+  </resultMap>
+
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+     SELECT * from(SELECT (@rownum:=@rownum+1)rownum,
+	    a.* FROM t_fix_auto_invest a,(SELECT @rownum:=0)b ORDER BY uptime ASC)t 
+	    WHERE id = #{id,jdbcType=INTEGER}
+  </select>
+  <select id="selectByUserId" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+	SELECT t.rownum,ra.use_money useMoney,IFNULL(ca.TOTAL,0)curMoney,c.* from t_fix_auto_invest c LEFT JOIN(
+	SELECT (@rownum:=@rownum+1)rownum,a.id as autoid FROM t_fix_auto_invest a,(SELECT @rownum:=0)b 
+	WHERE `STATUS`=1 ORDER BY uptime ASC)t on c.id=t.autoid 
+	LEFT JOIN rocky_account ra on ra.USER_ID=c.USER_ID
+	LEFT JOIN t_cur_account ca on ca.USER_ID=c.USER_ID
+	where c.`STATUS`!=-1 and c.USER_ID=#{userId}
+  </select>
+  <insert id="insert" parameterType="com.dxjr.portal.autoInvestConfig.entity.FixAutoInvest" useGeneratedKeys="true" keyProperty="id" >
+    insert into t_fix_auto_invest ( user_id, status, 
+      auto_tender_type, tender_money, fix_limit, 
+      is_use_cur, uptime, platform, 
+      remark, addtime, addip
+      )
+    values ( #{userId }, #{status }, 
+      #{autoTenderType }, #{tenderMoney }, #{fixLimit }, 
+      #{isUseCur }, #{uptime}, #{platform }, 
+      #{remark}, now(), #{addip}
+      )
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.dxjr.portal.autoInvestConfig.entity.FixAutoInvest" >
+    update t_fix_auto_invest
+    <set >
+      <if test="userId != null" >
+        user_id = #{userId },
+      </if>
+      <if test="status != null" >
+        status = #{status },
+      </if>
+      <if test="autoTenderType != null" >
+        auto_tender_type = #{autoTenderType },
+      </if>
+      <if test="tenderMoney != null or tenderMoney == null" >
+        tender_money = #{tenderMoney },
+      </if>
+      <if test="fixLimit != null" >
+        fix_limit = #{fixLimit },
+      </if>
+      <if test="isUseCur != null" >
+        is_use_cur = #{isUseCur },
+      </if>
+        uptime = #{uptime },
+      <if test="platform != null" >
+        platform = #{platform},
+      </if>
+      <if test="remark != null" >
+        remark = #{remark},
+      </if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+   
+</mapper>

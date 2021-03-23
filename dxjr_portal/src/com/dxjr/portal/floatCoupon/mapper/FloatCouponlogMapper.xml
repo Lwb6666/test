@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dxjr.portal.floatCoupon.mapper.FloatCouponlogMapper" >
+  <resultMap id="BaseResultMap" type="com.dxjr.portal.floatCoupon.entity.FloatCouponlog" >
+    <id column="ID" property="id" jdbcType="INTEGER" />
+    <result column="USER_ID" property="userId" jdbcType="INTEGER" />
+    <result column="FLOAT_COUPON_ID" property="floatCouponId" jdbcType="INTEGER" />
+    <result column="TYPE" property="type" jdbcType="INTEGER" />
+    <result column="APR" property="apr" jdbcType="DECIMAL" />
+    <result column="INTEREST" property="interest" jdbcType="DECIMAL" />
+    <result column="CAPITAL" property="capital" jdbcType="DECIMAL" />
+    <result column="INTEREST_DATE" property="interestDate" jdbcType="DATE" />
+    <result column="REMARK" property="remark" jdbcType="VARCHAR" />
+    <result column="ADDTIME" property="addtime" jdbcType="TIMESTAMP" />
+    <result column="ADDUSER" property="adduser" jdbcType="INTEGER" />
+    <result column="ADDIP" property="addip" jdbcType="VARCHAR" />
+    <result column="PLATFORM" property="platform" jdbcType="INTEGER" />
+    <result column="IS_CUSTODY" property="isCustody" jdbcType="INTEGER" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    ID, USER_ID, FLOAT_COUPON_ID, TYPE, APR, INTEREST, CAPITAL, INTEREST_DATE, REMARK, 
+    ADDTIME, ADDUSER, ADDIP, PLATFORM, IS_CUSTODY
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from t_float_couponlog
+    where ID = #{id,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from t_float_couponlog
+    where ID = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.dxjr.portal.floatCoupon.entity.FloatCouponlog" >
+    insert into t_float_couponlog (ID, USER_ID, FLOAT_COUPON_ID, 
+      TYPE, APR, INTEREST, 
+      CAPITAL, INTEREST_DATE, REMARK, 
+      ADDTIME, ADDUSER, ADDIP, 
+      PLATFORM, IS_CUSTODY)
+    values (#{id,jdbcType=INTEGER}, #{userId,jdbcType=INTEGER}, #{floatCouponId,jdbcType=INTEGER}, 
+      #{type,jdbcType=INTEGER}, #{apr,jdbcType=DECIMAL}, #{interest,jdbcType=DECIMAL}, 
+      #{capital,jdbcType=DECIMAL}, #{interestDate,jdbcType=DATE}, #{remark,jdbcType=VARCHAR}, 
+      now(), #{adduser,jdbcType=INTEGER}, #{addip,jdbcType=VARCHAR}, 
+      #{platform,jdbcType=INTEGER}, #{isCustody,jdbcType=INTEGER})
+      <selectKey resultType="java.lang.Integer" order="AFTER" keyProperty="id">
+	  	  SELECT LAST_INSERT_ID() AS ID
+	  </selectKey>
+  </insert>
+  <insert id="insertSelective" parameterType="com.dxjr.portal.floatCoupon.entity.FloatCouponlog" >
+    insert into t_float_couponlog
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        ID,
+      </if>
+      <if test="userId != null" >
+        USER_ID,
+      </if>
+      <if test="floatCouponId != null" >
+        FLOAT_COUPON_ID,
+      </if>
+      <if test="type != null" >
+        TYPE,
+      </if>
+      <if test="apr != null" >
+        APR,
+      </if>
+      <if test="interest != null" >
+        INTEREST,
+      </if>
+      <if test="capital != null" >
+        CAPITAL,
+      </if>
+      <if test="interestDate != null" >
+        INTEREST_DATE,
+      </if>
+      <if test="remark != null" >
+        REMARK,
+      </if>
+      <if test="addtime != null" >
+        ADDTIME,
+      </if>
+      <if test="adduser != null" >
+        ADDUSER,
+      </if>
+      <if test="addip != null" >
+        ADDIP,
+      </if>
+      <if test="platform != null" >
+        PLATFORM,
+      </if>
+      <if test="isCustody != null" >
+        IS_CUSTODY,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="userId != null" >
+        #{userId,jdbcType=INTEGER},
+      </if>
+      <if test="floatCouponId != null" >
+        #{floatCouponId,jdbcType=INTEGER},
+      </if>
+      <if test="type != null" >
+        #{type,jdbcType=INTEGER},
+      </if>
+      <if test="apr != null" >
+        #{apr,jdbcType=DECIMAL},
+      </if>
+      <if test="interest != null" >
+        #{interest,jdbcType=DECIMAL},
+      </if>
+      <if test="capital != null" >
+        #{capital,jdbcType=DECIMAL},
+      </if>
+      <if test="interestDate != null" >
+        #{interestDate,jdbcType=DATE},
+      </if>
+      <if test="remark != null" >
+        #{remark,jdbcType=VARCHAR},
+      </if>
+      <if test="addtime != null" >
+        now(),
+      </if>
+      <if test="adduser != null" >
+        #{adduser,jdbcType=INTEGER},
+      </if>
+      <if test="addip != null" >
+        #{addip,jdbcType=VARCHAR},
+      </if>
+      <if test="platform != null" >
+        #{platform,jdbcType=INTEGER},
+      </if>
+      <if test="isCustody != null" >
+        #{isCustody,jdbcType=INTEGER},
+      </if>
+    </trim>
+    <selectKey resultType="java.lang.Integer" order="AFTER" keyProperty="id">
+	  	  SELECT LAST_INSERT_ID() AS ID
+	  </selectKey>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.dxjr.portal.floatCoupon.entity.FloatCouponlog" >
+    update t_float_couponlog
+    <set >
+      <if test="userId != null" >
+        USER_ID = #{userId,jdbcType=INTEGER},
+      </if>
+      <if test="floatCouponId != null" >
+        FLOAT_COUPON_ID = #{floatCouponId,jdbcType=INTEGER},
+      </if>
+      <if test="type != null" >
+        TYPE = #{type,jdbcType=INTEGER},
+      </if>
+      <if test="apr != null" >
+        APR = #{apr,jdbcType=DECIMAL},
+      </if>
+      <if test="interest != null" >
+        INTEREST = #{interest,jdbcType=DECIMAL},
+      </if>
+      <if test="capital != null" >
+        CAPITAL = #{capital,jdbcType=DECIMAL},
+      </if>
+      <if test="interestDate != null" >
+        INTEREST_DATE = #{interestDate,jdbcType=DATE},
+      </if>
+      <if test="remark != null" >
+        REMARK = #{remark,jdbcType=VARCHAR},
+      </if>
+      <if test="addtime != null" >
+        ADDTIME = #{addtime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="adduser != null" >
+        ADDUSER = #{adduser,jdbcType=INTEGER},
+      </if>
+      <if test="addip != null" >
+        ADDIP = #{addip,jdbcType=VARCHAR},
+      </if>
+      <if test="platform != null" >
+        PLATFORM = #{platform,jdbcType=INTEGER},
+      </if>
+      <if test="isCustody != null" >
+        IS_CUSTODY = #{isCustody,jdbcType=INTEGER},
+      </if>
+    </set>
+    where ID = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.dxjr.portal.floatCoupon.entity.FloatCouponlog" >
+    update t_float_couponlog
+    set USER_ID = #{userId,jdbcType=INTEGER},
+      FLOAT_COUPON_ID = #{floatCouponId,jdbcType=INTEGER},
+      TYPE = #{type,jdbcType=INTEGER},
+      APR = #{apr,jdbcType=DECIMAL},
+      INTEREST = #{interest,jdbcType=DECIMAL},
+      CAPITAL = #{capital,jdbcType=DECIMAL},
+      INTEREST_DATE = #{interestDate,jdbcType=DATE},
+      REMARK = #{remark,jdbcType=VARCHAR},
+      ADDTIME = #{addtime,jdbcType=TIMESTAMP},
+      ADDUSER = #{adduser,jdbcType=INTEGER},
+      ADDIP = #{addip,jdbcType=VARCHAR},
+      PLATFORM = #{platform,jdbcType=INTEGER},
+      IS_CUSTODY = #{isCustody,jdbcType=INTEGER}
+    where ID = #{id,jdbcType=INTEGER}
+  </update>
+</mapper>

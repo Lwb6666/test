@@ -1,0 +1,496 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.dxjr.portal.outerInterface.mapper.OuterInterfaceMapper">
+
+	<!-- 插入外部访问日志 -->
+	<insert id="insertExternalAccessLog" parameterType="com.dxjr.portal.outerInterface.entity.ExternalAccessLog">
+		INSERT INTO ROCKY_EXTERNAL_ACCESS_LOG 
+		(ACCESS_IP,ACCESS_URL,ACCESS_TYPE,ACCESS_CLASS,ACCESS_METHOD,ACCESS_TIME,STATUS,RETURN_TIME,REMARK)
+		VALUES
+		(#{accessIp}, #{accessUrl}, #{accessType},	#{accessClass},	#{accessMethod}, #{accessTime}, #{status}, #{returnTime}, #{remark})
+ 		 <selectKey resultType="java.lang.Integer" order="AFTER" keyProperty="id">  
+      	    SELECT LAST_INSERT_ID() AS ID    
+   		 </selectKey>
+	</insert>
+	
+	<!-- 查询访问IP是否有访问网贷天眼接口的权限 -->
+	<select id="judgeIPForWDTY"  parameterType="java.lang.String" resultType="java.lang.Integer">
+		SELECT count(*) FROM rocky_ip_while_list where ip = #{ip} and status = 0 and access_type in(0,1)
+	</select>
+	
+	<!-- 查询访问IP是否有访问网贷天眼接口的权限 -->
+	<select id="judgeIPForHSW"  parameterType="java.lang.String" resultType="java.lang.Integer">
+		SELECT count(*) FROM rocky_ip_while_list where ip = #{ip} and status = 0 and access_type in(0,3)
+	</select>
+	
+	<!-- 查询访问IP是否有访问接口的权限 -->
+	<select id="judgeIPForInterface"  resultType="java.lang.Integer">
+		SELECT count(*) FROM rocky_ip_while_list where ip = #{ip} and status = 0 and access_type in(0,#{accessType})
+	</select>
+	
+	<!-- 获取每日成交量数据接口某个IP在某个时间段内的访问次数 -->
+	<select id="findAccessCountForTransactionInfo"  parameterType="com.dxjr.portal.outerInterface.vo.ExternalAccessLogCnd" resultType="java.lang.Integer">
+		SELECT count(*) FROM ROCKY_EXTERNAL_ACCESS_LOG WHERE `STATUS` = 0 
+		AND ACCESS_TYPE = #{accessType} 
+		AND ACCESS_IP =  #{accessIp}
+		AND ACCESS_TIME <![CDATA[>=]]> #{beginTime}
+		AND ACCESS_TIME <![CDATA[<=]]> #{endTime}
+	</select>
+	
+	<!-- 获取某日的净值标总额(满标)、抵押标总额(满标)、天标总额(满标)、月标总额(满标)、贷款总额 (满标)、平均年利率 -->
+	<select id="findTodayBorrowInfo"  resultType="java.util.Map">
+				SELECT SUM(today_net_amount) AS today_net_amount,
+				  SUM(today_loan_amount) AS today_loan_amount,
+				  SUM(today_month_amount) AS today_month_amount,
+				  SUM(v_amount) AS v_amount,
+				  AVG(v_rate) AS v_rate,
+				  SUM(today_day_amount) AS today_day_amount
+				  FROM (select
+						  SUM(case when BORROWTYPE = 3 then ACCOUNT end) today_net_amount,
+						  SUM(case when BORROWTYPE in (1,2,5) then ACCOUNT end) today_loan_amount,
+						  SUM(case when style in (1,2,3) then ACCOUNT end) today_month_amount,
+						  SUM(ACCOUNT) v_amount,
+						  AVG(apr) v_rate,
+						  SUM(case when style = 4 then ACCOUNT end) today_day_amount
+						from rocky_borrow
+						where BORROWTYPE in (1,2,3,5) and status >= 3
+					  and success_time <![CDATA[>=]]> #{beginTime}
+						and success_time <![CDATA[<=]]> #{endTime}
+				UNION ALL 
+				<!-- 统计债券转让信息 -->
+				SELECT
+				  SUM(case when BORROW_TYPE = 3 then ACCOUNT_REAL end) today_net_amount,
+				  SUM(case when BORROW_TYPE in (1,2,5) then ACCOUNT_REAL end) today_loan_amount,
+				  SUM(case when BORROW_STYLE in (1,2,3) then ACCOUNT_REAL end) today_month_amount,
+				  SUM(ACCOUNT_REAL) v_amount,
+				  AVG(BORROW_APR) v_rate,
+				  SUM(case when BORROW_STYLE = 4 then ACCOUNT_REAL end) today_day_amount
+				FROM rocky_b_transfer WHERE STATUS IN (3,4)
+				  and SUCCESS_TIME <![CDATA[>=]]> #{beginTime}
+						and SUCCESS_TIME <![CDATA[<=]]> #{endTime}
+				) AS TB
+	</select>
+	
+	<!--获取某日的贷款周期(平均值)-->
+	<select id="findTodayPeriod"  resultType="java.math.BigDecimal">
+		SELECT (t1.sum1+t2.sum2)/(t1.count1+t2.count2) from (select SUM(time_limit/30) sum1,count(*) count1 from rocky_borrow where BORROWTYPE = 3 and status >= 3  and style = 4
+		<if test="beginTime != null and beginTime != ''">
+				and success_time <![CDATA[>=]]> #{beginTime}
+		</if>
+		<if test="endTime != null and endTime != ''">
+				and success_time <![CDATA[<=]]> #{endTime}
+		</if>
+		) t1,(select sum(time_limit) sum2,count(*) count2 from rocky_borrow where BORROWTYPE in(1,2,3,5) and style in(1,2,3) and status >= 3
+		<if test="beginTime != null and beginTime != ''">
+				and success_time <![CDATA[>=]]> #{beginTime}
+		</if>
+		<if test="endTime != null and endTime != ''">
+				and success_time <![CDATA[<=]]> #{endTime}
+		</if>
+		) t2
+	</select>
+	
+	<!--统计某时间段投资人数-->
+	<select id="findInvestesCount"  resultType="java.lang.Integer">
+		SELECT count(DISTINCT t.USER_ID) FROM rocky_b_tenderrecord t,rocky_borrow b where b.ID = t.BORROW_ID and b.status >= 3 and b.BORROWTYPE in(1,2,3,5) 
+		<if test="beginTime != null and beginTime != ''">
+				and success_time <![CDATA[>=]]> #{beginTime}
+		</if>
+		<if test="endTime != null and endTime != ''">
+				and success_time <![CDATA[<=]]> #{endTime}
+		</if>
+	</select>
+	
+	<!--统计某时间段借款人人数-->
+	<select id="findLoanerCount"  resultType="java.lang.Integer">
+		SELECT count(DISTINCT USER_ID) FROM rocky_borrow where status >= 3 and BORROWTYPE in(1,2,3,5) 
+		<if test="beginTime != null and beginTime != ''">
+				and success_time <![CDATA[>=]]> #{beginTime}
+		</if>
+		<if test="endTime != null and endTime != ''">
+				and success_time <![CDATA[<=]]> #{endTime}
+		</if>
+	</select>
+	
+	<!--查询今天累计待收本息总计-->
+	<select id="queryNowCollectionData"  resultType="java.math.BigDecimal">
+		SELECT SUM(REPAY_ACCOUNT) AS account
+			 FROM rocky_b_collectionrecord c,rocky_b_tenderrecord t,rocky_borrow b
+			 WHERE c.STATUS =0 
+			 AND c.TENDER_ID = t.ID
+			 AND t.BORROW_ID = b.ID
+			 AND b.BORROWTYPE != 4
+	</select>
+	
+	<!--查询某IP在段之内频繁访问次数-->
+	<select id="judgeIPByAccessByDate" parameterType="com.dxjr.portal.outerInterface.vo.ExternalAccessLogCnd"  resultType="java.lang.Integer">
+		SELECT count(*) FROM ROCKY_EXTERNAL_ACCESS_LOG 
+		WHERE STATUS= 0 AND ACCESS_TYPE = #{accessType}
+		 AND ACCESS_IP = #{accessIp}
+		 AND (ACCESS_TIME + #{accessTimeAdd}) <![CDATA[>=]]> #{accessTime}
+		 ORDER BY ACCESS_TIME DESC
+	</select>
+	
+	
+	<resultMap id="borrowVoResultMap" type="com.dxjr.portal.borrow.vo.BorrowVo">
+		<id column="ID" 						property="id"/>
+		<result column="USER_ID" 				property="userId" />
+		<result column="NAME" 					property="name" />
+		<result column="STATUS" 				property="status" />
+		<result column="APPRSTATUS"				property="apprstatus" />
+		<result column="ORDER" 				    property="order" />
+		<result column="BORROWTYPE" 			property="borrowtype" />
+		<result column="REPAYMENT_ACCOUNT"		property="repaymentAccount"	/>
+		<result column="MONTHLY_REPAYMENT" 		property="monthlyRepayment" />
+		<result column="REPAYMENT_YESACCOUNT" 	property="repaymentYesaccount"/>
+		<result column="REPAYMENT_YESINTEREST" 	property="repaymentYesinterest" />
+		<result column="SUCCESS_TIME" 			property="successTime" />
+		<result column="END_TIME" 				property="endTime" />
+		<result column="USE" 					property="use"  />
+		<result column="TIME_LIMIT" 			property="timeLimit"  />
+		<result column="STYLE" 					property="style" />
+		<result column="ACCOUNT" 				property="account"  />
+		<result column="ACCOUNT_YES" 			property="accountYes"  />
+		<result column="TENDER_TIMES" 			property="tenderTimes" />
+		<result column="APR" 					property="apr"  />
+		<result column="LOWEST_ACCOUNT"			property="lowestAccount" />
+		<result column="MOST_ACCOUNT" 			property="mostAccount"  />
+		<result column="VALID_TIME" 			property="validTime" />
+		<result column="AWARD" 					property="award" />
+		<result column="FUNDS" 					property="funds" />
+		<result column="CONTENT" 				property="content" />
+		<result column="SENDMESSAGE" 			property="sendmessage"  />
+		<result column="ADDTIME" 				property="addtime" />
+		<result column="ADDIP" 					property="addip"  />
+		<result column="CANCEL_USER" 			property="cancelUser"  />
+		<result column="CANCEL_TIME" 			property="cancelTime"  />
+		<result column="CANCEL_REMARK" 			property="cancelRemark" />
+		<result column="UUID" 					property="uuid" />
+		<result column="CONTRACT_NO" 			property="contractNo"  />
+		<result column="BID_PASSWORD" 			property="bidPassword" />
+		<result column="IS_AUTOTENDER" 			property="isAutotender"/>
+		<result column="REMARK" 				property="remark" />
+		<result column="PLEDGE_TYPE" 			property="pledgeType"  />
+		<result column="TIMING_BORROW_TIME"		property="timingBorrowTime" />
+		<result column="PUBLISH_TIME" 			property="publishTime" />
+		<result column="username" 				property="userName" />
+		<result column="headimg" 				property="headimg" />
+	</resultMap>
+	
+	<!--借款标基本列 -->
+	<sql id="borrowVoColumn">
+		b.ID,
+		b.USER_ID,
+		b.NAME,
+		b.STATUS,
+		b.APPRSTATUS,
+		b.ORDER,
+		b.BORROWTYPE,
+		b.REPAYMENT_ACCOUNT,
+		b.MONTHLY_REPAYMENT,
+		b.REPAYMENT_YESACCOUNT,
+		b.REPAYMENT_YESINTEREST,
+		b.SUCCESS_TIME,
+		b.END_TIME,
+		b.USE,
+		b.TIME_LIMIT,
+		b.STYLE,
+		b.ACCOUNT,
+		b.ACCOUNT_YES,
+		b.TENDER_TIMES,
+		b.APR,
+		b.LOWEST_ACCOUNT,
+		b.MOST_ACCOUNT,
+		b.VALID_TIME,
+		b.AWARD,
+		b.FUNDS,
+		b.CONTENT,
+		b.SENDMESSAGE,
+		b.ADDTIME,
+		b.ADDIP,
+		b.CANCEL_USER,
+		b.CANCEL_TIME,
+		b.CANCEL_REMARK,
+		b.UUID,
+		b.CONTRACT_NO,
+		b.BID_PASSWORD,
+		b.IS_AUTOTENDER,
+		b.REMARK,
+		b.PLEDGE_TYPE,
+		b.TIMING_BORROW_TIME,
+		b.PUBLISH_TIME
+	</sql>
+	
+	<!-- 查询某个时间段内满标的借款标（包含信用标、抵押标、净值标和担保标） -->
+	<select id="findBorrowInfo" resultMap="borrowVoResultMap">
+		SELECT  
+		<include refid="borrowVoColumn"/>
+		FROM rocky_borrow b where b.status >= 3 and b.BORROWTYPE in(1,2,3,5)
+		<if test="beginTime != null and beginTime != ''">
+				and b.success_time <![CDATA[>=]]> #{beginTime}
+		</if>
+		<if test="endTime != null and endTime != ''">
+				and b.success_time <![CDATA[<=]]> #{endTime}
+		</if>
+	</select>
+	
+	<!-- 获取正在投标中的标（包含信用标、抵押标、净值标和担保标） -->
+	<select id="findBorrowByNow" resultMap="borrowVoResultMap">
+		SELECT <include refid="borrowVoColumn"/>,m.USERNAME username 
+		FROM rocky_borrow b,rocky_member m 
+		where b.status = 2 and BORROWTYPE in(1,2,3,5) and m.ID = b.USER_ID
+	</select>
+	
+	<!-- 获取某天内满标的借款标信息（包含信用标、抵押标、净值标和担保标）. -->
+	<select id="findBorrowByDate" resultMap="borrowVoResultMap">
+		SELECT <include refid="borrowVoColumn"/>,m.USERNAME username 
+		FROM rocky_borrow b,rocky_member m where b.status >= 3 and BORROWTYPE in(1,2,3,5) and m.ID = b.USER_ID
+		<if test="beginTime != null and beginTime != ''">
+				and b.success_time <![CDATA[>=]]> #{beginTime}
+		</if>
+		<if test="endTime != null and endTime != ''">
+				and b.success_time <![CDATA[<=]]> #{endTime}
+		</if>
+	</select>
+	
+	<!-- 获取某天还款的标的信息（包含信用标、抵押标、净值标和担保标）. -->
+	<select id="getPaiedLoanInfo" resultMap="borrowVoResultMap">
+		SELECT <include refid="borrowVoColumn"/>,m.USERNAME username 
+		FROM rocky_borrow b,rocky_member m,rocky_b_repaymentrecord r 
+			where b.status >= 3 and BORROWTYPE in(1,2,3,5) and m.ID = b.USER_ID AND r.BORROW_ID = b.ID
+			<if test="beginTime != null and beginTime != ''">
+			AND 
+			( 
+				(r.REPAYMENT_TIME <![CDATA[>=]]> #{beginTime}
+				 AND r.REPAYMENT_TIME <![CDATA[<=]]> #{endTime}
+				)
+				or 
+				(r.REPAYMENT_YESTIME <![CDATA[>=]]> #{beginTime}
+				 AND r.REPAYMENT_YESTIME <![CDATA[<=]]> #{endTime}
+				) 
+			)
+			</if>
+			GROUP BY b.ID
+	</select>
+	
+	<!-- 结果集 -->
+	<resultMap type="com.dxjr.portal.repayment.vo.BRepaymentRecordVo" id="repaymentRecordVoResultMap">
+		<id property="id" column="id" />
+		<result column="STATUS" property="status" jdbcType="INTEGER" />
+	    <result column="WEBSTATUS" property="webstatus" jdbcType="INTEGER" />
+	    <result column="ORDER" property="order" jdbcType="INTEGER" />
+	    <result column="BORROW_ID" property="borrowId" jdbcType="INTEGER" />
+	    <result column="REPAYMENT_TIME" property="repaymentTime" jdbcType="VARCHAR" />
+	    <result column="REPAYMENT_YESTIME" property="repaymentYestime" jdbcType="VARCHAR" />
+	    <result column="REPAYMENT_ACCOUNT" property="repaymentAccount" jdbcType="DECIMAL" />
+	    <result column="REPAYMENT_YESACCOUNT" property="repaymentYesaccount" jdbcType="DECIMAL" />
+	    <result column="LATE_DAYS" property="lateDays" jdbcType="INTEGER" />
+	    <result column="LATE_INTEREST" property="lateInterest" jdbcType="DECIMAL" />
+	    <result column="INTEREST" property="interest" jdbcType="DECIMAL" />
+	    <result column="CAPITAL" property="capital" jdbcType="DECIMAL" />
+	    <result column="ADDTIME" property="addtime" jdbcType="VARCHAR" />
+	    <result column="ADDIP" property="addip" jdbcType="VARCHAR" />
+	    <result column="USER_ID" property="userId" jdbcType="INTEGER" />
+	    <result column="ADVANCETIME" property="advancetime" jdbcType="TIMESTAMP" />
+	    <result column="borrow_name" property="name" jdbcType="VARCHAR" />
+	    <result column="success_time" property="successTime" jdbcType="VARCHAR" />
+	    <result column="username" property="username" jdbcType="VARCHAR" />
+	    <result column="email" property="email" jdbcType="VARCHAR" />
+	</resultMap>
+
+	<!--基本列 -->
+	<sql id="repaymentRecordVoBaseColumn">
+		r.ID, 
+		r.STATUS, 
+		r.WEBSTATUS, 
+		r.ORDER, 
+		r.BORROW_ID, 
+		r.REPAYMENT_TIME, 
+		r.REPAYMENT_YESTIME,
+		r.REPAYMENT_ACCOUNT, 
+		r.REPAYMENT_YESACCOUNT,
+		r.LATE_DAYS,
+		r.LATE_INTEREST,
+		r.INTEREST,
+		r.CAPITAL,
+		r.ADDTIME,
+		r.ADDIP,
+		r.USER_ID,
+		r.ADVANCETIME
+	</sql>
+	
+	<!-- 根据借款标id查询待还记录. -->
+	<select id="queryRepaymentRecordByBorrow" parameterType="java.lang.Integer" resultMap="repaymentRecordVoResultMap">
+		SELECT <include refid="repaymentRecordVoBaseColumn"/> 
+		FROM ROCKY_B_REPAYMENTRECORD r 
+		WHERE r.BORROW_ID = #{borrowid} 
+		ORDER BY ID ASC
+	</select>
+	
+	<!-- 验证用户是否是平台用户. -->
+	<select id="judgeUser" resultType="java.lang.Integer">
+		SELECT count(*) from rocky_member m,rocky_realname_appro r 
+		WHERE m.ID = r.USER_ID AND m.USERNAME = #{userName} and r.REALNAME = #{realName} AND IDCARDNO = #{cardId}
+	</select>
+	
+	<resultMap id="tenderRecordVoResultMap" type="com.dxjr.portal.borrow.vo.TenderRecordVo" >
+	    <id column="ID" property="id" jdbcType="INTEGER" />
+	    <result column="USER_ID" property="userId" jdbcType="INTEGER" />
+	    <result column="BORROW_ID" property="borrowId" jdbcType="INTEGER" />
+	    <result column="STATUS" property="status" jdbcType="INTEGER" />
+	    <result column="ACCOUNT" property="account" jdbcType="DOUBLE" />
+	    <result column="INTEREST" property="interest" jdbcType="DOUBLE" />
+	    <result column="REPAYMENT_ACCOUNT" property="repaymentAccount" jdbcType="DOUBLE" />
+	    <result column="REPAYMENT_YESACCOUNT" property="repaymentYesaccount" jdbcType="DOUBLE" />
+	    <result column="REPAYMENT_YESINTEREST" property="repaymentYesinterest" jdbcType="DOUBLE" />
+	    <result column="ADDTIME" property="addtime" jdbcType="VARCHAR" />
+	    <result column="ADDIP" property="addip" jdbcType="VARCHAR" />
+	    <result column="TENDER_TYPE" property="tenderType" jdbcType="INTEGER" />
+	    <result column="AUTOTENDER_ORDER" property="autotenderOrder" jdbcType="INTEGER" />
+	    <result column="AUTOTENDER_ORDER_REMARK" property="autotenderOrderRemark" jdbcType="VARCHAR" />
+	    <result column="FIRST_BORROW_ID" property="firstBorrowId" jdbcType="INTEGER" />
+	    <result column="FIRST_BORROW_SCALE" property="firstBorrowScale" jdbcType="VARCHAR" />
+	    <result column="USER_LEVEL" property="userLevel" jdbcType="VARCHAR" />
+	    <result column="RATIO" property="ratio" jdbcType="VARCHAR" />
+	    <result column="email" property="email" jdbcType="VARCHAR" />
+	    <result column="username" property="username" jdbcType="VARCHAR" />
+	    <result column="firstBorrowName" property="firstBorrowName" jdbcType="VARCHAR" />
+  	</resultMap>
+  	
+  	<sql id="tender_record_column_List" >
+	    t.ID, t.USER_ID, t.BORROW_ID, t.STATUS, t.ACCOUNT, t.INTEREST, t.REPAYMENT_ACCOUNT, t.REPAYMENT_YESACCOUNT, 
+	    t.REPAYMENT_YESINTEREST, t.ADDTIME, t.ADDIP, t.TENDER_TYPE, t.AUTOTENDER_ORDER, t.AUTOTENDER_ORDER_REMARK, 
+	    t.FIRST_BORROW_ID, t.FIRST_BORROW_SCALE, t.USER_LEVEL, t.RATIO
+  	</sql>
+  	
+  	<!-- 根据借款标id查询投标记录. -->
+	<select id="queryTenderRecordByBorrow" parameterType="java.lang.Integer" resultMap="tenderRecordVoResultMap">
+		SELECT <include refid="tender_record_column_List"/>, m.username username FROM ROCKY_B_TENDERRECORD t left join ROCKY_MEMBER m on m.id = t.user_id 
+		WHERE t.BORROW_ID = #{borrowid}
+	</select>
+	
+	<!-- 根据借款标id查询投标记录. -->
+	<select id="queryTenderRecordListByBorrow" parameterType="com.dxjr.portal.outerInterface.vo.OuterParamCnd" resultMap="tenderRecordVoResultMap">
+		SELECT <include refid="tender_record_column_List"/>, m.username username FROM ROCKY_B_TENDERRECORD t left join ROCKY_MEMBER m on m.id = t.user_id 
+		WHERE t.BORROW_ID = #{borrowid}
+	</select>
+	
+	<!-- 根据借款标id查询投标记录数量. -->
+	<select id="queryTenderRecordCountByBorrow" parameterType="com.dxjr.portal.outerInterface.vo.OuterParamCnd" resultType="java.lang.Integer">
+		SELECT count(t.id) FROM ROCKY_B_TENDERRECORD t 
+		WHERE t.BORROW_ID = #{borrowid}
+	</select>
+	
+	<!-- 根据条件查询借款标（包含信用标、抵押标、净值标和担保标） -->
+	<select id="queryBorrowListByOuterParam" parameterType="com.dxjr.portal.outerInterface.vo.OuterParamCnd" resultMap="borrowVoResultMap">
+		<if test="type != null and type == 0">
+			SELECT <include refid="borrowVoColumn"/>,m.USERNAME FROM rocky_member m,rocky_borrow b 
+			WHERE b.USER_ID = m.ID AND b.BORROWTYPE in(1,2,3,5) AND b.status in(2,3)
+		</if>
+		<if test="type != null and type == 1">
+			SELECT <include refid="borrowVoColumn"/>,m.USERNAME FROM rocky_member m,rocky_borrow b
+			WHERE b.USER_ID = m.ID AND b.BORROWTYPE in(1,2,3,5) AND b.status in(4,5,42)
+		</if>
+		<if test="type != null and type == 2">
+			SELECT DISTINCT(b.id) as borrowId,<include refid="borrowVoColumn"/>,m.USERNAME FROM rocky_member m,rocky_borrow b,rocky_b_repaymentrecord r WHERE b.USER_ID = m.ID AND b.ID = r.BORROW_ID and b.BORROWTYPE in(1,2,3,5)
+			AND r.BORROW_ID = b.ID AND 
+			((r.`STATUS` = 0 AND UNIX_TIMESTAMP(SUBSTR(FROM_UNIXTIME(r.REPAYMENT_TIME) FROM 1 FOR 10)) <![CDATA[<]]> UNIX_TIMESTAMP(SUBSTR(NOW() FROM 1 FOR 10))) or (r.status = 1 AND UNIX_TIMESTAMP(SUBSTR(FROM_UNIXTIME(r.REPAYMENT_TIME) FROM 1 FOR 10)) <![CDATA[<]]> UNIX_TIMESTAMP(SUBSTR(FROM_UNIXTIME(r.REPAYMENT_YESTIME) FROM 1 FOR 10))))
+		</if>
+		<if test="type != null and type != 0 and type != 1 and type != 2">
+			SELECT <include refid="borrowVoColumn"/>,m.USERNAME FROM rocky_member m,rocky_borrow b where b.USER_ID = m.ID AND b.BORROWTYPE in(1,2,3,5)
+		</if>
+		<if test="type == null or type == ''">
+			SELECT <include refid="borrowVoColumn"/>,m.USERNAME FROM rocky_member m,rocky_borrow b where b.USER_ID = m.ID AND b.BORROWTYPE in(1,2,3,5)
+		</if>
+		<if test="beginTime != null">
+			and b.PUBLISH_TIME <![CDATA[>=]]> #{beginTime}
+		</if>
+		<if test="endTime != null">
+			and b.PUBLISH_TIME <![CDATA[<=]]> #{endTime}
+		</if>
+	</select>
+	
+	<!-- 根据条件查询借款标数量（包含信用标、抵押标、净值标和担保标） -->
+	<select id="queryBorrowCountByOuterParam" parameterType="com.dxjr.portal.outerInterface.vo.OuterParamCnd" resultType="java.lang.Integer">
+		<if test="type != null and type == 0">
+			SELECT count(b.id) FROM rocky_member m,rocky_borrow b 
+			WHERE b.USER_ID = m.ID AND b.BORROWTYPE in(1,2,3,5) AND b.status in(2,3)
+		</if>
+		<if test="type != null and type == 1">
+			SELECT count(b.id) FROM rocky_member m,rocky_borrow b
+			WHERE b.USER_ID = m.ID AND b.BORROWTYPE in(1,2,3,5) AND b.status in(4,5,42)
+		</if>
+		<if test="type != null and type == 2">
+			SELECT count(b.id) FROM rocky_member m,rocky_borrow b,rocky_b_repaymentrecord r WHERE b.USER_ID = m.ID AND b.ID = r.BORROW_ID and b.BORROWTYPE in(1,2,3,5)
+			AND r.BORROW_ID = b.ID AND 
+			((r.`STATUS` = 0 AND UNIX_TIMESTAMP(SUBSTR(FROM_UNIXTIME(r.REPAYMENT_TIME) FROM 1 FOR 10)) <![CDATA[<]]> UNIX_TIMESTAMP(SUBSTR(NOW() FROM 1 FOR 10))) or (r.status = 1 AND UNIX_TIMESTAMP(SUBSTR(FROM_UNIXTIME(r.REPAYMENT_TIME) FROM 1 FOR 10)) <![CDATA[<]]> UNIX_TIMESTAMP(SUBSTR(FROM_UNIXTIME(r.REPAYMENT_YESTIME) FROM 1 FOR 10))))
+		</if>
+		<if test="type != null and type != 0 and type != 1 and type != 2">
+			SELECT count(b.id) FROM rocky_member m,rocky_borrow b where b.USER_ID = m.ID AND b.BORROWTYPE in(1,2,3,5)
+		</if>
+		<if test="type == null or type == ''">
+			SELECT count(b.id) FROM rocky_member m,rocky_borrow b where b.USER_ID = m.ID AND b.BORROWTYPE in(1,2,3,5)
+		</if>
+		<if test="beginTime != null">
+			and b.PUBLISH_TIME <![CDATA[>=]]> #{beginTime}
+		</if>
+		<if test="endTime != null">
+			and b.PUBLISH_TIME <![CDATA[<=]]> #{endTime}
+		</if>
+	</select>
+	
+	<!-- 逾期结果集 -->
+	<resultMap id="overdueBorrowVoResultMap" type="com.dxjr.portal.outerInterface.vo.OverdueBorrowVo" >
+	    <id column="ID" property="id" jdbcType="INTEGER" />
+	    <result column="user_id" property="userId" jdbcType="INTEGER" />
+	    <result column="username" property="username" jdbcType="VARCHAR" />
+	    <result column="idcard" property="idcard" jdbcType="VARCHAR" />
+	    <result column="overdue_count" property="overdueCount" jdbcType="INTEGER" />
+	    <result column="overdue_period" property="overduePeriod" jdbcType="INTEGER" />
+	    
+	    <result column="overdue_total" property="overdueTotal" jdbcType="DOUBLE" />
+	    <result column="overdue_principal" property="overduePrincipal" jdbcType="DOUBLE" />
+	    <result column="payment_total" property="paymentTotal" jdbcType="DOUBLE" />
+	    
+	    <result column="payment_count" property="paymentCount" jdbcType="INTEGER" />
+	    <result column="payment_period" property="paymentPeriod" jdbcType="INTEGER" />
+	    <result column="repay_amount" property="repayAmount" jdbcType="DOUBLE" />
+	    <result column="wait_amount" property="waitAmount" jdbcType="DOUBLE" />
+  	</resultMap>
+  	
+  	<!-- 获取逾期借款标列表. -->
+	<select id="findOverdueBorrowList" resultMap="overdueBorrowVoResultMap">
+		SELECT m.id id,m.id user_id, m.USERNAME username, a.IDCARDNO idcard, r2.overdue_count overdue_count, r2.overdue_period overdue_period, r1.payment_count payment_count, r1.payment_period payment_period, r1.payment_total payment_total, yr.YESACCOUNT repay_amount 
+		FROM rocky_member m 
+		LEFT JOIN (SELECT USER_ID,count(DISTINCT BORROW_ID) payment_count,count(*) payment_period, SUM(REPAYMENT_ACCOUNT) payment_total FROM rocky_b_repaymentrecord WHERE WEBSTATUS = 1 GROUP BY user_id) r1 ON (m.id = r1.USER_ID)  
+		LEFT JOIN (SELECT USER_ID,SUM(REPAYMENT_YESACCOUNT) YESACCOUNT FROM rocky_b_repaymentrecord WHERE `STATUS` = 1 GROUP BY USER_ID) yr on(m.id = yr.USER_ID)  
+		,rocky_realname_appro a ,(SELECT r.USER_ID,count(DISTINCT BORROW_ID) overdue_count,count(*) overdue_period FROM rocky_b_repaymentrecord r WHERE (r.`STATUS` = 0 AND UNIX_TIMESTAMP(SUBSTR(FROM_UNIXTIME(r.REPAYMENT_TIME) FROM 1 FOR 10)) <![CDATA[<]]> UNIX_TIMESTAMP(SUBSTR(NOW() FROM 1 FOR 10))) or (r.status = 1 AND UNIX_TIMESTAMP(SUBSTR(FROM_UNIXTIME(r.REPAYMENT_TIME) FROM 1 FOR 10)) <![CDATA[<]]> UNIX_TIMESTAMP(SUBSTR(FROM_UNIXTIME(r.REPAYMENT_YESTIME) FROM 1 FOR 10))) GROUP BY r.user_id) r2 WHERE  
+		m.id = r2.user_id and a.user_id = m.id 
+	</select>
+	
+	<!-- 获取逾期借款标数量. -->
+	<select id="findOverdueBorrowCout" resultType="java.lang.Integer">
+		SELECT count(m.id)
+		FROM rocky_member m ,rocky_realname_appro a ,(SELECT r.USER_ID,count(DISTINCT BORROW_ID) overdue_count,count(*) overdue_period FROM rocky_b_repaymentrecord r WHERE (r.`STATUS` = 0 AND UNIX_TIMESTAMP(SUBSTR(FROM_UNIXTIME(r.REPAYMENT_TIME) FROM 1 FOR 10)) <![CDATA[<]]> UNIX_TIMESTAMP(SUBSTR(NOW() FROM 1 FOR 10))) or (r.status = 1 AND UNIX_TIMESTAMP(SUBSTR(FROM_UNIXTIME(r.REPAYMENT_TIME) FROM 1 FOR 10)) <![CDATA[<]]> UNIX_TIMESTAMP(SUBSTR(FROM_UNIXTIME(r.REPAYMENT_YESTIME) FROM 1 FOR 10))) GROUP BY r.user_id) r2 WHERE  
+		m.id = r2.user_id and a.user_id = m.id 
+	</select>
+	
+	<!-- 查询发生过逾期的还款记录. -->
+	<select id="findOverdueRepaymentRecordList" parameterType="java.lang.Integer" resultMap="repaymentRecordVoResultMap">
+		SELECT <include refid="repaymentRecordVoBaseColumn"/> 
+		FROM rocky_b_repaymentrecord r 
+		WHERE ((r.`STATUS` = 0 AND UNIX_TIMESTAMP(SUBSTR(FROM_UNIXTIME(r.REPAYMENT_TIME) FROM 1 FOR 10)) <![CDATA[<]]> UNIX_TIMESTAMP(SUBSTR(NOW() FROM 1 FOR 10))) or (r.status = 1 AND UNIX_TIMESTAMP(SUBSTR(FROM_UNIXTIME(r.REPAYMENT_TIME) FROM 1 FOR 10)) <![CDATA[<]]> UNIX_TIMESTAMP(SUBSTR(FROM_UNIXTIME(r.REPAYMENT_YESTIME) FROM 1 FOR 10)))) 
+		AND r.user_id = #{userId}
+	</select>
+	
+	<!-- 查询某个用户ID下待还本金的总计. -->
+	<select id="queryUnpayCapitalByMemberId" parameterType="java.lang.Integer" resultType="java.math.BigDecimal">
+		SELECT SUM(b.CAPITAL) TOTALACCOUNT FROM rocky_b_repaymentrecord b WHERE b.STATUS = 0 AND b.USER_ID = #{userId}
+	</select>
+	
+	<!-- 查询某个用户ID下待还利息的总计. -->
+	<select id="queryWaitPayInterestByMemberId" parameterType="java.lang.Integer" resultType="java.math.BigDecimal">
+		SELECT SUM(b.INTEREST) TOTALACCOUNT FROM rocky_b_repaymentrecord b WHERE b.STATUS = 0 AND b.USER_ID =  #{userId}
+	</select>
+</mapper>  

@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.dxjr.portal.member.mapper.MobileApproMapper">
+	
+	<!-- 返回的结果集 -->
+	<resultMap type="com.dxjr.portal.member.vo.MobileApproVo" id="mobileApproMapperResultMap">
+		<id property="id" column="id" />
+		<result property="userId" 		column="USER_ID" />
+		<result property="mobileNum" 	column="MOBILENUM" />
+		<result property="randCode"		column="RANDCODE" />
+		<result property="passed"		column="PASSED" />
+		<result property="addTime"		column="ADDTIME" />
+		<result property="addIp"		column="ADDIP" />
+		<result property="approTime"	column="APPROTIME" />
+	</resultMap>
+	
+	<!--基本列 -->
+	<sql id="mobileApproBaseColumn">
+		m.ID, 
+		m.USER_ID, 
+		m.MOBILENUM, 
+		m.RANDCODE, 
+		m.PASSED, 
+		m.ADDTIME,
+		m.ADDIP,
+		m.APPROTIME
+	</sql>
+	
+	<!-- 封装查询条件 -->
+	<sql id="mobileAppro_Where_Clause">
+		<if test="id != null">
+			and m.id =#{id}
+		</if>
+		<if test="userId != null ">
+			and m.USER_ID = #{userId}
+		</if>
+		<if test="mobileNum !=null and mobileNum !=''">
+			and m.MOBILENUM =#{mobileNum}
+		</if>
+		<if test="passed !=null">
+			and m.PASSED =#{passed}
+		</if>		
+	</sql>
+	
+  	<!-- 根据条件查询记录集合 -->
+	<select id="queryMobileApproList" parameterType="com.dxjr.portal.member.vo.MobileApproCnd" resultMap="mobileApproMapperResultMap" >
+		select 	
+		   <include refid="mobileApproBaseColumn"/>
+		from
+			rocky_mobile_appro m
+		where 1=1
+		<include refid="mobileAppro_Where_Clause"/>
+  	</select>
+  	
+  	  	<!-- 根据条件查询记录数量-->
+	<select id="queryMobileApproCount" parameterType="com.dxjr.portal.member.vo.MobileApproCnd" resultType="java.lang.Integer" >
+		select count(m.id)
+		from
+			rocky_mobile_appro m
+		where 1=1
+		<include refid="mobileAppro_Where_Clause"/>
+  	</select>
+  	
+  	<!-- 验证手机认证数据是否重复-->
+	<select id="queryRepeatMobileApproCount" parameterType="com.dxjr.portal.member.vo.MobileApproCnd" resultType="java.lang.Integer" >
+		select count(m.id)
+		from
+			rocky_mobile_appro m
+		where 1=1 AND m.PASSED = 1
+		<if test="userId != null">
+			and m.USER_ID !=#{userId}
+		</if>
+		<if test="mobileNum !=null and mobileNum !=''">
+			and m.MOBILENUM =#{mobileNum}
+		</if>
+  	</select>
+  	
+  	<select id="querySendSmsMobile"  resultType="java.lang.String" >
+	  	<!--  给平台通过实名认证的所有用户发短信
+			SELECT DISTINCT MOBILENUM  FROM rocky_mobile_appro a INNER JOIN  rocky_member m  on a.USER_ID=m.ID  WHERE a.PASSED=1  and m.IS_FINANCIAL_USER=1 and m.status = 0 
+		 -->
+	 	<!-- 给用户代收>=100 发送短信 -->
+	    SELECT DISTINCT m.MOBILENUM  from   rocky_account  ra   INNER JOIN    rocky_mobile_appro  m  on ra.USER_ID=m.USER_ID  WHERE m.PASSED=1  AND ra.collection >= 100 
+  	 	<!-- 查询手机认证通过、用户状态为正常，待收大于0的用户 -->
+  	  <!--  SELECT DISTINCT m.MOBILENUM  from   rocky_account  ra   INNER JOIN    rocky_mobile_appro  m  on ra.USER_ID=m.USER_ID  INNER JOIN  rocky_member m1  on ra.USER_ID=m1.ID  WHERE m.PASSED=1  AND ra.collection >0  and m1.status = 0 AND  m1.IS_FINANCIAL_USER=1 -->
+       <!-- 未绑定银行卡的理财用户的名单 -->
+      <!--  SELECT  DISTINCT rma.MOBILENUM as '手机号' 
+		FROM rocky_member m 
+		LEFT JOIN (SELECT * FROM rocky_bankinfo where `STATUS` = 0) b on(m.id = b.USER_ID) 
+		LEFT JOIN rocky_mobile_appro rma on(rma.USER_ID = m.id), 
+		rocky_account a 
+		WHERE b.USER_ID IS NULL AND m.id = a.USER_ID AND m.IS_FINANCIAL_USER = 1 AND m.`STATUS` = 0 
+		AND a.total >= 100 -->
+  
+  
+  	</select>
+  	
+  	 <select id="getByUserId" parameterType="java.lang.Integer" resultMap="mobileApproMapperResultMap">
+		select * from rocky_mobile_appro where USER_ID=#{userId} and PASSED=1
+	</select>
+	
+	<select id="getMobileByUsername" parameterType="java.lang.String" resultType="java.lang.String">
+		select ma.mobilenum from rocky_mobile_appro ma
+		INNER JOIN rocky_member rm on ma.user_id=rm.id
+		where rm.`STATUS`=0 and ma.PASSED=1 and rm.username=#{username} LIMIT 1
+	</select>
+	
+	
+  	
+</mapper>  

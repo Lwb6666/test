@@ -1,0 +1,2126 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dxjr.portal.borrow.mapper.BorrowMapper">
+	<resultMap id="borrowVoResultMap" type="com.dxjr.portal.borrow.vo.BorrowVo">
+		<id column="ID" 						property="id"/>
+		<result column="USER_ID" 				property="userId" />
+		<result column="NAME" 					property="name" />
+		<result column="STATUS" 				property="status" />
+		<result column="APPRSTATUS"				property="apprstatus" />
+		<result column="ORDER" 				    property="order" />
+		<result column="BORROWTYPE" 			property="borrowtype" />
+		<result column="REPAYMENT_ACCOUNT"		property="repaymentAccount"	/>
+		<result column="MONTHLY_REPAYMENT" 		property="monthlyRepayment" />
+		<result column="REPAYMENT_YESACCOUNT" 	property="repaymentYesaccount"/>
+		<result column="REPAYMENT_YESINTEREST" 	property="repaymentYesinterest" />
+		<result column="SUCCESS_TIME" 			property="successTime" />
+		<result column="END_TIME" 				property="endTime" />
+		<result column="BORROW_USE" 			property="borrowUse"  />
+		<result column="TIME_LIMIT" 			property="timeLimit"  />
+		<result column="STYLE" 					property="style" />
+		<result column="ACCOUNT" 				property="account"  />
+		<result column="ACCOUNT_YES" 			property="accountYes"  />
+		<result column="TENDER_TIMES" 			property="tenderTimes" />
+		<result column="APR" 					property="apr"  />
+		<result column="LOWEST_ACCOUNT"			property="lowestAccount" />
+		<result column="MOST_ACCOUNT" 			property="mostAccount"  />
+		<result column="VALID_TIME" 			property="validTime" />
+		<result column="AWARD" 					property="award" />
+		<result column="FUNDS" 					property="funds" />
+		<result column="CONTENT" 				property="content" />
+		<result column="SENDMESSAGE" 			property="sendmessage"  />
+		<result column="ADDTIME" 				property="addtime" />
+		<result column="ADDIP" 					property="addip"  />
+		<result column="CANCEL_USER" 			property="cancelUser"  />
+		<result column="CANCEL_TIME" 			property="cancelTime"  />
+		<result column="CANCEL_REMARK" 			property="cancelRemark" />
+		<result column="UUID" 					property="uuid" />
+		<result column="CONTRACT_NO" 			property="contractNo"  />
+		<result column="BID_PASSWORD" 			property="bidPassword" />
+		<result column="IS_AUTOTENDER" 			property="isAutotender"/>
+		<result column="REMARK" 				property="remark" />
+		<result column="PLEDGE_TYPE" 			property="pledgeType"  />
+		<result column="TIMING_BORROW_TIME"		property="timingBorrowTime" />
+		<result column="PUBLISH_TIME" 			property="publishTime" />
+		<result column="product_type" 			property="productType" />
+		<result column="borrow_use" 			property="borrowUse" />
+		<result column="publish_time" 			property="publishTimeDate" />
+		<result column="credit_rating" 			property="creditRating" />
+		<result column="IS_JOINT_GUARANTY" 		property="isJointGuaranty" />
+		<result column="JOINT_GUARANTY" 		property="jointGuaranty" />
+		<result column="IS_GUARANTY" 			property="isGuaranty" />
+		<result column="MORTGAGE_TYPE" 			property="mortgageType" />
+		<result column="GUARANTY_ORGANIZATION" 	property="guarantyOrganization" />
+		<result column="is_mortgage" 			property="isMortgage" />
+		<result column="is_Transfer" 			property="isTransfer" />
+		<result column="IS_FINANCIAL_USER" 		property="isFinancialUser" />
+		<result column="AREA_TYPE" 				property="areaType" />
+		<result column="AREA_CHANGE_TIME" 		property="areaChangeTime" />
+		<result column="TENDER_TYPE" 		    property="tenderType" />
+		<result column="rbtAccount"             property="rbtAccount"/>
+		<result column="is_custody" 			property="isCustody"/>
+		<result column="IS_CHECK" 				property="isCheck"/>
+		<result column="E_ProjectId" 			property="eProjectId"/>
+		<result column="RepayName" 				property="repayName"/>
+		<result column="RepayAcct" 				property="repayAcct"/>
+		<result column="e_advance" 				property="advance"/>
+		<result column="recordId" property="recordId"/>
+        <result column="APR_YEAR" property="yearApr"/>
+        <result column="HAS_EXTRA_INTEREST" property="ishowfloat"/>
+		<result column="tenderStatus" property="tenderStatus"/>
+	</resultMap>
+	
+	<!--借款标基本列 -->
+	<sql id="borrowVoColumn">
+		b.ID,
+		b.USER_ID,
+		b.NAME,
+		b.STATUS,
+		b.APPRSTATUS,
+		b.ORDER,
+		b.BORROWTYPE,
+		b.REPAYMENT_ACCOUNT,
+		b.MONTHLY_REPAYMENT,
+		b.REPAYMENT_YESACCOUNT,
+		b.REPAYMENT_YESINTEREST,
+		b.SUCCESS_TIME,
+		b.END_TIME,
+		b.USE,
+		b.TIME_LIMIT,
+		b.STYLE,
+		b.ACCOUNT,
+		b.ACCOUNT_YES,
+		b.TENDER_TIMES,
+		b.APR,
+		b.LOWEST_ACCOUNT,
+		b.MOST_ACCOUNT,
+		b.VALID_TIME,
+		b.AWARD,
+		b.FUNDS,
+		b.CONTENT,
+		b.SENDMESSAGE,
+		b.ADDTIME,
+		b.ADDIP,
+		b.CANCEL_USER,
+		b.CANCEL_TIME,
+		b.CANCEL_REMARK,
+		b.UUID,
+		b.CONTRACT_NO,
+		b.BID_PASSWORD,
+		b.IS_AUTOTENDER,
+		b.REMARK,
+		b.PLEDGE_TYPE,
+		b.TIMING_BORROW_TIME,
+		b.PUBLISH_TIME,
+		b.product_type,
+		b.borrow_use,
+		b.credit_rating,b.IS_JOINT_GUARANTY,b.JOINT_GUARANTY,b.IS_GUARANTY,b.MORTGAGE_TYPE,b.GUARANTY_ORGANIZATION,b.is_mortgage,
+		b.AREA_TYPE,
+		b.AREA_CHANGE_TIME,
+		b.is_custody,
+		b.IS_CHECK,
+		b.E_ProjectId,
+		b.RepayName,
+		b.RepayAcct,
+		b.e_advance
+	
+	</sql>
+
+	<!-- 根据id查询借款标 -->
+	<select id="selectByPrimaryKey" resultMap="borrowVoResultMap"
+		parameterType="java.lang.Integer">
+		select 
+		<include refid="borrowVoColumn" />
+		from rocky_borrow b
+		where b.ID = #{id,jdbcType=INTEGER}
+	</select>
+	
+	<!-- 根据id查询借款标并锁定 -->
+	<select id="selectByPrimaryKeyForUpdate" resultMap="borrowVoResultMap"
+		parameterType="java.lang.Integer">
+		select 
+		<include refid="borrowVoColumn" />
+		from rocky_borrow b
+		where b.ID = #{id,jdbcType=INTEGER}
+		for update
+	</select>
+
+	<!-- 新增借款标，不同标种借入功能完成后期可删除 -->
+	<insert id="insert" useGeneratedKeys="true" keyProperty="id"
+		parameterType="com.dxjr.portal.borrow.entity.Borrow">
+		insert into rocky_borrow ( USER_ID, NAME,
+		STATUS, APPRSTATUS,`ORDER`,
+		BORROWTYPE, REPAYMENT_ACCOUNT, MONTHLY_REPAYMENT,
+		REPAYMENT_YESACCOUNT, REPAYMENT_YESINTEREST,
+		SUCCESS_TIME, END_TIME, `USE`,
+		TIME_LIMIT, STYLE, ACCOUNT,
+		ACCOUNT_YES, TENDER_TIMES, APR,
+		LOWEST_ACCOUNT, MOST_ACCOUNT, VALID_TIME,
+		AWARD, FUNDS, CONTENT,
+		SENDMESSAGE, ADDTIME, ADDIP,
+		CANCEL_USER, CANCEL_TIME, CANCEL_REMARK,
+		UUID, CONTRACT_NO, BID_PASSWORD,
+		IS_AUTOTENDER, REMARK, PLEDGE_TYPE,
+		TIMING_BORROW_TIME, PUBLISH_TIME, AREA_TYPE, AREA_CHANGE_TIME)
+		values ( #{userId,jdbcType=INTEGER}, #{name,jdbcType=VARCHAR},
+		#{status,jdbcType=INTEGER}, #{apprstatus,jdbcType=INTEGER},
+		#{order,jdbcType=INTEGER},
+		#{borrowtype,jdbcType=INTEGER}, #{repaymentAccount,jdbcType=DECIMAL},
+		#{monthlyRepayment,jdbcType=DECIMAL},
+		#{repaymentYesaccount,jdbcType=DECIMAL},
+		#{repaymentYesinterest,jdbcType=DECIMAL},
+		#{successTime}, #{endTime}, #{use,jdbcType=VARCHAR},
+		#{timeLimit,jdbcType=INTEGER}, #{style,jdbcType=INTEGER}, #{account,jdbcType=DECIMAL},
+		#{accountYes,jdbcType=DECIMAL}, #{tenderTimes,jdbcType=INTEGER},
+		#{apr,jdbcType=DECIMAL},
+		#{lowestAccount,jdbcType=DECIMAL}, #{mostAccount,jdbcType=DECIMAL}, #{validTime,jdbcType=INTEGER},
+		#{award,jdbcType=INTEGER}, #{funds,jdbcType=DECIMAL},
+		#{content,jdbcType=VARCHAR},
+		#{sendmessage,jdbcType=INTEGER}, #{addtime}, #{addip,jdbcType=VARCHAR},
+		#{cancelUser,jdbcType=INTEGER}, #{cancelTime,jdbcType=VARCHAR},
+		#{cancelRemark,jdbcType=VARCHAR},
+		#{uuid,jdbcType=VARCHAR}, #{contractNo,jdbcType=VARCHAR}, #{bidPassword,jdbcType=VARCHAR},
+		#{isAutotender,jdbcType=INTEGER}, #{remark,jdbcType=VARCHAR},
+		#{pledgeType,jdbcType=INTEGER},
+		#{timingBorrowTime,jdbcType=VARCHAR}, #{publishTime,jdbcType=VARCHAR}, #{areaType}, #{areaChangeTime})
+	</insert>
+	
+	<!-- 根据id更新借款标 -->
+	<update id="updateByPrimaryKey" parameterType="com.dxjr.portal.borrow.entity.Borrow">
+		update rocky_borrow
+		<set >
+		USER_ID = #{userId,jdbcType=INTEGER},
+		NAME = #{name,jdbcType=VARCHAR},
+		STATUS = #{status,jdbcType=INTEGER},
+		APPRSTATUS = #{apprstatus,jdbcType=INTEGER},
+		`ORDER` = #{order,jdbcType=INTEGER},
+		BORROWTYPE = #{borrowtype,jdbcType=INTEGER},
+		REPAYMENT_ACCOUNT = #{repaymentAccount,jdbcType=DECIMAL},
+		MONTHLY_REPAYMENT = #{monthlyRepayment,jdbcType=DECIMAL},
+		REPAYMENT_YESACCOUNT = #{repaymentYesaccount,jdbcType=DECIMAL},
+		REPAYMENT_YESINTEREST = #{repaymentYesinterest,jdbcType=DECIMAL},
+		SUCCESS_TIME = #{successTime},
+		END_TIME = #{endTime},
+		`USE` = #{use,jdbcType=VARCHAR},
+		TIME_LIMIT = #{timeLimit,jdbcType=INTEGER},
+		STYLE = #{style,jdbcType=INTEGER},
+		ACCOUNT = #{account,jdbcType=DECIMAL},
+		ACCOUNT_YES = #{accountYes,jdbcType=DECIMAL},
+		TENDER_TIMES = #{tenderTimes,jdbcType=INTEGER},
+		APR = #{apr,jdbcType=DECIMAL},
+		LOWEST_ACCOUNT = #{lowestAccount,jdbcType=DECIMAL},
+		MOST_ACCOUNT = #{mostAccount,jdbcType=DECIMAL},
+		VALID_TIME = #{validTime,jdbcType=INTEGER},
+		AWARD = #{award,jdbcType=INTEGER},
+		FUNDS = #{funds,jdbcType=DECIMAL},
+		CONTENT = #{content,jdbcType=VARCHAR},
+		SENDMESSAGE = #{sendmessage,jdbcType=INTEGER},
+		ADDTIME = #{addtime},
+		ADDIP = #{addip,jdbcType=VARCHAR},
+		CANCEL_USER = #{cancelUser,jdbcType=INTEGER},
+		CANCEL_TIME = #{cancelTime,jdbcType=VARCHAR},
+		CANCEL_REMARK = #{cancelRemark,jdbcType=VARCHAR},
+		UUID = #{uuid,jdbcType=VARCHAR},
+		CONTRACT_NO = #{contractNo,jdbcType=VARCHAR},
+		BID_PASSWORD = #{bidPassword,jdbcType=VARCHAR},
+		IS_AUTOTENDER = #{isAutotender,jdbcType=INTEGER},
+		REMARK = #{remark,jdbcType=VARCHAR},
+		PLEDGE_TYPE = #{pledgeType,jdbcType=INTEGER},
+		TIMING_BORROW_TIME = #{timingBorrowTime,jdbcType=VARCHAR},
+		PUBLISH_TIME = #{publishTime,jdbcType=VARCHAR},
+		credit_rating = #{creditRating,jdbcType=VARCHAR},
+		AREA_TYPE = #{areaType,jdbcType=INTEGER},
+		AREA_CHANGE_TIME = #{areaChangeTime}
+		</set>
+		where ID = #{id,jdbcType=INTEGER}
+	</update>
+
+	<!-- 分页查询投标中的借款标集合 -->
+	<select id="selectTenderBorrow" resultMap="borrowVoResultMap">
+		SELECT 
+			<include refid="borrowVoColumn" /> from rocky_borrow b 
+		where b.`STATUS`= 2 and b.IS_AUTOTENDER = 0
+	</select>
+
+	<!-- 查询投标中的借款标数量 -->
+	<select id="countTenderBorrow" resultType="java.lang.Integer">
+		SELECT count(b.id)
+		where b.`STATUS`= 2 and b.IS_AUTOTENDER = 0
+	</select>
+
+	<!-- 查询最新标 -->
+	<select id="queryLastBorrow" resultMap="borrowVoResultMap"
+		parameterType="java.lang.Integer">
+		SELECT * FROM ROCKY_BORROW where contract_no is not null ORDER BY id DESC LIMIT 0,1 for update
+	</select>
+	
+	<!-- 查询最新净值标 -->
+	<select id="queryLastNetValueBorrow" resultMap="borrowVoResultMap">
+		SELECT * FROM ROCKY_BORROW where contract_no is not null and BORROWTYPE=3 ORDER BY id DESC LIMIT 0,1 for update
+	</select>
+
+	<!-- 根据合同编号查询 -->
+	<select id="queryBorrowByContractNo" resultMap="borrowVoResultMap"
+		parameterType="String">
+		SELECT * FROM ROCKY_BORROW where contract_no = #{contractNo} and status >= 0
+	</select>
+
+	<!-- 调用手动投标存储过程 -->
+	<select id="saveManualTender" statementType="CALLABLE" parameterType="java.util.Map">  
+		<![CDATA[  
+		    {call tender(#{borrowid,mode=IN,jdbcType=INTEGER}, #{tenderMoney,mode=IN,jdbcType=DECIMAL}, #{memberId,mode=IN,jdbcType=INTEGER}, #{addip,mode=IN,jdbcType=VARCHAR}, #{tenderType,mode=IN,jdbcType=VARCHAR},#{platform,mode=IN,jdbcType=VARCHAR},#{msg,mode=OUT,jdbcType=VARCHAR})}  
+		]]>
+	</select>
+
+	<!-- 调用复审存储过程 -->
+	<select id="approveBorrowReCheck" statementType="CALLABLE" parameterType="java.util.Map">  
+		<![CDATA[  
+		    {call recheck (
+		    #{borrowid,mode=IN,jdbcType=INTEGER}, 
+		    #{addip,mode=IN,jdbcType=VARCHAR},
+		    #{checkUserId,mode=IN,jdbcType=INTEGER}, 
+		    #{checkRemark,mode=IN,jdbcType=VARCHAR}, 
+		    #{msg,mode=OUT,jdbcType=VARCHAR})}  
+		]]>
+	</select>
+
+	<!-- 调用还款存储过程 -->
+	<select id="repayBorrow" parameterType="java.util.Map"
+		statementType="CALLABLE">  
+		<![CDATA[  
+		    {call repay_normal (
+		    #{borrowid,mode=IN,jdbcType=INTEGER}, 
+		    #{repaymentid,mode=IN,jdbcType=INTEGER},
+		    #{addip,mode=IN,jdbcType=VARCHAR},
+		     #{platform,mode=IN,jdbcType=VARCHAR},
+		    #{msg,mode=OUT,jdbcType=VARCHAR})}  
+		]]>
+	</select>
+
+
+	<!-- 调用提前还款存储过程 -->
+	<select id="repayEarlyBorrow" parameterType="java.util.Map"
+		statementType="CALLABLE">  
+		<![CDATA[  
+		    {call repay_early (
+		    #{borrowid,mode=IN,jdbcType=INTEGER}, 
+		    #{repaymentid,mode=IN,jdbcType=INTEGER},
+		    #{addip,mode=IN,jdbcType=VARCHAR},
+		    #{platform,mode=IN,jdbcType=VARCHAR},
+		    #{msg,mode=OUT,jdbcType=VARCHAR})}  
+		]]>
+	</select>
+
+	<!-- 调用操作罚息存储过程 -->
+	<select id="operatingPenalty" parameterType="java.util.Map"
+		statementType="CALLABLE">  
+		<![CDATA[  
+		    {call operatingpenalty (
+		    #{repaymentid,mode=IN,jdbcType=INTEGER},
+		    #{addip,mode=IN,jdbcType=VARCHAR},
+		    #{msg,mode=OUT,jdbcType=VARCHAR})}  
+		]]>
+	</select>
+
+	<!-- 调用垫付后还款存储过程 -->
+	<select id="afterWebpayBorrow" parameterType="java.util.Map"
+		statementType="CALLABLE">  
+		<![CDATA[  
+		    {call afterwebpay (
+		    #{repaymentid,mode=IN,jdbcType=INTEGER}, 
+		    #{addip,mode=IN,jdbcType=VARCHAR},
+		    #{platform,mode=IN,jdbcType=VARCHAR},
+		    #{msg,mode=OUT,jdbcType=VARCHAR})}  
+		]]>
+	</select>
+
+	<!-- 调用撤标存储过程 -->
+	<select id="cancelBorrow" parameterType="java.util.Map"
+		statementType="CALLABLE">  
+		<![CDATA[  
+		    {call cancel_borrow(
+		    	#{borrowid,mode=IN,jdbcType=INTEGER},
+		    	#{type,mode=IN,jdbcType=INTEGER},
+				#{addip,mode=IN,jdbcType=VARCHAR},
+				#{platform,mode=IN,jdbcType=VARCHAR},		    	
+		        #{msg,mode=OUT,jdbcType=VARCHAR}
+		     )}  
+		]]>
+	</select>
+
+	<!-- 调用流标存储过程 -->
+	<select id="flowBorrow" parameterType="java.util.Map"
+		statementType="CALLABLE">  
+		<![CDATA[  
+		    {call flow_borrow(#{msg,mode=OUT,jdbcType=VARCHAR})}  
+		]]>
+	</select>
+
+	<!-- 我要理财-招标中的列表 -->
+	<select id="queryBorrowForDefault" parameterType="com.dxjr.portal.borrow.vo.BorrowCnd"
+		resultMap="borrowVoResultMap">
+		SELECT m.username, m.headimg, r.repayment_time,
+		<include refid="borrowVoColumn" />
+		FROM rocky_borrow b LEFT JOIN rocky_member m on(m.ID = b.USER_ID) LEFT
+		JOIN rocky_b_repaymentrecord r on(r.BORROW_ID = b.ID)
+		where b.status = 2 and b.is_autoTender = 0
+		<if test="name != null and name != ''">
+			and b.name like CONCAT('%', #{name}, '%' )
+		</if>
+		<if test="userName != null and userName != ''">
+			and m.username like CONCAT('%', #{userName}, '%' )
+		</if>
+		GROUP BY b.id
+		order by
+		<if test="searchOrderBy == null or searchOrderBy == '' ">
+			FIELD(b.BORROWTYPE,4,2,1,3), b.APR desc, b.PUBLISH_TIME
+			desc
+		</if>
+		<if
+			test="searchOrderBy != null and searchOrderBy == 'apr' and orderByType != null and orderByType == 'ASC' ">
+			b.apr asc
+		</if>
+		<if
+			test="searchOrderBy != null and searchOrderBy == 'apr' and orderByType != null and orderByType == 'DESC' ">
+			b.apr desc
+		</if>
+		<if
+			test="searchOrderBy != null and searchOrderBy == 'period' and orderByType != null and orderByType == 'ASC' ">
+			b.time_limit asc
+		</if>
+		<if
+			test="searchOrderBy != null and searchOrderBy == 'period' and orderByType != null and orderByType == 'DESC' ">
+			b.time_limit desc
+		</if>
+		<if
+			test="searchOrderBy != null and searchOrderBy == 'schedule' and orderByType != null and orderByType == 'ASC'">
+			b.publish_time asc
+		</if>
+		<if
+			test="searchOrderBy != null and searchOrderBy == 'schedule' and orderByType != null and orderByType == 'DESC' ">
+			b.publish_time desc
+		</if>
+		<if
+			test="searchOrderBy != null and searchOrderBy == 'account' and orderByType != null and orderByType == 'ASC' ">
+			b.account asc
+		</if>
+		<if
+			test="searchOrderBy != null and searchOrderBy == 'account' and orderByType != null and orderByType == 'DESC' ">
+			b.account desc
+		</if>
+	</select>
+
+	<!-- 我要理财-招标中的列表记录数量 -->
+	<select id="queryBorrowForDefaultCount" parameterType="com.dxjr.portal.borrow.vo.BorrowCnd"
+		resultType="java.lang.Integer">
+		SELECT count(*) FROM rocky_borrow b,rocky_member m where b.USER_ID =
+		m.ID
+		and b.status = 2 and b.is_autoTender = 0
+		<if test="name != null and name != ''">
+			and b.name like CONCAT('%', #{name}, '%' )
+		</if>
+		<if test="userName != null and userName != ''">
+			and m.username like CONCAT('%', #{userName}, '%' )
+		</if>
+	</select>
+
+	<!-- 我要理财-预发标列表 -->
+	<select id="queryBorrowForAdvance" parameterType="com.dxjr.portal.borrow.vo.BorrowCnd"
+		resultMap="borrowVoResultMap">
+		SELECT m.username, m.headimg, r.repayment_time,
+		<include refid="borrowVoColumn" />
+		FROM rocky_borrow b LEFT JOIN rocky_member m on(m.ID = b.USER_ID) LEFT
+		JOIN rocky_b_repaymentrecord r on(r.BORROW_ID = b.ID)
+		where b.timing_borrow_time is not null and b.timing_borrow_time != '' and
+		b.`status` = 1 and b.borrowtype = 2
+		<if test="name != null and name != ''">
+			and b.name like CONCAT('%', #{name}, '%' )
+		</if>
+		<if test="userName != null and userName != ''">
+			and m.username like CONCAT('%', #{userName}, '%' )
+		</if>
+		GROUP BY b.id
+		order by
+		<if test="searchOrderBy == null or searchOrderBy == '' ">
+			b.timing_borrow_time asc
+		</if>
+		<if
+			test="searchOrderBy != null and searchOrderBy == 'apr' and orderByType != null and orderByType == 'ASC' ">
+			b.apr asc
+		</if>
+		<if
+			test="searchOrderBy != null and searchOrderBy == 'apr' and orderByType != null and orderByType == 'DESC' ">
+			b.apr desc
+		</if>
+		<if
+			test="searchOrderBy != null and searchOrderBy == 'period' and orderByType != null and orderByType == 'ASC' ">
+			b.time_limit asc
+		</if>
+		<if
+			test="searchOrderBy != null and searchOrderBy == 'period' and orderByType != null and orderByType == 'DESC' ">
+			b.time_limit desc
+		</if>
+		<if
+			test="searchOrderBy != null and searchOrderBy == 'schedule' and orderByType != null and orderByType == 'ASC'">
+			b.timing_borrow_time asc
+		</if>
+		<if
+			test="searchOrderBy != null and searchOrderBy == 'schedule' and orderByType != null and orderByType == 'DESC' ">
+			b.timing_borrow_time desc
+		</if>
+		<if
+			test="searchOrderBy != null and searchOrderBy == 'account' and orderByType != null and orderByType == 'ASC' ">
+			b.account asc
+		</if>
+		<if
+			test="searchOrderBy != null and searchOrderBy == 'account' and orderByType != null and orderByType == 'DESC' ">
+			b.account desc
+		</if>
+	</select>
+
+	<!-- 我要理财-预发标列表记录数量 -->
+	<select id="queryBorrowForAdvanceCount" parameterType="com.dxjr.portal.borrow.vo.BorrowCnd"
+		resultType="java.lang.Integer">
+		SELECT count(*) FROM rocky_borrow b,rocky_member m where b.USER_ID =
+		m.ID
+		and b.timing_borrow_time is not null and b.timing_borrow_time != '' and
+		b.`status` = 1 and b.borrowtype = 2
+		<if test="name != null and name != ''">
+			and b.name like CONCAT('%', #{name}, '%' )
+		</if>
+		<if test="userName != null and userName != ''">
+			and m.username like CONCAT('%', #{userName}, '%' )
+		</if>
+	</select>
+
+	<!-- 我要理财-完成列表 -->
+	<select id="queryBorrowForComplete" parameterType="com.dxjr.portal.borrow.vo.BorrowCnd"
+		resultMap="borrowVoResultMap">
+		SELECT m.username, m.headimg, r.repayment_time,
+		<include refid="borrowVoColumn" />
+		FROM rocky_borrow b LEFT JOIN rocky_member m on(m.ID = b.USER_ID) LEFT
+		JOIN rocky_b_repaymentrecord r on(r.BORROW_ID = b.ID)
+		where b.STATUS in (3,4,5,42) and b.is_autoTender = 0
+		<if test="name != null and name != ''">
+			and b.name like CONCAT('%', #{name}, '%' )
+		</if>
+		<if test="userName != null and userName != ''">
+			and m.username like CONCAT('%', #{userName}, '%' )
+		</if>
+		GROUP BY b.id
+		order by
+		<if test="searchOrderBy == null or searchOrderBy == '' ">
+			b.success_time desc
+		</if>
+		<if
+			test="searchOrderBy != null and searchOrderBy == 'apr' and orderByType != null and orderByType == 'ASC' ">
+			b.apr asc
+		</if>
+		<if
+			test="searchOrderBy != null and searchOrderBy == 'apr' and orderByType != null and orderByType == 'DESC' ">
+			b.apr desc
+		</if>
+		<if
+			test="searchOrderBy != null and searchOrderBy == 'period' and orderByType != null and orderByType == 'ASC' ">
+			b.time_limit asc
+		</if>
+		<if
+			test="searchOrderBy != null and searchOrderBy == 'period' and orderByType != null and orderByType == 'DESC' ">
+			b.time_limit desc
+		</if>
+		<if
+			test="searchOrderBy != null and searchOrderBy == 'schedule' and orderByType != null and orderByType == 'ASC'">
+			b.success_time asc
+		</if>
+		<if
+			test="searchOrderBy != null and searchOrderBy == 'schedule' and orderByType != null and orderByType == 'DESC' ">
+			b.success_time desc
+		</if>
+		<if
+			test="searchOrderBy != null and searchOrderBy == 'account' and orderByType != null and orderByType == 'ASC' ">
+			b.account asc
+		</if>
+		<if
+			test="searchOrderBy != null and searchOrderBy == 'account' and orderByType != null and orderByType == 'DESC' ">
+			b.account desc
+		</if>
+	</select>
+
+	<!-- 我要理财-完成列表记录数量 -->
+	<select id="queryBorrowForCompleteCount" parameterType="com.dxjr.portal.borrow.vo.BorrowCnd"
+		resultType="java.lang.Integer">
+		SELECT count(*) FROM rocky_borrow b,rocky_member m where b.USER_ID =
+		m.ID
+		and b.STATUS in (3,4,5,42) and b.is_autoTender = 0
+		<if test="name != null and name != ''">
+			and b.name like CONCAT('%', #{name}, '%' )
+		</if>
+		<if test="userName != null and userName != ''">
+			and m.username like CONCAT('%', #{userName}, '%' )
+		</if>
+	</select>
+
+	<!-- 我要理财-完成的抵押标 -->
+	<select id="queryBorrowForCompleteDYB" parameterType="com.dxjr.portal.borrow.vo.BorrowCnd"
+		resultMap="borrowVoResultMap">
+		SELECT m.username, m.headimg, r.repayment_time,
+		<include refid="borrowVoColumn" />
+		FROM rocky_borrow b LEFT JOIN rocky_member m on(m.ID = b.USER_ID) LEFT
+		JOIN rocky_b_repaymentrecord r on(r.BORROW_ID = b.ID)
+		where b.BORROWTYPE = 2 and b.STATUS in (3,4,5,42) and b.is_autoTender = 0
+		<if test="name != null and name != ''">
+			and b.name like CONCAT('%', #{name}, '%' )
+		</if>
+		<if test="userName != null and userName != ''">
+			and m.username like CONCAT('%', #{userName}, '%' )
+		</if>
+		GROUP BY b.id
+		order by
+		<if test="searchOrderBy == null or searchOrderBy == '' ">
+			b.success_time desc
+		</if>
+		<if
+			test="searchOrderBy != null and searchOrderBy == 'apr' and orderByType != null and orderByType == 'ASC' ">
+			b.apr asc
+		</if>
+		<if
+			test="searchOrderBy != null and searchOrderBy == 'apr' and orderByType != null and orderByType == 'DESC' ">
+			b.apr desc
+		</if>
+		<if
+			test="searchOrderBy != null and searchOrderBy == 'period' and orderByType != null and orderByType == 'ASC' ">
+			b.time_limit asc
+		</if>
+		<if
+			test="searchOrderBy != null and searchOrderBy == 'period' and orderByType != null and orderByType == 'DESC' ">
+			b.time_limit desc
+		</if>
+		<if
+			test="searchOrderBy != null and searchOrderBy == 'schedule' and orderByType != null and orderByType == 'ASC'">
+			b.success_time asc
+		</if>
+		<if
+			test="searchOrderBy != null and searchOrderBy == 'schedule' and orderByType != null and orderByType == 'DESC' ">
+			b.success_time desc
+		</if>
+		<if
+			test="searchOrderBy != null and searchOrderBy == 'account' and orderByType != null and orderByType == 'ASC' ">
+			b.account asc
+		</if>
+		<if
+			test="searchOrderBy != null and searchOrderBy == 'account' and orderByType != null and orderByType == 'DESC' ">
+			b.account desc
+		</if>
+	</select>
+
+	<!-- 我要理财-完成的抵押标记录数量 -->
+	<select id="queryBorrowForCompleteDYBCount" parameterType="com.dxjr.portal.borrow.vo.BorrowCnd"
+		resultType="java.lang.Integer">
+		SELECT count(*) FROM rocky_borrow b,rocky_member m where b.USER_ID =
+		m.ID
+		and b.BORROWTYPE = 2 and b.STATUS in (3,4,5,42) and b.is_autoTender = 0
+		<if test="name != null and name != ''">
+			and b.name like CONCAT('%', #{name}, '%' )
+		</if>
+		<if test="userName != null and userName != ''">
+			and m.username like CONCAT('%', #{userName}, '%' )
+		</if>
+	</select>
+
+	<!-- 我要理财-完成的净值标 -->
+	<select id="queryBorrowForCompleteJZB" parameterType="com.dxjr.portal.borrow.vo.BorrowCnd"
+		resultMap="borrowVoResultMap">
+		SELECT m.username, m.headimg, r.repayment_time,
+		<include refid="borrowVoColumn" />
+		FROM rocky_borrow b LEFT JOIN rocky_member m on(m.ID = b.USER_ID) LEFT
+		JOIN rocky_b_repaymentrecord r on(r.BORROW_ID = b.ID)
+		where b.BORROWTYPE = 3 and b.STATUS in (3,4,5,42) and b.is_autoTender = 0
+		<if test="name != null and name != ''">
+			and b.name like CONCAT('%', #{name}, '%' )
+		</if>
+		<if test="userName != null and userName != ''">
+			and m.username like CONCAT('%', #{userName}, '%' )
+		</if>
+		GROUP BY b.id
+		order by
+		<if test="searchOrderBy == null or searchOrderBy == '' ">
+			b.success_time desc
+		</if>
+		<if
+			test="searchOrderBy != null and searchOrderBy == 'apr' and orderByType != null and orderByType == 'ASC' ">
+			b.apr asc
+		</if>
+		<if
+			test="searchOrderBy != null and searchOrderBy == 'apr' and orderByType != null and orderByType == 'DESC' ">
+			b.apr desc
+		</if>
+		<if
+			test="searchOrderBy != null and searchOrderBy == 'period' and orderByType != null and orderByType == 'ASC' ">
+			b.time_limit asc
+		</if>
+		<if
+			test="searchOrderBy != null and searchOrderBy == 'period' and orderByType != null and orderByType == 'DESC' ">
+			b.time_limit desc
+		</if>
+		<if
+			test="searchOrderBy != null and searchOrderBy == 'schedule' and orderByType != null and orderByType == 'ASC'">
+			b.success_time asc
+		</if>
+		<if
+			test="searchOrderBy != null and searchOrderBy == 'schedule' and orderByType != null and orderByType == 'DESC' ">
+			b.success_time desc
+		</if>
+		<if
+			test="searchOrderBy != null and searchOrderBy == 'account' and orderByType != null and orderByType == 'ASC' ">
+			b.account asc
+		</if>
+		<if
+			test="searchOrderBy != null and searchOrderBy == 'account' and orderByType != null and orderByType == 'DESC' ">
+			b.account desc
+		</if>
+	</select>
+
+	<!-- 我要理财-完成的净值标记录数量 -->
+	<select id="queryBorrowForCompleteJZBCount" parameterType="com.dxjr.portal.borrow.vo.BorrowCnd"
+		resultType="java.lang.Integer">
+		SELECT count(*) FROM rocky_borrow b,rocky_member m where b.USER_ID =
+		m.ID
+		and b.BORROWTYPE = 3 and b.STATUS in (3,4,5,42) and b.is_autoTender = 0
+		<if test="name != null and name != ''">
+			and b.name like CONCAT('%', #{name}, '%' )
+		</if>
+		<if test="userName != null and userName != ''">
+			and m.username like CONCAT('%', #{userName}, '%' )
+		</if>
+	</select>
+
+	<!-- 我要理财-完成的秒标 -->
+	<select id="queryBorrowForCompleteMB" parameterType="com.dxjr.portal.borrow.vo.BorrowCnd"
+		resultMap="borrowVoResultMap">
+		SELECT m.username, m.headimg, r.repayment_time,
+		<include refid="borrowVoColumn" />
+		FROM rocky_borrow b LEFT JOIN rocky_member m on(m.ID = b.USER_ID) LEFT
+		JOIN rocky_b_repaymentrecord r on(r.BORROW_ID = b.ID)
+		where b.BORROWTYPE = 4 and b.STATUS in (3,4,5,42) and b.is_autoTender = 0
+		<if test="name != null and name != ''">
+			and b.name like CONCAT('%', #{name}, '%' )
+		</if>
+		<if test="userName != null and userName != ''">
+			and m.username like CONCAT('%', #{userName}, '%' )
+		</if>
+		GROUP BY b.id
+		order by
+		<if test="searchOrderBy == null or searchOrderBy == '' ">
+			b.success_time desc
+		</if>
+		<if
+			test="searchOrderBy != null and searchOrderBy == 'apr' and orderByType != null and orderByType == 'ASC' ">
+			b.apr asc
+		</if>
+		<if
+			test="searchOrderBy != null and searchOrderBy == 'apr' and orderByType != null and orderByType == 'DESC' ">
+			b.apr desc
+		</if>
+		<if
+			test="searchOrderBy != null and searchOrderBy == 'period' and orderByType != null and orderByType == 'ASC' ">
+			b.time_limit asc
+		</if>
+		<if
+			test="searchOrderBy != null and searchOrderBy == 'period' and orderByType != null and orderByType == 'DESC' ">
+			b.time_limit desc
+		</if>
+		<if
+			test="searchOrderBy != null and searchOrderBy == 'schedule' and orderByType != null and orderByType == 'ASC'">
+			b.success_time asc
+		</if>
+		<if
+			test="searchOrderBy != null and searchOrderBy == 'schedule' and orderByType != null and orderByType == 'DESC' ">
+			b.success_time desc
+		</if>
+		<if
+			test="searchOrderBy != null and searchOrderBy == 'account' and orderByType != null and orderByType == 'ASC' ">
+			b.account asc
+		</if>
+		<if
+			test="searchOrderBy != null and searchOrderBy == 'account' and orderByType != null and orderByType == 'DESC' ">
+			b.account desc
+		</if>
+	</select>
+
+	<!-- 我要理财-完成的秒标记录数量 -->
+	<select id="queryBorrowForCompleteMBCount" parameterType="com.dxjr.portal.borrow.vo.BorrowCnd"
+		resultType="java.lang.Integer">
+		SELECT count(*) FROM rocky_borrow b,rocky_member m where b.USER_ID =
+		m.ID
+		and b.BORROWTYPE = 4 and b.STATUS in (3,4,5,42) and b.is_autoTender = 0
+		<if test="name != null and name != ''">
+			and b.name like CONCAT('%', #{name}, '%' )
+		</if>
+		<if test="userName != null and userName != ''">
+			and m.username like CONCAT('%', #{userName}, '%' )
+		</if>
+	</select>
+
+	<!-- 我要理财-完成的推荐标 -->
+	<select id="queryBorrowForCompleteTJB" parameterType="com.dxjr.portal.borrow.vo.BorrowCnd"
+		resultMap="borrowVoResultMap">
+		SELECT m.username, m.headimg, r.repayment_time,
+		<include refid="borrowVoColumn" />
+		FROM rocky_borrow b LEFT JOIN rocky_member m on(m.ID = b.USER_ID) LEFT
+		JOIN rocky_b_repaymentrecord r on(r.BORROW_ID = b.ID)
+		where b.BORROWTYPE = 1 and b.STATUS in (3,4,5,42) and b.is_autoTender = 0
+		<if test="name != null and name != ''">
+			and b.name like CONCAT('%', #{name}, '%' )
+		</if>
+		<if test="userName != null and userName != ''">
+			and m.username like CONCAT('%', #{userName}, '%' )
+		</if>
+		GROUP BY b.id
+		order by
+		<if test="searchOrderBy == null or searchOrderBy == '' ">
+			b.success_time desc
+		</if>
+		<if
+			test="searchOrderBy != null and searchOrderBy == 'apr' and orderByType != null and orderByType == 'ASC' ">
+			b.apr asc
+		</if>
+		<if
+			test="searchOrderBy != null and searchOrderBy == 'apr' and orderByType != null and orderByType == 'DESC' ">
+			b.apr desc
+		</if>
+		<if
+			test="searchOrderBy != null and searchOrderBy == 'period' and orderByType != null and orderByType == 'ASC' ">
+			b.time_limit asc
+		</if>
+		<if
+			test="searchOrderBy != null and searchOrderBy == 'period' and orderByType != null and orderByType == 'DESC' ">
+			b.time_limit desc
+		</if>
+		<if
+			test="searchOrderBy != null and searchOrderBy == 'schedule' and orderByType != null and orderByType == 'ASC'">
+			b.success_time asc
+		</if>
+		<if
+			test="searchOrderBy != null and searchOrderBy == 'schedule' and orderByType != null and orderByType == 'DESC' ">
+			b.success_time desc
+		</if>
+		<if
+			test="searchOrderBy != null and searchOrderBy == 'account' and orderByType != null and orderByType == 'ASC' ">
+			b.account asc
+		</if>
+		<if
+			test="searchOrderBy != null and searchOrderBy == 'account' and orderByType != null and orderByType == 'DESC' ">
+			b.account desc
+		</if>
+	</select>
+
+	<!-- 我要理财-完成的推荐标记录数量 -->
+	<select id="queryBorrowForCompleteTJBCount" parameterType="com.dxjr.portal.borrow.vo.BorrowCnd"
+		resultType="java.lang.Integer">
+		SELECT count(*) FROM rocky_borrow b,rocky_member m where b.USER_ID =
+		m.ID
+		and b.BORROWTYPE = 1 and b.STATUS in (3,4,5,42) and b.is_autoTender = 0
+		<if test="name != null and name != ''">
+			and b.name like CONCAT('%', #{name}, '%' )
+		</if>
+		<if test="userName != null and userName != ''">
+			and m.username like CONCAT('%', #{userName}, '%' )
+		</if>
+	</select>
+
+	<!-- 我要理财-逾期列表 -->
+	<select id="queryBorrowForOverdue" parameterType="com.dxjr.portal.borrow.vo.BorrowCnd"
+		resultMap="borrowVoResultMap">
+		SELECT m.username, m.headimg, r.repayment_time,
+		<include refid="borrowVoColumn" />
+		FROM rocky_borrow b, rocky_member m, rocky_b_repaymentrecord r
+		where r.BORROW_ID = b.id and b.USER_ID = m.id and b.is_autoTender = 0
+		and (
+		(UNIX_TIMESTAMP(CONCAT(SUBSTR(NOW() FROM 1 FOR 10),'
+		00:00:00'))-UNIX_TIMESTAMP(CONCAT(SUBSTR(FROM_UNIXTIME(r.repayment_time)
+		FROM 1 FOR 10),' 00:00:00'))>0 and r.`STATUS` = 0)
+		OR
+		(r.`STATUS` = 1 AND b.BORROWTYPE in(1,2,4) AND
+		(UNIX_TIMESTAMP(CONCAT(SUBSTR(FROM_UNIXTIME(r.repayment_yestime) FROM
+		1 FOR 10),' 00:00:00')) -
+		UNIX_TIMESTAMP(CONCAT(SUBSTR(FROM_UNIXTIME(r.repayment_time) FROM 1
+		FOR 10),' 00:00:00'))>0))
+		)
+		<if test="name != null and name != ''">
+			and b.name like CONCAT('%', #{name}, '%' )
+		</if>
+		<if test="userName != null and userName != ''">
+			and m.username like CONCAT('%', #{userName}, '%' )
+		</if>
+		GROUP BY b.id
+		order by
+		<if test="searchOrderBy == null or searchOrderBy == '' ">
+			b.success_time desc
+		</if>
+		<if
+			test="searchOrderBy != null and searchOrderBy == 'apr' and orderByType != null and orderByType == 'ASC' ">
+			b.apr asc
+		</if>
+		<if
+			test="searchOrderBy != null and searchOrderBy == 'apr' and orderByType != null and orderByType == 'DESC' ">
+			b.apr desc
+		</if>
+		<if
+			test="searchOrderBy != null and searchOrderBy == 'period' and orderByType != null and orderByType == 'ASC' ">
+			b.time_limit asc
+		</if>
+		<if
+			test="searchOrderBy != null and searchOrderBy == 'period' and orderByType != null and orderByType == 'DESC' ">
+			b.time_limit desc
+		</if>
+		<if
+			test="searchOrderBy != null and searchOrderBy == 'schedule' and orderByType != null and orderByType == 'ASC'">
+			b.success_time asc
+		</if>
+		<if
+			test="searchOrderBy != null and searchOrderBy == 'schedule' and orderByType != null and orderByType == 'DESC' ">
+			b.success_time desc
+		</if>
+		<if
+			test="searchOrderBy != null and searchOrderBy == 'account' and orderByType != null and orderByType == 'ASC' ">
+			b.account asc
+		</if>
+		<if
+			test="searchOrderBy != null and searchOrderBy == 'account' and orderByType != null and orderByType == 'DESC' ">
+			b.account desc
+		</if>
+	</select>
+
+	<!-- 我要理财-逾期列表记录数量 -->
+	<select id="queryBorrowForOverdueCount" parameterType="com.dxjr.portal.borrow.vo.BorrowCnd"
+		resultType="java.lang.Integer">
+		SELECT count(*) FROM (
+		SELECT b.*
+		FROM rocky_borrow b, rocky_member m, rocky_b_repaymentrecord r
+		where r.BORROW_ID = b.id and b.USER_ID = m.id and b.is_autoTender = 0
+		and (
+		(UNIX_TIMESTAMP(CONCAT(SUBSTR(NOW() FROM 1 FOR 10),'
+		00:00:00'))-UNIX_TIMESTAMP(CONCAT(SUBSTR(FROM_UNIXTIME(r.repayment_time)
+		FROM 1 FOR 10),' 00:00:00'))>0 and r.`STATUS` = 0)
+		OR
+		(r.`STATUS` = 1 AND b.BORROWTYPE in(1,2,4) AND
+		(UNIX_TIMESTAMP(CONCAT(SUBSTR(FROM_UNIXTIME(r.repayment_yestime) FROM
+		1 FOR 10),' 00:00:00')) -
+		UNIX_TIMESTAMP(CONCAT(SUBSTR(FROM_UNIXTIME(r.repayment_time) FROM 1
+		FOR 10),' 00:00:00'))>0))
+		)
+		<if test="name != null and name != ''">
+			and b.name like CONCAT('%', #{name}, '%' )
+		</if>
+		<if test="userName != null and userName != ''">
+			and m.username like CONCAT('%', #{userName}, '%' )
+		</if>
+		GROUP BY b.id
+		) bb;
+	</select>
+
+	<!-- 我要理财-借款列表 -->
+	<select id="queryBorrowForList" parameterType="com.dxjr.portal.borrow.vo.BorrowCnd"
+		resultMap="borrowVoResultMap">
+		SELECT m.username,m.`USERIDMD5` userIdMD5, m.headimg, r.repayment_time,
+		<include refid="borrowVoColumn" />
+		FROM rocky_borrow b LEFT JOIN rocky_member m on(m.ID = b.USER_ID) LEFT
+		JOIN rocky_b_repaymentrecord r on(r.BORROW_ID = b.ID)
+		where b.`STATUS` > 0 and b.is_autoTender = 0
+		<if test="name != null and name != ''">
+			and b.name like CONCAT('%', #{name}, '%' )
+		</if>
+		<if test="userId != null and userId != ''">
+		and m.ID = #{userId}
+		AND b.status IN (4, 5, 42) 
+  		  AND (b.APPRSTATUS IN (3, 4) 
+              OR (b.APPRSTATUS = 2 
+    		  AND b.TIMING_BORROW_TIME 
+  			  IS NOT NULL))
+		</if>
+		<if test="userName != null and userName != ''">
+			and m.username like CONCAT('%', #{userName}, '%' )
+		</if>
+		GROUP BY b.id
+		order by
+		<if test="searchOrderBy == null or searchOrderBy == '' ">
+			b.success_time desc
+		</if>
+		<if
+			test="searchOrderBy != null and searchOrderBy == 'apr' and orderByType != null and orderByType == 'ASC' ">
+			b.apr asc
+		</if>
+		<if
+			test="searchOrderBy != null and searchOrderBy == 'apr' and orderByType != null and orderByType == 'DESC' ">
+			b.apr desc
+		</if>
+		<if
+			test="searchOrderBy != null and searchOrderBy == 'period' and orderByType != null and orderByType == 'ASC' ">
+			b.time_limit asc
+		</if>
+		<if
+			test="searchOrderBy != null and searchOrderBy == 'period' and orderByType != null and orderByType == 'DESC' ">
+			b.time_limit desc
+		</if>
+		<if
+			test="searchOrderBy != null and searchOrderBy == 'schedule' and orderByType != null and orderByType == 'ASC'">
+			b.success_time asc
+		</if>
+		<if
+			test="searchOrderBy != null and searchOrderBy == 'schedule' and orderByType != null and orderByType == 'DESC' ">
+			b.success_time desc
+		</if>
+		<if
+			test="searchOrderBy != null and searchOrderBy == 'account' and orderByType != null and orderByType == 'ASC' ">
+			b.account asc
+		</if>
+		<if
+			test="searchOrderBy != null and searchOrderBy == 'account' and orderByType != null and orderByType == 'DESC' ">
+			b.account desc
+		</if>
+	</select>
+
+	<!-- 我要理财-借款列表记录数量 -->
+	<select id="queryBorrowForListCount" parameterType="com.dxjr.portal.borrow.vo.BorrowCnd"
+		resultType="java.lang.Integer">
+		SELECT count(*) FROM rocky_borrow b,rocky_member m where b.USER_ID =
+		m.ID
+		and b.`STATUS` > 0 and b.is_autoTender = 0
+		<if test="name != null and name != ''">
+			and b.name like CONCAT('%', #{name}, '%' )
+		</if>
+		<if test="userName != null and userName != ''">
+			and m.username like CONCAT('%', #{userName}, '%' )
+		</if>
+		<if test="userId != null and userId != ''">
+		and m.ID = #{userId}
+		AND b.status IN (4, 5, 42) 
+  		  AND (b.APPRSTATUS IN (3, 4) 
+              OR (b.APPRSTATUS = 2 
+    		  AND b.TIMING_BORROW_TIME 
+  			  IS NOT NULL))
+		</if>
+	</select>
+
+	<!-- begin add by hujianpan 2014-08-04 担保标 -->
+	<!-- 我要理财-完成的担保标记录数量 -->
+	<select id="queryBorrowForCompleteDBBCount" parameterType="com.dxjr.portal.borrow.vo.BorrowCnd"
+		resultType="java.lang.Integer">
+		SELECT count(*) FROM rocky_borrow b,rocky_member m where b.USER_ID =
+		m.ID
+		and b.BORROWTYPE = 4 and b.STATUS in (3,4,5,42) and b.is_autoTender = 0
+		<if test="name != null and name != ''">
+			and b.name like CONCAT('%', #{name}, '%' )
+		</if>
+		<if test="userName != null and userName != ''">
+			and m.username like CONCAT('%', #{userName}, '%' )
+		</if>
+	</select>
+
+	<!-- 我要理财-完成的担保标 -->
+	<select id="queryBorrowForCompleteDBB" parameterType="com.dxjr.portal.borrow.vo.BorrowCnd"
+		resultMap="borrowVoResultMap">
+		SELECT m.username, m.headimg, r.repayment_time,
+		<include refid="borrowVoColumn" />
+		FROM rocky_borrow b LEFT JOIN rocky_member m on(m.ID = b.USER_ID) LEFT
+		JOIN rocky_b_repaymentrecord r on(r.BORROW_ID = b.ID)
+		where b.BORROWTYPE = 5 and b.STATUS in (3,4,5,42) and b.is_autoTender = 0
+		<if test="name != null and name != ''">
+			and b.name like CONCAT('%', #{name}, '%' )
+		</if>
+		<if test="userName != null and userName != ''">
+			and m.username like CONCAT('%', #{userName}, '%' )
+		</if>
+		GROUP BY b.id
+		order by
+		<if test="searchOrderBy == null or searchOrderBy == '' ">
+			b.success_time desc
+		</if>
+		<if
+			test="searchOrderBy != null and searchOrderBy == 'apr' and orderByType != null and orderByType == 'ASC' ">
+			b.apr asc
+		</if>
+		<if
+			test="searchOrderBy != null and searchOrderBy == 'apr' and orderByType != null and orderByType == 'DESC' ">
+			b.apr desc
+		</if>
+		<if
+			test="searchOrderBy != null and searchOrderBy == 'period' and orderByType != null and orderByType == 'ASC' ">
+			b.time_limit asc
+		</if>
+		<if
+			test="searchOrderBy != null and searchOrderBy == 'period' and orderByType != null and orderByType == 'DESC' ">
+			b.time_limit desc
+		</if>
+		<if
+			test="searchOrderBy != null and searchOrderBy == 'schedule' and orderByType != null and orderByType == 'ASC'">
+			b.success_time asc
+		</if>
+		<if
+			test="searchOrderBy != null and searchOrderBy == 'schedule' and orderByType != null and orderByType == 'DESC' ">
+			b.success_time desc
+		</if>
+		<if
+			test="searchOrderBy != null and searchOrderBy == 'account' and orderByType != null and orderByType == 'ASC' ">
+			b.account asc
+		</if>
+		<if
+			test="searchOrderBy != null and searchOrderBy == 'account' and orderByType != null and orderByType == 'DESC' ">
+			b.account desc
+		</if>
+	</select>
+	<!-- end add by hujianpan -->
+
+	<!-- Added by Chen Lu 2014-08-04 -->
+	<!-- 获取成交总金额 -->
+	<select id="queryTotalMoney" resultType="java.util.Map">
+		SELECT SUM(ROUND(ACCOUNT, 2)) AS TOTALMONEY
+		FROM ROCKY_BORROW
+		WHERE `STATUS` IN (4, 5, 42)
+	</select>
+	
+	<!-- Added by Chen Lu 2014-08-08 -->
+	<!-- 获取未满抵押标 先查询四个存管标  在查询四个非存管标-->
+	<select id="getLatestNotFull" parameterType="java.util.Map" resultMap="borrowVoResultMap">
+		select * from (
+			(
+			SELECT
+					rb.area_type,
+					rm.IS_FINANCIAL_USER,
+					rb.ID,
+					rm.USERNAME,
+					rb.NAME,
+					rb.ACCOUNT,
+					rb.TIME_LIMIT,
+					CONTRACT_NO,
+					rb.BORROWTYPE,
+					rb.APR,
+					rb.ACCOUNT_YES,
+					TRUNCATE(rb.ACCOUNT_YES/rb.ACCOUNT,2) SCHEDULE,
+					rb.STYLE,
+					rb.status,
+					rb.TIMING_BORROW_TIME,
+					rm.HEADIMG HEADIMG, 
+					rb.borrow_use,
+					rb.credit_rating,
+						rb.PUBLISH_TIME,
+				    rb.BID_PASSWORD AS bidPassword,
+				    rb.is_custody
+					FROM
+							ROCKY_BORROW rb
+						LEFT JOIN ROCKY_MEMBER rm ON rb.USER_ID = rm.ID
+						LEFT JOIN rocky_b_repaymentrecord re ON (
+							rb.id = re.borrow_id
+							AND rb. STATUS >= 4
+						)
+						WHERE 1=1
+						and rb.area_type=0
+						AND rb.is_autoTender = 0
+						AND   rb.BORROWTYPE  in (1, 2)
+						AND (
+							(rb.APPRSTATUS > 2)
+							OR (
+								rb.APPRSTATUS = 2
+								AND FROM_UNIXTIME(
+									timing_borrow_time,
+									'%Y-%m-%d %H:%i:00'
+								) >= NOW()
+							)
+						)
+			    and  rb.STATUS in (2) 
+		        and  rb.is_custody=1
+				and  rb.ACCOUNT_YES !=  rb.ACCOUNT 
+					GROUP BY
+					rb.id ORDER BY TRUNCATE(rb.ACCOUNT_YES/rb.ACCOUNT,2) DESC limit 4
+			)
+	    	UNION all 
+	    	(
+			SELECT
+						rb.area_type,
+						rm.IS_FINANCIAL_USER,
+						rb.ID,
+						rm.USERNAME,
+						rb.NAME,
+						rb.ACCOUNT,
+						rb.TIME_LIMIT,
+						CONTRACT_NO,
+						rb.BORROWTYPE,
+						rb.APR,
+						rb.ACCOUNT_YES,
+						TRUNCATE(rb.ACCOUNT_YES/rb.ACCOUNT,2) SCHEDULE,
+						rb.STYLE,
+						rb.status,
+						rb.TIMING_BORROW_TIME,
+						rm.HEADIMG HEADIMG, 
+						rb.borrow_use,
+						rb.credit_rating,
+							rb.PUBLISH_TIME,
+					    rb.BID_PASSWORD AS bidPassword,
+					    rb.is_custody
+						FROM
+								ROCKY_BORROW rb
+							LEFT JOIN ROCKY_MEMBER rm ON rb.USER_ID = rm.ID
+							LEFT JOIN rocky_b_repaymentrecord re ON (
+								rb.id = re.borrow_id
+								AND rb. STATUS >= 4
+							)
+							WHERE 1=1
+							and rb.area_type=0
+							AND rb.is_autoTender = 0
+							AND   rb.BORROWTYPE  in (1, 2)
+							AND (
+								(rb.APPRSTATUS > 2)
+								OR (
+									rb.APPRSTATUS = 2
+									AND FROM_UNIXTIME(
+										timing_borrow_time,
+										'%Y-%m-%d %H:%i:00'
+									) >= NOW()
+								)
+							)
+				    and  rb.STATUS in (2) 
+			        and  rb.is_custody!=1
+					and  rb.ACCOUNT_YES !=  rb.ACCOUNT 
+						GROUP BY
+						rb.id ORDER BY TRUNCATE(rb.ACCOUNT_YES/rb.ACCOUNT,2) DESC  limit 4 
+				)
+			)  rb
+	<!--如果有投标中的抵押标，则
+	                a.存管标前面，非存管标后面；
+			        b.抵押标期限，期限短排在前面，期限长在后面；
+			        c.投标进度，投标进度快排在前面，投标进度慢的排在后面；
+			        d.抵押标发布时间，发布时间早的排在前面，发布时间晚的排在后面。
+		    -->
+	 ORDER BY  rb.is_custody DESC,
+	 		   SCHEDULE DESC,
+		       rb.TIME_LIMIT ASC ,
+		      IFNULL( PUBLISH_TIME,rb.TIMING_BORROW_TIME )   ASC 
+	</select>
+	
+	<!-- Added by Chen Lu 2014-08-08 -->
+	<!-- 获取已经满的抵押标-->
+	<select id="getLatestFull" parameterType="java.util.Map" resultMap="borrowVoResultMap">
+				SELECT
+				rb.area_type,
+				rm.IS_FINANCIAL_USER,
+			rb.ID,
+			rm.USERNAME,
+			rb.NAME,
+			rb.ACCOUNT,
+			rb.TIME_LIMIT,
+			CONTRACT_NO,
+			rb.BORROWTYPE,
+			rb.APR,
+			rb.ACCOUNT_YES,
+			ROUND(rb.ACCOUNT_YES/rb.ACCOUNT,2) SCHEDULE,
+			rb.STYLE,
+			rb.status,
+			rb.TIMING_BORROW_TIME,
+			rm.HEADIMG HEADIMG, 
+			rb.borrow_use,
+			rb.credit_rating,
+				rb.PUBLISH_TIME,
+		    rb.BID_PASSWORD AS bidPassword,
+		    rb.is_custody
+			FROM
+					ROCKY_BORROW rb
+				LEFT JOIN ROCKY_MEMBER rm ON rb.USER_ID = rm.ID
+				LEFT JOIN rocky_b_repaymentrecord re ON (
+					rb.id = re.borrow_id
+					AND rb. STATUS >= 4
+				)
+				WHERE
+					rb. STATUS >0
+				and	rb.area_type=0
+				AND rb.is_autoTender = 0
+				AND rb.BORROWTYPE  in (1, 2)
+				AND (
+					(rb.APPRSTATUS > 2)
+					OR (
+						rb.APPRSTATUS = 2
+						AND FROM_UNIXTIME(
+							timing_borrow_time,
+							'%Y-%m-%d %H:%i:00'
+						) >= NOW()
+					)
+				)
+		 
+			and	rb.STATUS in   (4,5,6,42) 
+		and  rb.ACCOUNT_YES=rb.ACCOUNT 
+			GROUP BY
+			rb.id 
+			ORDER BY
+			<!-- 如果有没有满的投标，排列按照利率来拍，对于已经满的标的排列应该是按照满标时间来排，最近满标的拍前。  -->			
+		  	 rb.SUCCESS_TIME   desc 
+		   	LIMIT 
+			#{startNum},#{pageSize}
+			
+	</select>
+	
+	<!-- 新手标  start-->
+	<select id="getAdvancedNew" resultMap="borrowVoResultMap">
+		SELECT 
+		rb.MOST_ACCOUNT, 
+		rb.AREA_Type, 
+		rb.ID, 
+		rm.USERNAME, 
+		rb.NAME, 
+		rb.ACCOUNT, 
+		rb.TIME_LIMIT, 
+		CONTRACT_NO, 
+		rb.BORROWTYPE, 
+		rb.APR, 
+		rb.ACCOUNT_YES, 
+		ROUND(rb.ACCOUNT_YES/rb.ACCOUNT,2) SCHEDULE, 
+		rb.STYLE, 
+		rb.status, 
+		rb.TIMING_BORROW_TIME, 
+		rm.HEADIMG HEADIMG, 
+		rb.borrow_use, 
+		rb.credit_rating, 
+		rb.PUBLISH_TIME, 
+		rb.BID_PASSWORD AS bidPassword, 
+		rm.IS_FINANCIAL_USER 
+		FROM 
+		ROCKY_BORROW rb 
+		LEFT JOIN ROCKY_MEMBER rm ON rb.USER_ID = rm.ID 
+		WHERE 
+		1 = 1 
+		AND rb.AREA_TYPE = 1 
+		AND rb.BORROWTYPE = '2' 
+		AND rb. STATUS IN (1, 2, 4, 5, 42) 
+		AND ( 
+		(rb.APPRSTATUS > 2) 
+		OR ( 
+		rb.APPRSTATUS = 2 
+		AND FROM_UNIXTIME( 
+		timing_borrow_time, 
+		'%Y-%m-%d %H:%i:00' 
+		) >= NOW() 
+		) 
+		) 
+		ORDER BY FIELD(rb.STATUS,2,1,4,42,5), 
+		CASE WHEN rb.`STATUS` = 2 THEN publish_time WHEN rb.`STATUS` = 1 THEN rb.TIMING_BORROW_TIME END ASC, 
+		CASE WHEN rb.`STATUS` > 2 THEN SUCCESS_TIME END DESC 
+		LIMIT 1
+	</select>
+	<!-- 新手标  end-->
+	
+	<!-- Added by Chen Lu 2014-08-08 -->
+	<!-- 获取预发标-->
+	<select id="getAdvanced" parameterType="java.util.Map" resultMap="borrowVoResultMap">
+		SELECT
+			rb.AREA_Type, 
+			rb.ID,
+			rm.USERNAME,
+			rb.NAME,
+			rb.ACCOUNT,
+			rb.TIME_LIMIT,
+			CONTRACT_NO,
+			rb.BORROWTYPE,
+			rb.APR,
+			rb.ACCOUNT_YES,
+			ROUND(rb.ACCOUNT_YES/rb.ACCOUNT,2) SCHEDULE,
+			rb.STYLE,
+			rb.status,
+			rb.TIMING_BORROW_TIME,
+			rm.HEADIMG HEADIMG,
+			rb.borrow_use,
+			rb.credit_rating,
+				rb.PUBLISH_TIME,
+		    rb.BID_PASSWORD AS bidPassword,
+		    rm.IS_FINANCIAL_USER,
+		    rb.is_custody
+	 	FROM
+			ROCKY_BORROW rb
+		LEFT JOIN ROCKY_MEMBER rm ON rb.USER_ID = rm.ID
+		LEFT JOIN rocky_b_repaymentrecord re ON (
+			rb.id = re.borrow_id
+			AND rb. STATUS >= 4
+		)
+		WHERE
+		rb.area_type=0
+		and
+			 rb.is_autoTender = 0
+		AND rb.BORROWTYPE in (1, 2)
+		AND (
+			(rb.APPRSTATUS > 2)
+			OR (
+				rb.APPRSTATUS = 2
+				AND FROM_UNIXTIME(
+					timing_borrow_time,
+					'%Y-%m-%d %H:%i:00'
+				) >= NOW()
+			)
+		)
+		AND rb.timing_borrow_time IS NOT NULL
+		AND rb.timing_borrow_time != ''
+		AND rb.`status` = 1
+		GROUP BY
+			rb.id
+		ORDER BY
+			<!--2 条预发按照预发时间排列，早发的拍第一位  -->
+			rb.TIMING_BORROW_TIME ASC,
+			STATUS ASC,
+			field(borrowtype, 2, 5, 1, 4, 3),
+			apr DESC,
+			id DESC
+			LIMIT 
+			#{startNum},#{pageSize}
+			
+			 	
+	</select>
+	
+	
+	<!-- 获取未满借款列表(除预发标)-->
+	<select id="getBorrowList" parameterType="java.util.Map" resultMap="borrowVoResultMap">
+		SELECT
+			rb.AREA_Type, 
+			rb.ID,
+			rm.USERNAME,
+			rb.NAME,
+			rb.ACCOUNT,
+			rb.TIME_LIMIT,
+			CONTRACT_NO,
+			rb.BORROWTYPE,
+			rb.APR,
+			rb.ACCOUNT_YES,
+			ROUND(rb.ACCOUNT_YES/rb.ACCOUNT,2) SCHEDULE,
+			rb.STYLE,
+			rb.status,
+			rb.TIMING_BORROW_TIME,
+			rm.HEADIMG HEADIMG, 
+			rb.borrow_use,
+			rb.credit_rating,
+				rb.PUBLISH_TIME
+			FROM
+					ROCKY_BORROW rb
+				LEFT JOIN ROCKY_MEMBER rm ON rb.USER_ID = rm.ID
+				LEFT JOIN rocky_b_repaymentrecord re ON (
+					rb.id = re.borrow_id
+					AND rb. STATUS >= 4
+				)
+				WHERE
+					rb. STATUS >0
+				AND rb.is_autoTender = 0
+				AND rb.BORROWTYPE not in (3,4)
+				AND (
+					(rb.APPRSTATUS > 2)
+					OR (
+						rb.APPRSTATUS = 2
+						AND FROM_UNIXTIME(
+							timing_borrow_time,
+							'%Y-%m-%d %H:%i:00'
+						) >= NOW()
+					)
+				)
+		<foreach collection="statuses" item="status" separator="or" open="and (" close=")">		
+				rb.STATUS = #{status} 		
+		</foreach>
+		and  rb.ACCOUNT_YES !=rb.ACCOUNT 
+			GROUP BY
+			rb.id 
+			ORDER BY
+
+			<!-- 如果有没有满的投标，排列按照利率来拍，对于已经满的标的排列应该是按照满标时间来排，最近满标的拍前。  -->
+		   rb.apr    desc
+		
+	</select>
+	
+	
+	
+		<!-- 获取借已蛮的款列表(除预发标)-->
+	<select id="getBorrowListSuccess" parameterType="java.util.Map" resultMap="borrowVoResultMap">
+		SELECT
+			rb.ID,
+			rm.USERNAME,
+			rb.NAME,
+			rb.ACCOUNT,
+			rb.TIME_LIMIT,
+			CONTRACT_NO,
+			rb.BORROWTYPE,
+			rb.APR,
+			rb.ACCOUNT_YES,
+			ROUND(rb.ACCOUNT_YES/rb.ACCOUNT,2) SCHEDULE,
+			rb.STYLE,
+			rb.status,
+			rb.TIMING_BORROW_TIME,
+			rm.HEADIMG HEADIMG, 
+			rb.borrow_use,
+			rb.credit_rating,
+				rb.PUBLISH_TIME
+			FROM
+					ROCKY_BORROW rb
+				LEFT JOIN ROCKY_MEMBER rm ON rb.USER_ID = rm.ID
+				LEFT JOIN rocky_b_repaymentrecord re ON (
+					rb.id = re.borrow_id
+					AND rb. STATUS >= 4
+				)
+				WHERE
+					rb. STATUS >0
+				AND rb.is_autoTender = 0
+				AND rb.BORROWTYPE not in (3,4)
+				AND (
+					(rb.APPRSTATUS > 2)
+					OR (
+						rb.APPRSTATUS = 2
+						AND FROM_UNIXTIME(
+							timing_borrow_time,
+							'%Y-%m-%d %H:%i:00'
+						) >= NOW()
+					)
+				)
+		<foreach collection="statuses" item="status" separator="or" open="and (" close=")">		
+				rb.STATUS = #{status} 		
+		</foreach>
+		and  rb.ACCOUNT_YES =rb.ACCOUNT 
+			GROUP BY
+			rb.id 
+			ORDER BY
+
+			<!-- 如果有没有满的投标，排列按照利率来拍，对于已经满的标的排列应该是按照满标时间来排，最近满标的拍前。  -->
+		   rb.SUCCESS_TIME   asc 
+	 
+	</select>
+	
+	
+	
+	
+	
+	<!--投资管理===正在投标中列表==即当前用户投资其他正在招标中的借款标信息  -->
+	<select id="queryTenderingForOtherBorrow" parameterType="java.util.Map" resultMap="borrowVoResultMap">
+		SELECT 
+		      rbt.TENDER_TYPE,
+			  rb.ID,
+			  rm.USERNAME,
+			  rb.NAME,
+			  rb.ACCOUNT,
+			  rb.TIME_LIMIT,
+			  CONTRACT_NO,
+			  rb.BORROWTYPE,
+			  rb.APR,
+			  rb.ACCOUNT_YES,
+			  rb.ACCOUNT,
+			  STYLE,
+			  rb.status,
+			  rb.is_custody,
+			  rm.HEADIMG HEADIMG,
+			  rb.borrow_use,
+			  from_unixtime(rbt.addtime) addtime,
+			  rm1.USERNAME AS borrowUserName,
+              rb.credit_rating AS creditRating,
+              rbt.ACCOUNT as rbtAccount,
+              CASE WHEN fc.ID is null THEN 0 ELSE 1 END AS HAS_EXTRA_INTEREST,
+              fc.APR_YEAR AS APR_YEAR
+        FROM rocky_borrow rb
+    		INNER JOIN  rocky_b_tenderrecord rbt
+ 			 ON rb.ID=rbt.BORROW_ID
+            LEFT JOIN t_float_coupon fc
+              ON rbt.ID = fc.TARGET_ID
+                and rbt.USER_ID = fc.USER_ID
+                and fc.TYPE = 1
+                and fc.TARGET_TYPE = 1
+                and fc.STATUS = 1
+                and fc.IS_CUSTODY != 1
+            INNER JOIN rocky_member rm
+    		 ON rbt.USER_ID = rm.ID
+       LEFT  JOIN rocky_member rm1 
+       ON rm1.ID = rb.USER_ID
+		WHERE      rbt.PARENT_ID is  NULL and
+		            <choose> 
+						<when test=" borrowStatus == 'underway'"> 
+							( rb.status = 2  and rbt.STATUS =0 )
+						</when> 
+						<otherwise> 
+							( rb.status IN ( 4,5,42)  and rbt.STATUS in(1,2) )
+						</otherwise> 
+					</choose> 
+			
+		<if test="userId != null and userId != ''">
+			and rbt.USER_ID = #{userId}
+		</if>
+			
+		<if test="beginTime != null and beginTime != ''">
+			AND rbt.ADDTIME <![CDATA[ >= ]]> UNIX_TIMESTAMP(CONCAT(#{beginTime},' 00:00:00'))  
+		</if>
+		
+		<if test="endTime != null and endTime != ''">
+			AND rbt.ADDTIME  <![CDATA[ <= ]]> UNIX_TIMESTAMP(CONCAT(#{endTime},' 23:59:59'))
+		</if>
+		
+		<if test="borrowName != null and borrowName != ''">
+			and rb.`NAME` LIKE CONCAT('%', #{borrowName},'%')
+		</if>
+		<if test="custody != null and custody != ''">
+			and rb.is_custody = #{custody}
+		</if>
+		order by 
+			rbt.id desc 
+	</select>
+		<!--投资管理===正在投标中列表数量统计==即当前用户投资其他正在招标中的借款标信息数量  -->
+	<select id="queryTenderingForOtherBorrowCount" parameterType="java.util.Map"
+		resultType="java.lang.Integer">
+		SELECT 
+			  count(rb.ID)
+			  
+		FROM rocky_borrow rb  
+    		INNER   JOIN  rocky_b_tenderrecord rbt
+ 			 ON rb.ID=rbt.BORROW_ID 
+  			INNER   JOIN rocky_member rm
+    		 ON rbt.USER_ID = rm.ID
+		WHERE   rbt.PARENT_ID is  NULL and
+		
+				    <choose> 
+						<when test=" borrowStatus == 'underway'"> 
+							( rb.status = 2  and rbt.STATUS =0 )
+						</when> 
+						<otherwise> 
+							( rb.status IN ( 4,5,42)  and rbt.STATUS in(1,2) )
+						</otherwise> 
+					</choose> 
+			
+		<if test="userId != null and userId != ''">
+			and rbt.USER_ID = #{userId}
+		</if>
+			
+		<if test="beginTime != null and beginTime != ''">
+			AND rbt.ADDTIME <![CDATA[ >= ]]> UNIX_TIMESTAMP(CONCAT(#{beginTime},' 00:00:00'))  
+		</if>
+		
+		<if test="endTime != null and endTime != ''">
+			AND rbt.ADDTIME  <![CDATA[ <= ]]> UNIX_TIMESTAMP(CONCAT(#{endTime},' 23:59:59'))
+		</if>
+		
+		<if test="borrowName != null and borrowName != ''">
+			and rb.`NAME` LIKE CONCAT('%', #{borrowName},'%')
+		</if>
+		<if test="custody != null and custody != ''">
+			and rb.is_custody = #{custody}
+		</if>
+	</select>
+	
+	
+		<!--投资管理===正在投标中列表==即当前用户投资其他正在招标中的借款标信息  改版-->
+	<select id="queryTenderingForOtherBorrowNew" parameterType="java.util.Map" resultMap="borrowVoResultMap">
+		SELECT 
+		      rbt.TENDER_TYPE,
+		      rbt.id recordId,
+			  rb.ID,
+			  rm.USERNAME,
+			  rb.NAME,
+			  rb.ACCOUNT,
+			  rb.TIME_LIMIT,
+			  CONTRACT_NO,
+			  rb.BORROWTYPE,
+			  rb.APR,
+			  rb.ACCOUNT_YES,
+			  rb.ACCOUNT,
+			  STYLE,
+			  rb.status,
+			  rb.is_custody,
+			  rm.HEADIMG HEADIMG,
+			  rb.borrow_use,
+			  from_unixtime(rbt.addtime) addtime,
+			  rm1.USERNAME AS borrowUserName,
+              rb.credit_rating AS creditRating,
+              rbt.ACCOUNT as rbtAccount,
+              CASE WHEN fc.ID is null THEN 0 ELSE 1 END AS HAS_EXTRA_INTEREST,
+              fc.APR_YEAR AS APR_YEAR,
+			  rbt.STATUS AS tenderStatus
+		FROM rocky_borrow rb  
+    		INNER JOIN  rocky_b_tenderrecord rbt
+ 			 ON rb.ID=rbt.BORROW_ID
+            LEFT JOIN t_float_coupon fc
+              ON rbt.ID = fc.TARGET_ID
+                and rbt.USER_ID = fc.USER_ID
+                and fc.TYPE = 1
+                and fc.TARGET_TYPE = 1
+                and fc.STATUS = 1
+                and fc.IS_CUSTODY != 1
+  			INNER JOIN rocky_member rm
+    		 ON rbt.USER_ID = rm.ID
+       LEFT  JOIN rocky_member rm1 
+       ON rm1.ID = rb.USER_ID
+		WHERE      rbt.PARENT_ID is  NULL and
+		            <choose> 
+						<when test="borrowStatus == 'underway'">   <!-- 投标中 -->
+							( rb.status = 2  and rbt.STATUS =0 )
+						</when>
+						<when test="borrowStatus == 'sucess'">   <!-- 收益中 -->
+							(( rb.status = 4  and rbt.STATUS =1 ) or (rb.status=6 and rbt.STATUS=0) or (rb.status IN (5,42)  and rbt.STATUS in(1)))
+						</when>  
+						<when test="borrowStatus == 'end'">   <!-- 已结清 -->
+							( rb.status IN (5,42)  and rbt.STATUS in(2))
+						</when>  
+						<otherwise> 
+							(( rb.status = 2 and rbt.STATUS =0 ) or ( rb.status = 4  and rbt.STATUS =1 ) or ( rb.status IN (5,42)  and rbt.STATUS in(2)) or (rb.status=6 and rbt.STATUS=0) or (rb.status IN (5,42)  and rbt.STATUS in(1)))
+						</otherwise> 
+					</choose> 
+		<if test="userId != null and userId != ''">
+			and rbt.USER_ID = #{userId}
+		</if>
+			
+		<if test="beginTime != null and beginTime != ''">
+			AND rbt.ADDTIME <![CDATA[ >= ]]> UNIX_TIMESTAMP(CONCAT(#{beginTime},' 00:00:00'))  
+		</if>
+		
+		<if test="endTime != null and endTime != ''">
+			AND rbt.ADDTIME  <![CDATA[ <= ]]> UNIX_TIMESTAMP(CONCAT(#{endTime},' 23:59:59'))
+		</if>
+		
+		<if test="borrowName != null and borrowName != ''">
+			and rb.`NAME` LIKE CONCAT('%', #{borrowName},'%')
+		</if>
+		<if test="custody != null and custody != ''">
+		   <if test="custody==1">
+			and rb.is_custody = #{custody}
+			</if>
+			 <if test="custody==0">
+			and (rb.is_custody = #{custody} or rb.is_custody is null)
+			</if>
+		</if>
+		order by 
+			rbt.id desc 
+	</select>
+		<!--投资管理===正在投标中列表数量统计==即当前用户投资其他正在招标中的借款标信息数量  改版  -->
+	<select id="queryTenderingForOtherBorrowCountNew" parameterType="java.util.Map"
+		resultType="java.lang.Integer">
+		SELECT 
+		     count(1)
+		FROM rocky_borrow rb  
+    		INNER   JOIN  rocky_b_tenderrecord rbt
+ 			 ON rb.ID=rbt.BORROW_ID 
+  			INNER   JOIN rocky_member rm
+    		 ON rbt.USER_ID = rm.ID
+       LEFT  JOIN rocky_member rm1 
+       ON rm1.ID = rb.USER_ID
+		WHERE      rbt.PARENT_ID is  NULL and
+		            <choose> 
+						<when test="borrowStatus == 'underway'">   <!-- 投标中 -->
+							( rb.status = 2  and rbt.STATUS =0 )
+						</when>
+						<when test="borrowStatus == 'sucess'">   <!-- 收益中 -->
+							(( rb.status = 4  and rbt.STATUS =1 ) or (rb.status=6 and rbt.STATUS=0) or (rb.status IN (5,42)  and rbt.STATUS in(1)))
+						</when>
+						<when test="borrowStatus == 'end'">   <!-- 已结清 -->
+							( rb.status IN (5,42)  and rbt.STATUS in(2))
+						</when>  
+						<otherwise> 
+							(( rb.status = 2 and rbt.STATUS =0 ) or ( rb.status = 4  and rbt.STATUS =1 ) or ( rb.status IN (5,42)  and rbt.STATUS in(2)) or (rb.status=6 and rbt.STATUS=0)or (rb.status IN (5,42)  and rbt.STATUS in(1)))
+						</otherwise> 
+					</choose> 
+		<if test="userId != null and userId != ''">
+			and rbt.USER_ID = #{userId}
+		</if>
+			
+		<if test="beginTime != null and beginTime != ''">
+			AND rbt.ADDTIME <![CDATA[ >= ]]> UNIX_TIMESTAMP(CONCAT(#{beginTime},' 00:00:00'))  
+		</if>
+		
+		<if test="endTime != null and endTime != ''">
+			AND rbt.ADDTIME  <![CDATA[ <= ]]> UNIX_TIMESTAMP(CONCAT(#{endTime},' 23:59:59'))
+		</if>
+		
+		<if test="borrowName != null and borrowName != ''">
+			and rb.`NAME` LIKE CONCAT('%', #{borrowName},'%')
+		</if>
+		<if test="custody != null and custody != ''">
+		   <if test="custody==1">
+			and rb.is_custody = #{custody}
+			</if>
+			 <if test="custody==0">
+			and (rb.is_custody = #{custody} or rb.is_custody is null)
+			</if>
+		</if>
+	</select>
+	
+	
+	<!-- 正在投标中  -->
+	<select id="queryTendering" parameterType="com.dxjr.portal.borrow.vo.BorrowCnd"
+		resultMap="borrowVoResultMap">
+		SELECT 
+			  <include refid="borrowVoColumn"/>,
+			  rm.USERNAME,
+			  rm.HEADIMG HEADIMG
+		FROM 
+			ROCKY_BORROW b,
+			ROCKY_MEMBER rm 
+		where b.USER_ID = rm.ID  and b.STATUS =2  
+		<if test="userId != null">
+			and b.USER_ID = #{userId}
+		</if>
+		<if test="beginTime != null and beginTime != ''">
+			AND b.PUBLISH_TIME <![CDATA[ >= ]]> #{beginTime}
+		</if>
+		<if test="endTime != null and endTime != ''">
+			AND b.PUBLISH_TIME <![CDATA[ <= ]]> #{endTime}
+		</if>
+		<if test="name != null and name != ''">
+			and b.`NAME` LIKE CONCAT(#{name},'%')
+		</if>
+		order by 
+			b.ADDTIME desc 
+	</select>
+	
+	<!-- 当前登录用户所有标  -->
+	<select id="queryAll" parameterType="com.dxjr.portal.borrow.vo.BorrowCnd"
+		resultMap="borrowVoResultMap">
+		SELECT 
+			  <include refid="borrowVoColumn"/>,
+			  rm.USERNAME,
+			  rm.HEADIMG HEADIMG
+		FROM 
+			ROCKY_BORROW b,
+			ROCKY_MEMBER rm 
+		where b.USER_ID = rm.ID  
+		<if test="userId != null">
+			and b.USER_ID = #{userId}
+		</if>
+		<if test="beginTime != null and beginTime != ''">
+			AND b.PUBLISH_TIME <![CDATA[ >= ]]> #{beginTime}
+		</if>
+		<if test="endTime != null and endTime != ''">
+			AND b.PUBLISH_TIME <![CDATA[ <= ]]> #{endTime}
+		</if>
+		<if test="name != null and name != ''">
+			and b.`NAME` LIKE CONCAT('%',#{name},'%')
+		</if>
+		order by 
+			b.ADDTIME desc 
+	</select>
+	
+	<!-- 正在投标中记录数-融资  -->
+	<select id="getTenderingCount" parameterType="com.dxjr.portal.borrow.vo.BorrowCnd"
+		resultType="java.lang.Integer">
+		SELECT 
+			count(1)
+		FROM 
+			ROCKY_BORROW b
+		where b.STATUS =2 
+		<if test="userId != null">
+			and b.USER_ID = #{userId}
+		</if>
+	</select>
+	
+	<!-- 正在投标中记录数  -->
+	<select id="queryTenderingCount" parameterType="com.dxjr.portal.borrow.vo.BorrowCnd"
+		resultType="java.lang.Integer">
+		SELECT 
+			count(1)
+		FROM ROCKY_BORROW b,
+			ROCKY_MEMBER rm 
+		where b.USER_ID = rm.ID and
+			b.STATUS = 2 
+		<if test="userId != null">
+			and b.USER_ID = #{userId}
+		</if>
+		<if test="beginTime != null and beginTime != ''">
+			AND cast(b.ADDTIME as signed) <![CDATA[ >= ]]> #{beginTime}
+		</if>
+		<if test="endTime != null and endTime != ''">
+			AND cast(b.ADDTIME as signed)*1000 <![CDATA[ <= ]]> #{endTime}
+		</if>
+		<if test="name != null and name != ''">
+			and b.`NAME` LIKE CONCAT(#{name},'%')
+		</if>
+	</select>
+	
+	<!-- 当前登录用户所有标中记录数  -->
+	<select id="queryAllCount" parameterType="com.dxjr.portal.borrow.vo.BorrowCnd"
+		resultType="java.lang.Integer">
+		SELECT 
+			count(1)
+		FROM ROCKY_BORROW b,
+			ROCKY_MEMBER rm 
+		where b.USER_ID = rm.ID 
+		<if test="userId != null">
+			and b.USER_ID = #{userId}
+		</if>
+		<if test="beginTime != null and beginTime != ''">
+			AND b.PUBLISH_TIME <![CDATA[ >= ]]> #{beginTime}
+		</if>
+		<if test="endTime != null and endTime != ''">
+			AND b.PUBLISH_TIME <![CDATA[ <= ]]> #{endTime}
+		</if>
+		<if test="name != null and name != ''">
+			and b.`NAME` LIKE CONCAT('%',#{name},'%')
+		</if>
+	</select>
+	
+   <!--根据id更新借款标状态和审核状态-->
+  <update id="updateBorrowStatusById" parameterType="com.dxjr.base.entity.Borrow" >
+    update rocky_borrow
+    <set >
+      <if test="status != null" >
+        STATUS = #{status},
+      </if>
+      <if test="apprstatus != null" >
+        APPRSTATUS = #{apprstatus},
+      </if> 
+      <if test="publishTime != null" >
+        PUBLISH_TIME = #{publishTime},
+      </if> 
+      <if test="isAutotender != null" >
+        IS_AUTOTENDER = #{isAutotender},
+      </if> 
+      <if test="creditRating != null and creditRating !=''" >
+        credit_rating = #{creditRating},
+      </if>            
+    </set>
+    where ID = #{id}
+  </update>	
+  
+    <!-- 查询某标种最后一笔标 -->
+	<select id="queryLastBorrowByBorrowType" parameterType="java.lang.Integer" resultMap="borrowVoResultMap">
+		SELECT * FROM ROCKY_BORROW where contract_no is not null and BORROWTYPE = #{borrowType} and LENGTH(CONTRACT_NO) >= 11 ORDER BY id DESC LIMIT 0,1 for update
+	</select>
+	
+	<!-- 根据借款标id查询投标总额 -->
+	<select id="queryTenderTotalByBorrowId" parameterType="java.lang.Integer" resultType="java.math.BigDecimal">
+		SELECT SUM(ACCOUNT) FROM rocky_b_tenderrecord
+		WHERE BORROW_ID = #{borrowId}
+	</select>
+	
+	<!-- 还款引发债权转让撤销-->
+	<select id="transferCancelByRepay"  	statementType="CALLABLE"   parameterType="java.util.Map"  resultType="java.lang.String" >
+      <![CDATA[   { call transferCancel(#{id},#{cancelUser},#{cancelIP},#{cancelRemark},#{transferStatus},#{msg,mode=OUT,jdbcType=VARCHAR}) }   ]]>
+    </select>
+    
+     <select id="getLatestNotFullConstainTransfer"  	    parameterType="java.util.Map"  resultMap="borrowVoResultMap" >
+      
+           (SELECT
+			rb.ID,
+			rm.USERNAME,
+			rb.NAME,
+			rb.ACCOUNT,
+			rb.TIME_LIMIT,
+			rb.BORROWTYPE,
+			rb.APR, 
+			rb.ACCOUNT_YES,
+			ROUND(rb.ACCOUNT_YES/rb.ACCOUNT,2) SCHEDULE,
+			rb.STYLE,
+			rb.status, 
+			rb.credit_rating,
+			rb.PUBLISH_TIME,
+		    rb.BID_PASSWORD AS bidPassword,
+		    0 isTransfer,
+		    rm.IS_FINANCIAL_USER 
+			FROM  ROCKY_BORROW rb
+				LEFT JOIN ROCKY_MEMBER rm ON rb.USER_ID = rm.ID
+				LEFT JOIN rocky_b_repaymentrecord re ON (
+					rb.id = re.borrow_id
+					AND rb. STATUS >= 4
+				)
+				WHERE 1=1
+				and rb.area_type=0
+				AND rb.is_autoTender = 0
+				AND rb.BORROWTYPE not in (3,4)
+				AND (
+					(rb.APPRSTATUS > 2)
+					OR (
+						rb.APPRSTATUS = 2
+						AND FROM_UNIXTIME(
+							timing_borrow_time,
+							'%Y-%m-%d %H:%i:00'
+						) >= NOW()
+					)
+				)
+	    and  rb.STATUS in (2) 
+		and  rb.ACCOUNT_YES !=  rb.ACCOUNT 
+			GROUP BY
+			rb.id 
+			ORDER BY
+		          rb.apr desc,rb.PUBLISH_TIME asc limit  0, 10 )
+			union all 
+		  ( select   
+		    rb.ID,
+		    rm.USERNAME,
+			rb.TRANSFER_NAME,
+			rb.ACCOUNT_REAL,
+			rb.TIME_LIMIT_REAL,
+			rb.BORROW_TYPE,
+			rb.CUR_APR,
+			rb.ACCOUNT_YES,
+			ROUND(rb.ACCOUNT_YES/rb.ACCOUNT_REAL,8) SCHEDULE,
+			rb.BORROW_STYLE,
+			rb.status,
+			rb.BORROW_CREDIT_RATING,
+			UNIX_TIMESTAMP(rb.ADD_TIME),
+		    rb.BID_PASSWORD AS bidPassword, 
+		    1 isTransfer,
+		    rm.IS_FINANCIAL_USER       
+		    FROM  rocky_b_transfer rb 
+		     LEFT JOIN rocky_member rm
+			 ON rb.user_id = rm.id 
+			  WHERE  rb.STATUS=2 ORDER BY  rb.BID_PASSWORD asc,rb.CUR_APR desc  LIMIT   0,3 )
+    </select>
+    
+    <select id="getLatestFullConstainTransfer"     parameterType="java.util.Map"  resultMap="borrowVoResultMap">
+          SELECT   * FROM  ( 	
+		          (SELECT
+					rb.ID,
+					rm.USERNAME,
+					rb.NAME,
+					rb.ACCOUNT,
+					rb.TIME_LIMIT,
+					rb.BORROWTYPE,
+					rb.APR,
+					rb.ACCOUNT_YES,
+					ROUND(rb.ACCOUNT_YES/rb.ACCOUNT,2) SCHEDULE,
+					rb.STYLE,
+					rb.status,
+					rb.credit_rating,
+					rb.PUBLISH_TIME,
+				    rb.BID_PASSWORD AS bidPassword,
+				    SUCCESS_TIME,
+				    0 isTransfer,
+				    rm.IS_FINANCIAL_USER 
+					FROM
+							ROCKY_BORROW rb
+						LEFT JOIN ROCKY_MEMBER rm ON rb.USER_ID = rm.ID
+						LEFT JOIN rocky_b_repaymentrecord re ON (
+							rb.id = re.borrow_id
+							AND rb. STATUS >= 4
+						)
+						WHERE 1=1 
+						and
+						rb.area_type=0
+						and	rb. STATUS >0
+						AND rb.is_autoTender = 0
+						AND rb.BORROWTYPE not in (3,4)
+						AND (
+							(rb.APPRSTATUS > 2)
+							OR (
+								rb.APPRSTATUS = 2
+								AND FROM_UNIXTIME(
+									timing_borrow_time,
+									'%Y-%m-%d %H:%i:00'
+								) >= NOW()
+							)
+						)
+				 
+					and	rb.STATUS in   (4,5,42) 
+				and  rb.ACCOUNT_YES=rb.ACCOUNT 
+					GROUP BY
+					rb.id   )
+					union all 
+			 ( select   rb.ID,
+			        rm.USERNAME,
+					rb.TRANSFER_NAME,
+					rb.ACCOUNT_REAL,
+					rb.TIME_LIMIT_REAL,
+					rb.BORROW_TYPE,
+					rb.CUR_APR,
+					rb.ACCOUNT_YES,
+					ROUND(rb.ACCOUNT_YES/rb.ACCOUNT_REAL,8) SCHEDULE,
+					rb.BORROW_STYLE,
+					rb.status,
+					rb.BORROW_CREDIT_RATING,
+					UNIX_TIMESTAMP(rb.ADD_TIME),
+				    rb.BID_PASSWORD AS bidPassword ,
+				    UNIX_TIMESTAMP(SUCCESS_TIME)  ,
+				     1 isTransfer,
+				    rm.IS_FINANCIAL_USER
+				    FROM  rocky_b_transfer rb 
+				      LEFT JOIN rocky_member rm
+					      ON rb.user_id = rm.id 
+					      WHERE  rb.STATUS=4   )
+		       ) t 
+           ORDER BY  SUCCESS_TIME DESC  limit 0,10
+    </select>
+    
+    <!-- 调用直通车转让撤销存储过程 -->
+	<select id="cancelFirstTransfer" statementType="CALLABLE" parameterType="java.util.Map">  
+		<![CDATA[  
+		    {call first_transfercancel(#{borrowId,mode=IN,jdbcType=INTEGER}, #{userId,mode=IN,jdbcType=INTEGER}, #{userName,mode=IN,jdbcType=VARCHAR},#{addip,mode=IN,jdbcType=VARCHAR},#{remark,mode=IN,jdbcType=VARCHAR}, #{platform,mode=IN,jdbcType=INTEGER}, #{type,mode=IN,jdbcType=INTEGER}, #{status,mode=IN,jdbcType=INTEGER}, #{msg,mode=OUT,jdbcType=VARCHAR})}
+		]]>
+	</select>
+	
+	
+	<update id="updateBorrowStutus" parameterType="com.dxjr.portal.borrow.vo.BorrowVo">
+	 UPDATE rocky_borrow SET STATUS = #{status},SUCCESS_TIME = UNIX_TIMESTAMP(DATE_ADD(CURRENT_TIMESTAMP(),INTERVAL 1 DAY)),END_TIME = UNIX_TIMESTAMP(DATE_ADD(DATE_ADD(CURRENT_TIMESTAMP(),INTERVAL 1 DAY),INTERVAL #{timeLimit} MONTH))  WHERE ID =#{id}
+	</update>
+	
+	<update id="updateBorrowStutusDay" parameterType="com.dxjr.portal.borrow.vo.BorrowVo">
+	 UPDATE rocky_borrow SET STATUS = #{status},SUCCESS_TIME = UNIX_TIMESTAMP(DATE_ADD(CURRENT_TIMESTAMP(),INTERVAL 1 DAY)),END_TIME = UNIX_TIMESTAMP(DATE_ADD(CURRENT_TIMESTAMP(),INTERVAL #{timeLimit}+1 DAY))  WHERE ID =#{id}
+	</update>
+	
+	
+	<update id="updateBorrow" parameterType="com.dxjr.portal.borrow.vo.BorrowVo">
+	update rocky_borrow 
+	<set>
+		<if test="advance!=null and advance!=''">
+			e_advance=#{advance},
+		</if>
+		<if test="accountYes!=null and accountYes!=''">
+		   ACCOUNT_YES=#{accountYes},
+		</if>
+		<if test="tenderTimes!=null and tenderTimes!=''">
+			TENDER_TIMES=#{tenderTimes},
+		</if>
+		<if test="status!=null and status!=''">
+		  STATUS=#{status},
+		</if>
+		<if test="succount!=null and succount!=''">
+		 	succount=#{succount},
+		</if>
+		<if test="sucsum!=null and sucsum!=''">
+		  	sucsum=#{sucsum},
+		</if>
+		<if test="failcount!=null and failcount!=''">
+			failcount=#{failcount},
+		</if>
+		<if test="failsum!=null and failsum!=''">
+			failsum=#{failsum},
+		</if>
+	</set>
+	  WHERE ID =#{id}
+	</update>
+	
+	
+	<update id="updateBorrowAdvance" parameterType="com.dxjr.portal.borrow.vo.BorrowVo">
+		update rocky_borrow set e_advance=#{advance} WHERE ID =#{id}
+	</update>
+	
+	
+	<update id="updateCGBorrowZS" parameterType="com.dxjr.portal.borrow.vo.BorrowVo">
+	update rocky_borrow  set succount=ifnull(succount,0)+#{succount},sucsum=ifnull(sucsum,0)+#{sucsum},failcount=ifnull(failcount,0)+#{failcount},failsum=ifnull(failsum,0)+#{failsum} WHERE ID =#{id} 
+	</update>
+	
+	<select id="findTenderrecordInfo" parameterType="java.lang.Integer" resultType="com.dxjr.portal.borrow.vo.InvestBorrow">
+		select rbt.id as investBorrowId,rbt.ACCOUNT as investmentAmount,rbt.E_FREEZE_No as payNum,rbt.BIZ_INVEST_NO as p2pSerialNo,rbt.INTEREST as interestCapital,
+		e.REALNAME as realname,e.CERTTYPE as certType,e.CERT_NO as certNo,e.BIND_NO as bindSerialNo
+		from rocky_b_tenderrecord rbt 
+		left join e_bankinfo e on e.USER_ID=rbt.USER_ID  
+		where rbt.BORROW_ID =#{borrowId} and rbt.E_INVEST_STATUS=0
+	</select>
+	
+	<select id="findTenderrecordInfoCount" parameterType="java.lang.Integer" resultType="java.lang.Integer">
+	select count(rbt.id)
+		from rocky_b_tenderrecord rbt 
+		left join e_bankinfo e on e.USER_ID=rbt.USER_ID  
+		where rbt.BORROW_ID =#{borrowId} and rbt.E_INVEST_STATUS=0
+	</select>
+	
+	
+	<select id="queryTenderingForId" parameterType="java.util.Map" resultMap="borrowVoResultMap">
+		select b.`NAME` ,FROM_UNIXTIME(t.`ADDTIME`,'%Y-%m-%d %H:%i:%s')addtime,b.style,b.`APR`,b.BORROWTYPE,b.TIME_LIMIT, t.USER_ID,t.ACCOUNT from rocky_b_tenderrecord t 
+		left join rocky_borrow b on b.ID = t.BORROW_ID
+		WHERE FIRST_TENDER_REAL_ID =#{firstTenderRealId} and t.borrow_id = #{borrowId} and t.user_id =#{userId}
+	</select>
+	
+	
+	<select id="queryTenderingForMap" parameterType="java.util.Map" resultMap="borrowVoResultMap">
+		SELECT rb.`NAME`,from_unixtime(rbt.addtime) addtime,rb.STYLE,rb.APR,rb.BORROWTYPE,rb.TIME_LIMIT,rbt.ACCOUNT as rbtAccount 
+		FROM rocky_borrow rb  
+    		INNER   JOIN  rocky_b_tenderrecord rbt
+ 			 ON rb.ID=rbt.BORROW_ID 
+  			INNER   JOIN rocky_member rm
+    		 ON rbt.USER_ID = rm.ID
+       LEFT  JOIN rocky_member rm1 
+       ON rm1.ID = rb.USER_ID
+		WHERE rbt.PARENT_ID is  NULL and rbt.USER_ID = #{userId}
+		and rb.id =#{borrowId} and rbt.id=#{tenderId}
+	</select>
+	
+</mapper>

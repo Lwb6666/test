@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.dxjr.base.mapper.BaseAccountRechargeFeedbackMapper">
+	
+	<!-- 结果集 -->
+	<resultMap type="com.dxjr.base.entity.AccountRechargeFeedback" id="accountRechargeFeedbackResultMap">
+		<id property="id" column="id" />
+		<result property="orderno" 					column="orderno" />
+		<result property="paymode" 					column="paymode" />
+		<result property="paystatus" 				column="paystatus" />
+		<result property="paystring" 				column="paystring" />
+		<result property="amount"	    			column="amount" />
+		<result property="moneytype"  				column="moneytype" />
+		<result property="md5str" 					column="md5str" />
+		<result property="remark1"					column="remark1" /> 
+		<result property="remark2" 					column="remark2" /> 
+		<result property="onlinetype" 				column="onlinetype" />
+		<result property="addtime" 					column="ADDTIME" /> 
+	</resultMap>
+	
+	<!--基本列 -->
+	<sql id="accountRechargeFeedbackBaseColumn">
+		f.id, 
+		f.orderno, 
+		f.paymode, 
+		f.paystatus, 
+		f.paystring, 
+		f.amount, 
+		f.moneytype, 
+		f.md5str, 
+		f.remark1, 
+		f.remark2, 
+		f.onlinetype, 
+		f.ADDTIME
+	</sql>
+	
+	<!-- 插入记录，返回主键 -->
+	<insert id="insertEntity" parameterType="com.dxjr.base.entity.AccountRechargeFeedback">
+		INSERT INTO rocky_account_recharge_feedback 
+		(orderno,	paymode,	paystatus,	paystring,	amount,	moneytype,	md5str, 
+		 remark1,	remark2,	onlinetype,	ADDTIME)
+		VALUES
+		(#{orderno},#{paymode},#{paystatus},#{paystring},#{amount},#{moneytype},#{md5str},
+		#{remark1},#{remark2},#{onlinetype},#{addtime})
+		
+ 		 <selectKey resultType="java.lang.Integer" order="AFTER" keyProperty="id">  
+      	    SELECT LAST_INSERT_ID() AS ID    
+   		 </selectKey>
+	</insert>
+	
+  	<!-- 根据ID查询 -->
+	<select id="queryById" parameterType="java.lang.Integer" resultMap="accountRechargeFeedbackResultMap" >
+		select 	
+		   <include refid="accountRechargeFeedbackBaseColumn"/>
+		from
+			rocky_account_recharge_feedback f
+		where 1=1
+		and a.id=#{id}
+  	</select>
+	
+  <!-- 更新-->
+  <update id="updateEntity" parameterType="com.dxjr.base.entity.AccountRechargeFeedback" >
+    update rocky_account_recharge_feedback
+    <set >
+      <if test="orderno != null" >
+        orderno = #{orderno},
+      </if>
+      <if test="paymode != null" >
+        paymode = #{paymode},
+      </if>
+      <if test="paystatus != null" >
+        paystatus = #{paystatus},
+      </if>
+      <if test="paystring != null" >
+        paystring = #{paystring},
+      </if>
+      <if test="amount != null" >
+        amount = #{amount},
+      </if>
+      <if test="moneytype != null" >
+        moneytype = #{moneytype},
+      </if>
+      <if test="md5str != null" >
+        md5str = #{md5str},
+      </if>
+      <if test="remark1 != null" >
+        remark1 = #{remark1},
+      </if>
+      <if test="remark2 != null" >
+        remark2 = #{remark2},
+      </if>
+      <if test="onlinetype != null" >
+        onlinetype = #{onlinetype},
+      </if>
+      <if test="addtime != null" >
+        ADDTIME = #{addtime},
+      </if>  
+    </set>
+    where ID = #{id}
+  </update>
+  	
+</mapper>  

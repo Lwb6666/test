@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.dxjr.portal.fix.mapper.FixAccountMapper">
+	
+	<!-- 修改账户表的总额和可用余额 -->
+	
+	<update id="updateFixAccount" parameterType="com.dxjr.base.entity.FixAccount">
+		UPDATE t_fix_account	
+		SET 
+		TOTAL = ifnull(total,0) + #{total},
+		USE_MONEY = ifnull(USE_MONEY,0) + #{useMoney},
+		Capital = ifnull(Capital,0) + #{capital}
+		where FIX_BORROW_ID=#{fixBorrowId}
+	</update>
+	
+	<!-- 结果集 -->
+	<resultMap type="com.dxjr.portal.fix.vo.FixAccountVo" id="fixAccountResultMap">
+		<id property="id" column="id" />
+		<result property="fixBorrowId" column="FIX_BORROW_ID" />
+		<result property="total" column="TOTAL" />
+		<result property="useMoney" column="USE_MONEY" />
+		<result property="noUseMoney" column="NO_USE_MONEY" />
+		<result property="collection" column="COLLECTION" />
+		<result property="capital" column="CAPITAL"  />
+		<result property="profit" column="PROFIT" />
+		<result property="repaymentYesAccount" column="REPAYMENT_YESACCOUNT" />
+		<result property="contractNo" column="contract_no" />
+	</resultMap>
+
+	<!--基本列 -->
+	<sql id="fixAccountBaseColumn">
+		id , FIX_BORROW_ID, TOTAL, USE_MONEY, NO_USE_MONEY, COLLECTION ,CAPITAL, PROFIT
+	</sql>
+	
+	<!-- 根据定期宝ID查询定期宝账户信息 -->
+	<select id="queryFixAccountByFixBorrowId" parameterType="java.lang.Integer" resultMap="fixAccountResultMap">
+		select <include refid="fixAccountBaseColumn"/>
+		  from t_fix_account 
+		 where FIX_BORROW_ID = #{fixBorrowId}
+		for update
+	</select> 
+	
+	<update id="updateFixAccountById" parameterType="com.dxjr.base.entity.FixAccount">
+		update t_fix_account
+		<set>
+			<if test="total != null">
+				TOTAL = #{total},
+			</if>
+			<if test="useMoney != null">
+				USE_MONEY = #{useMoney},
+			</if>
+			<if test="noUseMoney != null">
+				NO_USE_MONEY = #{noUseMoney},
+			</if>
+			<if test="collection != null">
+				COLLECTION = #{collection},
+			</if>
+			<if test="capital != null">
+				CAPITAL = #{capital},
+			</if>
+			<if test="profit != null">
+				PROFIT = #{profit}
+			</if>
+		</set>
+		where FIX_BORROW_ID=#{fixBorrowId}
+	</update>
+	
+</mapper>	

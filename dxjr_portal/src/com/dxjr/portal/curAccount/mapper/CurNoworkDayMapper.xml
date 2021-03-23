@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dxjr.portal.curAccount.mapper.CurNoworkDayMapper">
+	<resultMap id="BaseResultMap"
+		type="com.dxjr.portal.curAccount.entity.CurNoworkDay">
+		<id column="ID" property="id" jdbcType="INTEGER" />
+		<result column="START_DATE" property="startDate" jdbcType="DATE" />
+		<result column="END_DATE" property="endDate" jdbcType="DATE" />
+		<result column="NAME" property="name" jdbcType="VARCHAR" />
+	</resultMap>
+	<sql id="Base_Column_List">
+		ID, START_DATE, END_DATE, NAME
+	</sql>
+	<select id="selectByPrimaryKey" resultMap="BaseResultMap"
+		parameterType="java.lang.Integer">
+		select
+		<include refid="Base_Column_List" />
+		from t_cur_noworkday
+		where ID = #{id,jdbcType=INTEGER}
+	</select>
+	<delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+		delete from t_cur_noworkday
+		where ID = #{id,jdbcType=INTEGER}
+	</delete>
+	<insert id="insert" parameterType="com.dxjr.portal.curAccount.entity.CurNoworkDay">
+		insert into t_cur_noworkday (ID, START_DATE, END_DATE,
+		NAME)
+		values (#{id,jdbcType=INTEGER}, #{startDate,jdbcType=DATE},
+		#{endDate,jdbcType=DATE},
+		#{name,jdbcType=VARCHAR})
+	</insert>
+	<insert id="insertSelective" parameterType="com.dxjr.portal.curAccount.entity.CurNoworkDay">
+		insert into t_cur_noworkday
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				ID,
+			</if>
+			<if test="startDate != null">
+				START_DATE,
+			</if>
+			<if test="endDate != null">
+				END_DATE,
+			</if>
+			<if test="name != null">
+				NAME,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				#{id,jdbcType=INTEGER},
+			</if>
+			<if test="startDate != null">
+				#{startDate,jdbcType=DATE},
+			</if>
+			<if test="endDate != null">
+				#{endDate,jdbcType=DATE},
+			</if>
+			<if test="name != null">
+				#{name,jdbcType=VARCHAR},
+			</if>
+		</trim>
+	</insert>
+	<update id="updateByPrimaryKeySelective" parameterType="com.dxjr.portal.curAccount.entity.CurNoworkDay">
+		update t_cur_noworkday
+		<set>
+			<if test="startDate != null">
+				START_DATE = #{startDate,jdbcType=DATE},
+			</if>
+			<if test="endDate != null">
+				END_DATE = #{endDate,jdbcType=DATE},
+			</if>
+			<if test="name != null">
+				NAME = #{name,jdbcType=VARCHAR},
+			</if>
+		</set>
+		where ID = #{id,jdbcType=INTEGER}
+	</update>
+	<update id="updateByPrimaryKey" parameterType="com.dxjr.portal.curAccount.entity.CurNoworkDay">
+		update t_cur_noworkday
+		set START_DATE = #{startDate,jdbcType=DATE},
+		END_DATE = #{endDate,jdbcType=DATE},
+		NAME = #{name,jdbcType=VARCHAR}
+		where ID = #{id,jdbcType=INTEGER}
+	</update>
+
+
+
+	<!-- 封装查询条件 -->
+	<sql id="where_CurNoworkDay">
+		<if test="id != null">
+			and id =#{id}
+		</if>
+		<if test="start_date != null">
+			and START_DATE = #{start_date}
+		</if>
+		<if test="end_date != null">
+			and END_DATE = #{end_date}
+		</if>
+		<if test="name != null">
+			and NAME = #{name}
+		</if>
+
+	</sql>
+
+
+
+
+
+</mapper>

@@ -1,0 +1,71 @@
+@charset "utf-8";
+body {color:#000; background:#FFF; font-family: "微软雅黑"; font-size: 12px; text-align:center;  }
+*{ padding:0px ; margin:0px; vertical-align:middle}
+img{ max-width:100%;}
+.prize-body {
+	background:url(../../images/lottery/top-bg_01.png) center no-repeat #ffffff; width:100%; height:998px;
+}
+.fl{ float:left;}
+.prize-cont{ width:1330px; margin:0 auto; padding-top:200px;}
+.activity-p{ width:292px; height:500px; margin-top:130px; border-radius:5px; background:rgba(0,102,51,0.6); overflow:hidden}
+.activity-p .title{ background:#5c853a; border-radius:5px 5px 0 0 ; height:60px; line-height:60px; color:#FFF; font-size:24px; font-weight:bold}
+.activity-p ul{ border-left:2px solid #99cc33; margin:15px 20px; position:relative}
+.activity-p ul li{ list-style:none; text-align:left; margin-left:10px; line-height:40px; color:#FFF; font-size:14px}
+.activity-p ul li span{ color:#ff9900}
+.icon-circle{ width:8px; height:8px; border-radius:50px; display:inline-block; background:#99cc33; position:absolute; margin-left:-15px; margin-top:18px;}
+.award-yao{ background: url(../../images/lottery/img-cricle.png) no-repeat center; width:560px; height:560px; padding:30px 90px; float:left}
+
+.award-button{ position:absolute; padding:36px;}
+.award-button-txt{ position:absolute; z-index:99;width:80px; height:114px; text-align:center; font-size:18px; padding-top:220px; padding-left:200px; color:#a36c0b; cursor:pointer}
+.cicles{ width:135px; height:135px; background:#555555; opacity:0;-moz-opacity:0;-khtml-opacity: 0;filter: progid:DXImageTransform.Microsoft.Alpha(opacity=0); border-radius:50px; position:absolute;  margin-top:180px; margin-left:160px; z-index:1000; }
+.grad{ line-height:60px; background:rgba(0,12,52,0.16); color:#FFF; font-size:24px;}
+.grad-p{ text-align:center; font-size:16px; color:#FFF; line-height:30px; padding-top:15px;}
+.grad-p span{ color:#ff9900}
+.cont-body{ background:url(../../images/lottery/cont-body.png) no-repeat center #FFF; height:1474px;}
+.cont-body .cont-text{ width:700px; margin:0 auto}
+.cont-body .text1{ padding-top:200px; padding-left:90px}
+.cont-body .text2{ padding-top:275px; padding-left:90px}
+.cont-body .text3{ padding-top:230px; padding-left:90px}
+.cont-body .text1 p,.cont-body .text2 p,.cont-body .text3 p{ font-size:26px; color:#5c5c5c; text-align:left; width:400px; line-height:36px;}
+.btn-red{ float:right;margin-top:-40px;}
+.btn-red a{ padding:6px 30px; text-align:center; color:#FFF ; background:#f8635a; border-radius:3px; text-decoration:none; font-size:20px; }
+.btn-red a:hover{ background:#f73f34}
+.activity-notice{ background:#278423; width:100%; padding:80px 0;}
+.activity-notice .activity-word { width:1000px; margin:0 auto; color:#FFF; }
+.activity-notice .activity-word h1{font-size:32px; line-height:60px;}
+.activity-notice .activity-word p{ text-align:left; font-size:16px; color:#FFF; line-height:30px}
+.activity-notice .activity-word p a{ color:#ffcc33; text-decoration:none}
+.activity-notice .activity-word p a:hover{ text-decoration:underline; color:#f4bb0e}
+.prizeicon{ background:url(../../images/lottery/prize-icn.png) no-repeat;}
+.prizeicon.pple{ width:43px; height:38px; display:inline-block; background-position:0 -67px;}
+.prizeicon.name{ width:43px; height:38px; display:inline-block; background-position:0 -114px;}
+.prizeicon.jiang22{ width:60px; height:53px; display:inline-block; background-position:0 -2px;}
+
+
+
+/*layer*/ 
+.pop-window1{ width:481px; height:306px; background: url(../../images/lottery/pop-window_04.png) center; margin:0 auto;} 
+.p-r{ position:relative;} 
+.red{ color:#e60a00;} 
+.f28{font-size:28px;} 
+.f14{font-size:14px;} 
+.tc{ text-align:center;} 
+.pt30{ padding-top:30px;} 
+.pop-txt1{width: 160px; 
+height: 20px; 
+position: absolute; 
+bottom: 21px; 
+left: 25px; 
+} 
+.white{ color:#ffffff;}
+
+.pop-txt{ 
+width: 180px; 
+height: 20px; 
+position: absolute; 
+bottom: 21px; 
+right: 16px; 
+} 
+.pop-txt1 a{ color:#ffffff;} 
+.pop-txt1 a:hover{color:#ffe666;}
+

@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.dxjr.portal.fix.mapper.FixTenderUserMapper">
+	
+	 	<resultMap id="fixTenderRealMap" type="com.dxjr.portal.fix.vo.FixTenderUserVo">
+	 	<result property="id" column="ID"/>
+ 		<result property="userId" column="USER_ID"/>
+ 		<result property="fixBorrowId" column="FIX_BORROW_ID"/>
+ 		<result property="status" column="STATUS"/>
+ 		<result property="account" column="ACCOUNT"/>
+ 		<result property="userName" column="USERNAME"/>
+ 		<result property="addTime" column="ADDTIME"/>
+ 		<result property="fixTenderRealId" column="FIX_TENDER_REAL_ID"/>
+ 		<result property="borrowId" column="BORROW_ID"/>
+ 		<result property="tenderId" column="TENDER_ID"/>
+ 		<result property="borrowName" column="BORROW_NAME"/>
+ 		<result property="contractNo" column="CONTRACT_NO"/>
+ 		<result property="remark" column="REMARK"/>
+ 		<result property="tenderStatus" column="tenderStatus"/>
+ 
+ 		
+ 	</resultMap>
+	
+	<!-- 添加最终认购记录 -->
+	<insert id="insertFixTenderReal" parameterType="com.dxjr.base.entity.FixTenderReal">
+		INSERT INTO t_fix_tender_real ( 
+		FIX_BORROW_ID,
+		USER_ID,
+		ACCOUNT,
+		USE_MONEY,
+		STATUS,
+		ORDERNUM,
+		FIX_TENDER_TYPE,
+		<if test="parentId != null ">
+		PARENT_ID,
+		</if>
+		<if test="unlockUserid != null">
+		UNLOCK_USERID,
+		UNLOCK_TIME,
+		UNLOCK_IP,
+		</if>
+		<if test="remark != null ">
+		REMARK,
+		</if>
+		ADDTIME
+		) VALUES (
+     	#{fixBorrowId},
+        #{userId},
+        #{account},
+        #{useMoney},
+        #{status},
+        #{ordernum},
+        #{fixTenderType},
+        <if test="parentId != null ">
+        	#{parentId},
+        </if>
+        <if test="unlockUserid != null">
+        #{unlockUserid},
+        #{unlockTime},
+        #{unlockIp},
+        </if>
+        <if test="remark != null ">
+        #{remark},
+        </if>
+        #{addtime}
+		)
+		 <selectKey resultType="java.lang.Integer" order="AFTER" keyProperty="id">  
+      	    SELECT LAST_INSERT_ID() AS ID    
+   		 </selectKey>
+	</insert>
+	
+	
+		<!--  -->
+ 	   <select id="getFixTenderRealByBorrowId"  parameterType="com.dxjr.portal.fix.vo.FixTenderRealCnd" resultType="com.dxjr.portal.fix.vo.FixTenderRealVo">
+ 	  SELECT * from t_fix_tender_real  a where  1=1 
+ 	  
+ 	  <if test="fixBorrowId!=null">
+ 	  and fix_borrow_id = #{fixBorrowId}
+ 	  </if>
+ 	  </select>
+	
+	 	 
+ 
+	 
+ 	 
+	 
+ 	 
+ 	 
+ 	  <select id="queryTotalTBCounts"  parameterType="com.dxjr.portal.fix.vo.FixTenderRealCnd" resultType="java.lang.Integer">
+
+	
+	select count(1) from t_fix_tender_user   where 1=1 
+  <if test="userId!=null">
+ and  user_id = #{userId}
+  </if>
+  <if test="fixBorrowId!=null">
+   and  fix_Borrow_Id = #{fixBorrowId}
+  </if>
+ 	 </select>  
+ 	 
+ 	 
+ 	 
+ 	  <select id="queryTotalTBByPage"  parameterType="com.dxjr.portal.fix.vo.FixTenderRealCnd" resultMap="fixTenderRealMap">
+
+	
+	select tenderUser.*,borrow.STATUS tenderStatus  from t_fix_tender_user tenderUser LEFT JOIN  rocky_borrow borrow  on( tenderUser.BORROW_ID = borrow.ID ) where 1=1 
+  <if test="userId!=null">
+ and  tenderUser.user_id = #{userId}
+  </if>
+  <if test="fixBorrowId!=null">
+   and  fix_Borrow_Id = #{fixBorrowId}
+  </if>
+   and tenderUser.ACCOUNT>0
+  order by ADDTIME desc 
+ 	 </select>  
+ 	 
+ 	 
+ 	 
+</mapper>

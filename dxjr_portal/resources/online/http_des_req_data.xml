@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DATA>
+<#if trade_type?if_exists == "V" || trade_type?if_exists == "E" || trade_type?if_exists == "S">
+    <CARD>
+        <BANK>${card_bank?if_exists}</BANK>
+        <TYPE>${card_type?if_exists}</TYPE>
+        <NO>${card_no?if_exists}</NO>
+        <EXP>${card_exp?if_exists}</EXP>
+        <CVV2>${card_cvv2?if_exists}</CVV2>
+        <NAME>${card_name?if_exists}</NAME>
+        <IDTYPE>${card_idtype?if_exists}</IDTYPE>
+        <IDNO>${card_idno?if_exists}</IDNO>
+        <PHONE>${card_phone?if_exists}</PHONE>
+    </CARD>
+</#if>
+<#if trade_type?if_exists == "V">
+    <TRADE>
+        <TYPE>${trade_type?if_exists}</TYPE>
+        <ID>${trade_id?if_exists}</ID>
+        <AMOUNT>${trade_amount?if_exists}</AMOUNT>
+        <CURRENCY>${trade_currency?if_exists}</CURRENCY>
+    </TRADE>
+<#elseif trade_type?if_exists == "E">
+    <TRADE>
+        <TYPE>${trade_type?if_exists}</TYPE>
+    </TRADE>
+<#elseif trade_type?if_exists == "S">
+    <TRADE>
+        <TYPE>${trade_type?if_exists}</TYPE>
+        <ID>${trade_id?if_exists}</ID>
+        <AMOUNT>${trade_amount?if_exists}</AMOUNT>
+        <CURRENCY>${trade_currency?if_exists}</CURRENCY>
+        <DATE>${trade_date?if_exists}</DATE>
+        <TIME>${trade_time?if_exists}</TIME>
+        <NOTICE>${trade_notice?if_exists}</NOTICE>
+        <NOTE>${trade_note?if_exists}</NOTE>
+        <CODE>${trade_code?if_exists}</CODE>
+    </TRADE>
+<#elseif trade_type?if_exists == "R">
+    <TRADE>
+        <TYPE>${trade_type?if_exists}</TYPE>
+        <ID>${trade_id?if_exists}</ID>
+        <OID>${trade_oid?if_exists}</OID>
+        <AMOUNT>${trade_amount?if_exists}</AMOUNT>
+        <CURRENCY>${trade_currency?if_exists}</CURRENCY>
+        <DATE>${trade_date?if_exists}</DATE>
+        <TIME>${trade_time?if_exists}</TIME>
+        <NOTICE>${trade_notice?if_exists}</NOTICE>
+        <NOTE>${trade_note?if_exists}</NOTE>
+    </TRADE>
+<#elseif trade_type?if_exists == "Q">
+    <TRADE>
+        <TYPE>${trade_type?if_exists}</TYPE>
+        <ID>${trade_id?if_exists}</ID>
+    </TRADE>
+</#if>
+</DATA>

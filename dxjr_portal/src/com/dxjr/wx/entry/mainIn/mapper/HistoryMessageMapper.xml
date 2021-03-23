@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dxjr.wx.entry.mainIn.mapper.HistoryMessageMapper" >
+  <resultMap id="BaseResultMap" type="com.dxjr.wx.entry.mainIn.vo.HistoryMessage" >
+    <id column="ID" property="id" jdbcType="INTEGER" />
+    <result column="w_id" property="wId" />
+    <result column="CREATE_TIME" property="createTime" jdbcType="VARCHAR" />
+    <result column="MSG_TYPE" property="msgType" jdbcType="VARCHAR" />
+    <result column="MSG_ID" property="msgId" jdbcType="VARCHAR" />
+    <result column="DESCRIPTION" property="description" jdbcType="VARCHAR" />
+    <result column="CONTENT" property="content" jdbcType="VARCHAR" />
+    <result column="EVENT_KEY" property="eventKey" jdbcType="VARCHAR" />
+    <result column="wx_latitude"  property="latitude" />
+    <result column="wx_longitude"  property="longitude" />
+    <result column="wx_precision"  property="precision" />
+    <result column="wx_label"  property="label" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    ID, w_id, CREATE_TIME, MSG_TYPE,MSG_ID,  DESCRIPTION, CONTENT, 
+    EVENT_KEY,wx_latitude,wx_longitude,wx_precision,wx_label
+  </sql>
+  <insert id="insert" parameterType="com.dxjr.wx.entry.mainIn.vo.HistoryMessage" >
+    insert into wx_history_message (ID, w_id, CREATE_TIME, 
+      MSG_TYPE,MSG_ID, 
+     DESCRIPTION, CONTENT, 
+      EVENT_KEY,wx_latitude,wx_longitude,wx_precision,wx_label
+      )
+    values (#{id,jdbcType=INTEGER}, #{wId,jdbcType=VARCHAR}, #{createTime,jdbcType=VARCHAR}, 
+      #{msgType,jdbcType=VARCHAR},#{msgId,jdbcType=VARCHAR}, 
+     #{description,jdbcType=VARCHAR}, #{content,jdbcType=VARCHAR}, 
+      #{eventKey,jdbcType=VARCHAR},#{latitude},#{longitude},#{precision},#{label}
+      )
+  </insert>
+</mapper>

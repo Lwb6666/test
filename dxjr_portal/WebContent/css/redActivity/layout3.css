@@ -1,0 +1,65 @@
+body {
+	font-family: Microsoft YaHei, "微软雅黑", SimSun, Arial, Helvetica, Tahoma;
+	color: #555;
+	_background-attachment: fixed;
+	font-size: 13px;
+
+}
+html, body {
+	height: 100%;
+	width: 100%;
+	font-family: "微软雅黑";
+}
+html, body, div, span, footer, header, ul, li, table, tbody, tfoot, thead, tr, th, td {
+	margin: 0;
+	padding: 0;
+}
+article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, section, summary, mark, audio, video, canvas {
+	display: block;
+}
+.clearfix:after, #header:after, #footer:after, .model-box:after, #main:after, #wrapper:after, #wrap:after, .ch-top:after, .redeem-items:after, #mainsub:after {
+	visibility: hidden;
+	display: block;
+	font-size: 0;
+	content: ".";
+	clear: both;
+	height: 0;
+}
+table {
+	border-collapse: collapse;
+	border-spacing: 0;
+}
+ul, li {
+	list-style: none;
+}
+.gray {
+	color: #B4B5B5;
+}
+.blue {
+	color: #03568F;
+}
+.orange {
+	color: #EA5414;
+}
+a, a:hover {
+	text-decoration: none;
+}
+img {
+	border: none;
+	vertical-align: middle;
+}
+h1, h2, h3, h4 {
+	font-weight: normal;
+}
+/*head*/
+
+
+/*********************页面内容*************************/
+
+
+	
+		.boxbig {width:100%; margin:0 auto; text-align:center; position:relative; background:url(../../images/redActivity/bigpic.jpg) no-repeat center 0px ;  }
+		 .contentbox{   width:1100px; margin:0 auto;}
+		/*.boxbig  img{width:100.5%;}
+		.boxbig a{    bottom: 9%;    display: block;    height: 100px;    left: 40%;    position: absolute;    width: 400px; }
+*/

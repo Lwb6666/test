@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.dxjr.portal.tzjinterface.mapper.TenderRecordTransferLogMapper">
+	
+  		<!-- 插入记录，返回主键 -->
+	<insert id="insertTransferTenderRecordLog" parameterType="com.dxjr.portal.tzjinterface.vo.TransferTenderRecordLogVo">
+						INSERT INTO tzj_tenderrecord_transfer_log (FK_USER_ID,
+								FK_tenderrecord_ID,
+								ADD_TIME,
+								TS,
+								DR,
+								IS_SUCCESS,
+								MESSAGE,
+								FK_BORROW_ID,
+								oid,
+								STATUS)
+								  SELECT distinct 
+								    rbt.user_id,
+								    rbt.id AS TID,
+								    UNIX_TIMESTAMP(SYSDATE()),
+								    UNIX_TIMESTAMP(SYSDATE()),
+								    '1',
+								    0,
+								    '新增流水，等待投之家返回处理结果',
+								    rb.id AS bid,
+								    CONCAT(${OId},rb.id) AS oid,
+								    rb.status AS status
+								  FROM rocky_borrow rb
+								    INNER JOIN rocky_b_tenderrecord rbt
+								      ON rb.id = rbt.BORROW_ID
+								    INNER JOIN tzj_member_binding tmb
+								      ON tmb.user_id = rbt.user_id
+								    INNER JOIN rocky_member rm
+								      ON rm.id = tmb.user_id AND rm.TYPE = 0
+								    LEFT JOIN tzj_tenderrecord_transfer_log tttl 
+                                      ON  tttl.FK_BORROW_ID = rb.ID AND tttl.FK_tenderrecord_ID = rbt.ID 
+								  WHERE tmb.DR = '1' AND tmb.IS_SUCCESS = 1  
+								        and rb.STATUS in (4,5,42,2,-1,-2,-3)
+								        AND (tttl.ID IS NULL or (tttl.ID IS not NULL and tttl.IS_SUCCESS = 0)  
+								        OR (tttl.ID IS not NULL and tttl.IS_SUCCESS = 1 AND tttl.STATUS = 2))
+								  <!--  AND rbt.ADDTIME <![CDATA[>=]]> UNIX_TIMESTAMP(curdate()) 
+                                   AND rbt.ADDTIME <![CDATA[<]]> UNIX_TIMESTAMP(ADDDATE(curdate(),1)) -->
+ 		 <selectKey resultType="java.lang.Integer" order="AFTER" keyProperty="id">  
+      	    SELECT LAST_INSERT_ID() AS ID    
+   		 </selectKey>
+	</insert>
+	
+		<!-- 更新指定的访问日志-->
+	<update id="updateTransferTenderRecordLog" parameterType="com.dxjr.portal.tzjinterface.vo.TransferTenderRecordLogVo">
+			UPDATE tzj_tenderrecord_transfer_log
+					 <set > 
+					    TS = UNIX_TIMESTAMP(SYSDATE())
+					    <if test="ts != null and ts != ''">
+					    	,DR = #{dr}
+					    </if>
+					    <if test="isSuccess != null "> 
+					    ,IS_SUCCESS = #{isSuccess}
+					    </if>
+					   <if test="message != null and message != ''">
+					   ,MESSAGE = #{message}
+					   </if>
+					 </set>  
+					    
+				WHERE DR = 1 
+				
+				<if test="borrowId != null">
+				AND FK_BORROW_ID = #{borrowId}
+				</if>
+					AND OID = #{OId}
+			
+			  
+	</update>
+	<update id="updateTransferTenderRecordStatus">
+	            UPDATE       tzj_tenderrecord_transfer_log  tttl  INNER JOIN 
+                      (SELECT
+                          tttl.FK_BORROW_ID AS bid,
+                          CASE
+                              WHEN rb.STATUS = 4 THEN 0 ELSE 1
+                            END AS STATUS
+                        FROM tzj_tenderrecord_transfer_log tttl
+                          
+                          INNER JOIN rocky_borrow rb
+                            ON tttl.FK_BORROW_ID = rb.id AND rb.STATUS <![CDATA[<>]]> tttl.STATUS
+                        WHERE rb.STATUS IN (4, 5, 42) AND tttl.DR = '1' AND tttl.IS_SUCCESS = 1) AS tem ON
+              tttl.FK_BORROW_ID = tem.bid SET tttl.STATUS = tem.STATUS
+	</update>
+  	 
+</mapper>  

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dxjr.portal.fix.mapper.FixTenderTransferMapper">
+	<resultMap id="BaseResultMap" type="com.dxjr.base.entity.FixTenderTransfer">
+		<id column="ID" property="id" jdbcType="INTEGER" />
+		<result column="FIX_BORROW_TRANSFER_ID" property="fixBorrowTransferId" jdbcType="INTEGER" />
+		<result column="FIX_BORROW_ID" property="fixBorrowId" jdbcType="INTEGER" />
+		<result column="BORROW_ID" property="borrowId" jdbcType="INTEGER" />
+		<result column="TENDER_ID" property="tenderId" jdbcType="INTEGER" />
+		<result column="ACCOUNT" property="account" jdbcType="DECIMAL" />
+		<result column="ACCOUNT_REAL" property="accountReal" jdbcType="DECIMAL" />
+		<result column="INTEREST" property="interest" jdbcType="DECIMAL" />
+		<result column="REPAYMENT_ACCOUNT" property="repaymentAccount" jdbcType="DECIMAL" />
+		<result column="ADDTIME" property="addtime" jdbcType="TIMESTAMP" />
+		<result column="ADDUSER" property="adduser" jdbcType="INTEGER" />
+		<result column="ADD_IP" property="addIp" jdbcType="VARCHAR" />
+		<result column="ADD_MAC" property="addMac" jdbcType="VARCHAR" />
+		<result column="LAST_UPDATE_TIME" property="lastUpdateTime" jdbcType="TIMESTAMP" />
+		<result column="LAST_UPDATE_USER" property="lastUpdateUser" jdbcType="INTEGER" />
+		<result column="SUCCESS_TIME" property="successTime" jdbcType="TIMESTAMP" />
+		<result column="ACCOUNT_YES" property="accountYes" jdbcType="DECIMAL" />
+		<result column="CONTRACT_NO" property="contractNo" jdbcType="VARCHAR" />
+		<result column="STATUS" property="status" jdbcType="BIT" />
+		<result column="REMARK" property="remark" jdbcType="VARCHAR" />
+		<result column="PLATFORM" property="platform" jdbcType="BIT" />
+	</resultMap>
+	
+	<update id="updateByTransferId" parameterType="com.dxjr.base.entity.FixTenderTransfer">
+		update t_fix_tender_transfer
+		set LAST_UPDATE_TIME = now(),
+		LAST_UPDATE_USER = #{lastUpdateUser},
+		STATUS = #{status},
+		REMARK = #{remark}
+		where FIX_BORROW_TRANSFER_ID = #{fixBorrowTransferId}
+	</update>
+	
+	<insert id="insert" parameterType="com.dxjr.base.entity.FixTenderTransfer">
+		insert into t_fix_tender_transfer (FIX_BORROW_TRANSFER_ID,
+		FIX_BORROW_ID,
+		BORROW_ID, TENDER_ID, ACCOUNT,
+		ACCOUNT_REAL, INTEREST, REPAYMENT_ACCOUNT,
+		ADDTIME, ADDUSER,
+		ADD_IP, ADD_MAC, LAST_UPDATE_TIME,
+		LAST_UPDATE_USER, SUCCESS_TIME, ACCOUNT_YES,
+		CONTRACT_NO, STATUS, REMARK,
+		PLATFORM)
+		values ( #{fixBorrowTransferId,jdbcType=INTEGER},
+		#{fixBorrowId,jdbcType=INTEGER},
+		#{borrowId,jdbcType=INTEGER}, #{tenderId,jdbcType=INTEGER}, #{account,jdbcType=DECIMAL},
+		#{accountReal,jdbcType=DECIMAL}, #{interest,jdbcType=DECIMAL},
+		#{repaymentAccount,jdbcType=DECIMAL},
+		CURRENT_TIMESTAMP, #{adduser,jdbcType=INTEGER},
+		#{addIp,jdbcType=VARCHAR}, #{addMac,jdbcType=VARCHAR}, #{lastUpdateTime,jdbcType=TIMESTAMP},
+		#{lastUpdateUser,jdbcType=INTEGER}, #{successTime,jdbcType=TIMESTAMP},
+		#{accountYes,jdbcType=DECIMAL},
+		#{contractNo,jdbcType=VARCHAR}, #{status,jdbcType=BIT}, #{remark,jdbcType=VARCHAR},
+		#{platform,jdbcType=BIT})
+	</insert>
+</mapper>

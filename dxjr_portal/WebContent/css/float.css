@@ -1,0 +1,68 @@
+﻿@charset "utf-8";
+/* Right Float Module */
+#side_follow { width:36px; height: 188px; position: fixed; right: 10px; top: 0; z-index:0;}
+  #side_follow div p a { color: #fff; }
+    #side_follow div p a:hover { color: #fff !important; text-decoration: none; }
+  #side_follow .more_qg { font-size: 12px; margin-left: 5px; }
+
+  #side_follow .sf_suggest,
+  #side_follow .sf_phone,
+  #side_follow .sf_email,
+  #side_follow .sf_qqgroup,
+  #side_follow .sf_weibo,
+  #side_follow .sf_weibo_tencent,
+  #side_follow .sf_wbqq,
+  #side_follow .sf_gotop { float:right;width: 36px; background: url(../images/module-right.png) no-repeat; overflow: hidden; background-color: #1f76bc; clear:both;}
+  #side_follow .sf_suggest { overflow: visible; }
+    #side_follow .sf_suggest .sfs_show { width: 36px; height: 38px; overflow: hidden; float: right; }
+  #side_follow .sf_suggest,
+  #side_follow .sf_phone,
+  #side_follow .sf_email,
+  #side_follow .sf_qqgroup,
+  #side_follow .sf_weibo, #side_follow .sf_weibo_tencent { height: 38px; }
+
+    #side_follow .sf_suggest .sfs_con { width: 328px; height: 219px; background-color: #ececec; }
+
+      #side_follow .sf_suggest .sfs_con textarea { /*width: 294px;
+    height: 111px;*/ border: 1px solid #ccc; margin: 6px 0 0 8px; background-color: #ececec; color: #999; font-size: 14px; padding: 6px 9px; position: relative; top: -40px; left: 31px; width: 255px; height: 15px; overflow: hidden; }
+
+    #side_follow .sf_suggest .sfsc_tit,
+    #side_follow .sf_wbqq .sfw_tit { height: 36px; border-top: 1px solid #7ea6c7; border-bottom: 1px solid #064d86; background: #295e93 url(../../images/front/module-right.png) no-repeat 0 -135px; padding-left: 42px; color: #fff; font: 14px/35px '微软雅黑'; }
+
+    #side_follow .sf_suggest .sfsc_bott { padding: 4px 0 0 55px; padding-top: 8 px\9; }
+
+      #side_follow .sf_suggest .sfsc_bott input { width: 86px; height: 30px; border: none; background-color: #295e93; color: #fff; font-size: 14px; margin-right: 8px; }
+
+      #side_follow .sf_suggest .sfsc_bott a { color: #06c; font-size: 14px; }
+
+    #side_follow .sf_phone p,
+    #side_follow .sf_email p,
+    #side_follow .sf_qqgroup p,
+    #side_follow .sf_weibo p, #side_follow .sf_weibo_tencent p { color: #fff; height: 36px; border-top: 1px solid #7ea6c7; border-bottom: 1px solid #064d86; font: 15px/34px '微软雅黑'; padding-left: 40px; }
+      #side_follow .sf_email p a,
+      #side_follow .sf_weibo p a, #side_follow .sf_weibo_tencent a { color: #fff; }
+
+  #side_follow .sf_suggest { position: relative; /*width:328px;height:219px;*/ }
+
+  #side_follow .sf_phone { /*width:160px;*/ background-position: 0 -73px; }
+
+  #side_follow .sf_email { /*width:190px;*/ background-position: 0 -110px; }
+
+  #side_follow .sf_qqgroup { /*width:190px;*/ background-position: 0 -148px; }
+
+  #side_follow .sf_weibo { /*width:150px;*/ background-position: 0 -187px; }
+
+  #side_follow .sf_weibo_tencent { /*width:150px;*/ background-position: 0 -225px; }
+
+  #side_follow .sf_wbqq { /*width:160px;
+    height:199px;*/ height: 37px; background-position: 0 -262px; }
+
+    #side_follow .sf_wbqq .sfw_tit { background: none; width: 118px; }
+  #side_follow .sf_gotop {height: 0;overflow: hidden; cursor: pointer; background-position: 0 0; -webkit-transition: 0.6s ease; -moz-transition: 0.6s ease; -o-transition: 0.6s ease; transition: 0.6s ease; }
+    #side_follow .sf_gotop:hover { background-position: 0 -36px; }
+#side_follow .but1{padding:2px 5px; background:#65b940; border:0; font-size:13px; color:#fff;-moz-border-radius:5px;-khtml-border-radius:5px;-webkit-border-radius:5px;border-radius:5px}
+#side_follow .but1:hover{ background:#005a99; cursor:pointer;}
+
+.beian-box{ border-top:1px #ccc solid;  overflow:hidden; padding-top:20px;   width:1000px; margin:0 auto;}
+.beian-box .beian-l,.beian-box .beian-r{ float:left; width:500px; text-align:center;}
+

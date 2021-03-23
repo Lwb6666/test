@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.dxjr.base.mapper.BaseBankInfoMapper">
+	
+	<!-- 结果集 -->
+	<resultMap type="com.dxjr.base.entity.BankInfo" id="bankInfoResultMap">
+		<id property="id" column="id" />
+		<result property="userId" 		column="USER_ID" />
+		<result property="bankName" 	column="BANKNAME" />
+		<result property="cardNum"		column="CARDNUM" />
+		<result property="branch"		column="BRANCH" />
+		<result property="realName"		column="REALNAME" />
+		<result property="idCardNo"		column="IDCARDNO" />
+	</resultMap>
+	
+	<!--基本列 -->
+	<sql id="bankInfoBaseColumn">
+		b.ID, 
+		b.USER_ID, 
+		b.BANKNAME, 
+		b.CARDNUM, 
+		b.BRANCH, 
+		b.REALNAME,
+		b.IDCARDNO
+	</sql>
+	
+	<!-- 插入记录，返回主键 -->
+	<insert id="insertEntity" parameterType="com.dxjr.base.entity.BankInfo">
+		INSERT INTO rocky_bankinfo 
+		(USER_ID, 	
+			BANKNAME,	
+			CARDNUM,	
+			BRANCH,	
+			REALNAME,	
+			IDCARDNO, 
+			CNAPS_CODE,
+			BANK_CODE,
+			VERIFY_STATUS,BANKVERIF	)
+		VALUES
+		(#{userId},
+		#{bankName},
+		#{cardNum},
+		#{branch},	
+		#{realName},
+		#{idCardNo},
+		#{cnapsCode},
+		#{bankCode},
+		#{verifyStatus},
+		#{bankVerif})
+		
+ 		 <selectKey resultType="java.lang.Integer" order="AFTER" keyProperty="id">  
+      	    SELECT LAST_INSERT_ID() AS ID    
+   		 </selectKey>
+	</insert>
+	
+	<!-- 插入记录，返回主键 -->
+	<insert id="insertEntityAppro" parameterType="com.dxjr.base.entity.BankInfo">
+		INSERT INTO rocky_bankinfo 
+		(USER_ID, 	
+			BANKNAME,	
+			CARDNUM,	
+			BRANCH,	
+			REALNAME,	
+			IDCARDNO, 
+			CNAPS_CODE,
+			BANK_CODE,
+			VERIFY_STATUS,BANKVERIF,`STATUS`)
+		VALUES
+		(#{userId},
+		#{bankName},
+		#{cardNum},
+		#{branch},	
+		#{realName},
+		#{idCardNo},
+		#{cnapsCode},
+		#{bankCode},
+		#{verifyStatus},
+		#{bankVerif},
+		#{status})
+		
+ 		 <selectKey resultType="java.lang.Integer" order="AFTER" keyProperty="id">  
+      	    SELECT LAST_INSERT_ID() AS ID    
+   		 </selectKey>
+	</insert>
+	
+  	<!-- 根据ID查询 -->
+	<select id="queryById" parameterType="java.lang.Integer" resultMap="bankInfoResultMap" >
+		select 	
+		   <include refid="bankInfoBaseColumn"/>
+		from
+			rocky_bankinfo b
+		where 1=1
+		and b.id=#{id}
+  	</select>
+	
+  <!-- 更新-->
+  <update id="updateEntity" parameterType="com.dxjr.base.entity.BankInfo" >
+    update rocky_bankinfo
+    <set >
+      <if test="bankName != null" >
+        BANKNAME = #{bankName},
+      </if>
+      <if test="cardNum != null" >
+        CARDNUM = #{cardNum},
+      </if>
+      <if test="branch != null" >
+        BRANCH = #{branch},
+      </if>
+      <if test="realName != null" >
+        REALNAME = #{realName},
+      </if>
+      <if test="idCardNo != null" >
+        IDCARDNO = #{idCardNo},
+      </if>
+    </set>
+    where ID = #{id}
+  </update>
+  	
+</mapper>  

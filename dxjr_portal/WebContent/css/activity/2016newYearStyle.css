@@ -1,0 +1,102 @@
+@charset "utf-8";
+body, p, h1, h2, h3, h4, h5, h6, ul, ol, li, dl, dt, dd, table, th, td, form, fieldset, legend, input, textarea, button, select {
+	margin: 0px;
+	padding: 0px;
+	display:block;
+}
+img, fieldset {
+	border: 0;
+	margin:0px;
+	padding:0px;
+	max-width:100%;
+	display:block;
+}
+*{margin:0px;padding:0px;}
+title{ display:none}
+/*新人注册大奖*/
+.cont {
+	background:url(../../images/2016newYear/new_award_bg_01.jpg) no-repeat top center #bb3234;
+	width:100%;
+	height:100%;
+}
+ul li{ list-style:none;}
+.main{ width: 1213px; margin:0 auto}
+.btnbg{ padding:15px; text-align:center}
+.btnbg1{ padding-top:1028px; padding-bottom:20px; text-align:center;}
+.btn01{ background:url(../../images/2016newYear/btn_03.jpg) no-repeat; width:326px; height:66px; border:0px; cursor:pointer}
+.btn02{ background: url(../../images/2016newYear/btn_07.jpg) no-repeat; width:320px; height:66px; border:0px; cursor:pointer}
+.btn01:focus,.btn02:focus {
+	border-color: #66afe9;
+	outline: 0;
+	-webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(102,175,233,.6);
+	box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(102,175,233,.6)
+}
+/*12月温情升级*/
+.dc-banner{ background: url(../../images/2016newYear/december_update_01.jpg) no-repeat top center; width:100%; height:836px;}
+.dc-main{ width:100%; background:#f8e7a3}
+.dc-img{ width:934px; margin:0 auto}
+.dc-reg{ background:url(../../images/2016newYear/december_update_05.jpg) no-repeat center; width:934px; height:292px;}
+.reg-btn{ background:url(../../images/2016newYear/reg-btn.jpg) no-repeat; width:310px; height:56px; border:0px; cursor:pointer; margin-top:180px; margin-left:240px; display:inline}
+.dc-info{ background:url(../../images/2016newYear/december_update_06.jpg) no-repeat center; width:100%; height:1238px;}
+.dc-infolink{ padding-top:240px; padding-left:200px;}
+.dc-infolink a{ font-size:14px; color:#004d22; text-decoration:none; width:312px; float:left; height:36px; line-height:36px; background:#FFF; padding-left:15px;}
+.dc-infolink a:hover{ text-decoration:underline}
+.copybtn{ margin-left:15px; padding:6px 12px; vertical-align:middle; background:#0d6fb8; color:#FFF; border:0px; cursor:pointer; border-radius:8px; float:left}
+.copybtn:hover{ background:#095f9f}
+.dec-body{width:1000px; margin:0 auto; padding-top:173px;}
+a{ text-decoration:none;}
+.copy-div{ width:100%; height:68px; padding-top:0px; padding-left:125px; float: left; display: block;}
+.tips-div { width:279px; height:92px; background:url(../../images/2016newYear/hover-tips-img.png) no-repeat top; display: block; position: relative; top: -60px; float:left; display:none;}
+.share-div { width:100%; height:100px; padding-top:340px; padding-left:455px;float: left; display: block;}
+.qrbox-div {width: 150px;height: 150px;display: block;float: left; padding: 0 0 0 157px;}
+.btn {display:block; float:left; cursor:pointer; padding-left:10px;}
+.go-btn {display:block; float:left; width:200px; height:50px;margin: 490px 0 0 400px;}
+.reward-btn{ width:213px; height:76px; text-align:center;}
+.link-input{width: 310px;font-size: 14px; padding:6px 12px;border: 1px solid #e3e3e3;display:block;float:left;}
+.qrbox2-div{ background:url(../../images/2016newYear/wap/dece_wap_06.jpg) no-repeat #d14d23; background-size:100% 100%; height:180px;}
+.wap-topfh{background:#169ada;}
+.wap-topfh a{color:#fff;   display:inline-block; width:16%; height:50px; line-height:50px; padding-left:20px;}
+.qrbox2-div img{ padding:35px 20px 10px 9px;}
+/*1月温情升级*/
+.jan-banner{ background:url(../../images/2016newYear/january-bg01.jpg) no-repeat top center; width:100%; height:1620px;}
+/*手机端*/
+.wap_bg{
+	width:100%;
+	background:#bb3234;
+	max-width:940px;
+	margin:0 auto;	
+	}
+/*12月温情升级*/
+.dece_wap_bg{
+	width:100%;
+	background:#bb3234;
+	max-width:940px;
+	margin:0 auto;	
+	}
+.input-link{position:relative; background:#e61f19; padding:20px 10px;   text-align:left; }
+.input-link a{ text-align:left; background:#FFF; display:block; line-height:1.2em; width:50%; overflow:auto; padding:5px; padding-left:15px;  color:#00542b; text-decoration:none; font-size:12px;}
+.fzbtn{ position:absolute; top:12px;right:0px; }
+.fzbtn img{ width:55%;}
+
+
+
+/**********恭贺新春喜迎元宵***************/
+	.haoyoubox{    width:1300px; margin:0 auto;  }
+    	.haoyoubox p{ font-size:18px; color:#fff; padding-bottom:10px;}
+		.kbox{ width:100%; height:1510px;  }
+		.haoyoubox p span{ font-size:34px; color:#FFF000; padding:0 5px;}
+		.haoyoubox ul{  border-radius:6px; padding:15px; padding-bottom:50px; *padding-bottom:20px; width:500px; }
+		.haoyoubox ul li{ line-height:30px;}
+		.haoyoubox ul li a{color:#fff; }
+		.haoyoubox ul li a:hover{ opacity:0.8;}
+		.haoyoubox ul li a span{  display:inline-block;   width:118px; text-align:center;}
+		.hysm{  margin:0 auto;  padding-left:700px; }
+		.djxl-btn{ background:url(../../images/2016newYear/xialaimg.png) no-repeat right 8px;   display:inline-block; width:95px; float:right; margin:5px 35px 0 0; }
+	.xc-btn{  margin:0 auto;   width:435px; }
+	.xc-btn a{ display:inline-block;      }
+	.dqb-ranking{ width:886px; margin:0 auto; padding-top:285px; overflow:hidden;   }
+	.dqb-ranking ul{ background:#fff; float:left; width:322px; height:230px; margin-right:5px; padding:15px 20px; }
+	.dqb-ranking ul li { line-height:35px;}
+	.dqb-ranking ul li span{ width:155px;   display:inline-block;}
+
+/**********恭贺新春喜迎元宵***************/

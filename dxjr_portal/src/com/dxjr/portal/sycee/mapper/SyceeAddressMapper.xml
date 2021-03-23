@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.dxjr.portal.sycee.mapper.SyceeAddressMapper">
+
+<resultMap type="com.dxjr.portal.sycee.entity.SyceeAddress" id="syceeAddressMap">
+	<id 	property="id" 				column="id" />
+	<result property="userId" 	    	column="user_id" />
+	<result property="zipCode"			column="zip_code" />
+</resultMap>
+
+<!-- 新增 -->
+<insert id="add" useGeneratedKeys="true" keyProperty="id"  parameterType="com.dxjr.portal.sycee.entity.SyceeAddress" >
+	insert into t_sycee_addr(user_id,name,phone,address,zip_code,addtime)
+	values(#{userId},#{name},#{phone},#{address},#{zipCode},#{addtime})
+</insert>
+
+<!-- 根据ID查询 -->
+<select id="getById" parameterType="Integer" resultMap="syceeAddressMap">
+	select * from t_sycee_addr where user_id=#{userId}
+</select>
+
+
+
+
+
+</mapper>

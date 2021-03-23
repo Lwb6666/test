@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.dxjr.portal.member.mapper.BankcardChangeMapper">
+
+<!-- 结果集 -->
+<resultMap type="com.dxjr.portal.member.vo.BankcardChange" id="bankcardChangeMap">
+	<result property="realName" 			column="real_name" />
+	<result property="idCard"				column="id_card" />
+	<result property="idCardType"			column="id_card_type" />
+	<result property="oldBankcard"			column="old_bankcard" />
+	<result property="newBank"				column="new_bank" />
+	<result property="newBankCode"			column="new_bank_code" />
+	<result property="newBranch"			column="new_branch" />
+	<result property="newBranchNo"			column="new_branch_no" />
+	<result property="newBankcard"			column="new_bankcard" />
+	<result property="updateReason"			column="update_reason" />
+	<result property="userId"				column="user_id" />
+	
+	<result property="userName"				column="user_name" />
+	<result property="lastAddTime"			column="last_add_time" />
+	<result property="addTime"				column="add_time" />
+	<result property="addIp"				column="add_ip" />
+	<result property="approveStatus"		column="approve_status" />
+	<result property="approveTime"			column="approve_time" />
+	<result property="approveUserId"		column="approve_user_id" />
+	<result property="approveUserName"		column="approve_user_name" />
+	<result property="approveRemark"		column="approve_remark" />
+	<result property="approveIp"			column="approve_ip" />
+</resultMap>
+
+<!-- 根据ID查询 -->
+<select id="getById" parameterType="Integer" resultMap="bankcardChangeMap">
+select * from t_bankcard_change where id=#{id}
+</select>
+
+<!-- 根据UserId查询 -->
+<select id="getByUserId" parameterType="Integer" resultMap="bankcardChangeMap">
+select * from t_bankcard_change where user_id=#{userId}
+</select>
+
+<!-- 最近一次审核不通过距离现在的天数 -->
+<select id="getLastFailApprove" parameterType="Integer" resultType="Integer">
+select DATEDIFF(NOW(),approve_time)as num from t_bankcard_change where user_id=#{userId} and approve_status=-1 ORDER BY id desc limit 1
+</select>
+
+<!-- 查询资料图片 -->
+<select id="getPics" parameterType="Integer" resultMap="bankcardChangeMap">
+select * from t_bankcard_change c
+where 1=1
+ORDER BY id desc 
+</select>
+
+<!-- 添加 -->	
+<insert id="addChange" parameterType="com.dxjr.portal.member.vo.BankcardChange" keyProperty="id" useGeneratedKeys="true">
+insert into t_bankcard_change(real_name,id_card,id_card_type,old_bankcard,new_bank,new_bank_code,new_branch,new_branch_no,new_bankcard,update_reason,user_id,
+user_name,last_add_time,add_time,add_ip,approve_status,approve_time,approve_user_id,approve_user_name,approve_remark,approve_ip,
+phone,remark,platform,recheck_time,recheck_user_id,recheck_user_name,recheck_remark,recheck_ip) 
+values(#{realName},#{idCard},#{idCardType},#{oldBankcard},#{newBank},#{newBankCode},#{newBranch},#{newBranchNo},#{newBankcard},#{updateReason},#{userId},
+#{userName},#{lastAddTime},now(),#{addIp},#{approveStatus},#{approveTime},#{approveUserId},#{approveUserName},#{approveRemark},#{approveIp},
+#{phone},#{remark},#{platform},#{recheckTime},#{recheckUserId},#{recheckUserName},#{recheckRemark},#{recheckIp})
+</insert>
+
+<!-- 修改用户银行卡 -->
+<update id="updateBankinfo" parameterType="com.dxjr.portal.member.vo.BankcardChange">
+update rocky_bankinfo set bankname=#{newBank},cardnum=#{newBankcard},branch=#{newBranch},bank_code=#{newBankCode},CNAPS_CODE=#{newBranchNo},status=0,VERIFY_STATUS=1
+where USER_ID=#{userId} and status!=-1
+</update>
+
+<!-- 修改用户当前银行卡状态 -->
+<update id="updateBankinfoStatus">
+update rocky_bankinfo set status=#{status},VERIFY_STATUS=1
+where USER_ID=#{userId} and status!=-1
+</update>
+
+<!-- 用户申请更换银行卡提醒收件人列表 -->
+<select id="kefuEmailList" resultType="String">
+select value from rocky_configuration where type=1301 and status=0 limit 1;
+</select>
+
+<!-- 查询上次提交换卡申请时间 -->
+<select id="getLastApplyTime" resultType="java.util.Date" parameterType="Integer">
+select add_time from t_bankcard_change where user_id=#{userId} ORDER BY id desc LIMIT 1;
+</select>
+</mapper>

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dxjr.wx.entry.menu.mapper.MenuMapper" >
+  <resultMap id="BaseResultMap" type="com.dxjr.wx.entry.menu.vo.Menu" >
+    <id column="ID" property="id" jdbcType="BIGINT" />
+    <result column="NAME" property="name" jdbcType="VARCHAR" />
+    <result column="TYPE" property="type" jdbcType="VARCHAR" />
+    <result column="EVENT_KEY" property="eventKey" jdbcType="VARCHAR" />
+    <result column="URL" property="url" jdbcType="VARCHAR" />
+    <result column="P_ID" property="pId" jdbcType="BIGINT" />
+    <result column="SORT" property="sort" jdbcType="INTEGER" />
+    <result column="CREATE_USER" property="createUser" jdbcType="VARCHAR" />
+    <result column="CREATE_TIME" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="UPDATE_USER" property="updateUser" jdbcType="TIMESTAMP" />
+    <result column="UPDATE_TIME" property="updateTime" jdbcType="VARCHAR" />
+  </resultMap>
+ 
+  <sql id="Base_Column_List" >
+    ID, NAME, TYPE, EVENT_KEY, URL, P_ID, SORT, CREATE_USER, CREATE_TIME, UPDATE_USER, 
+    UPDATE_TIME
+  </sql>
+ <select id="selectMenu" parameterType="String" resultMap="BaseResultMap">
+     select * from wx_menu where remove_tag=1
+     <if test="pId !=null">
+         and p_id=#{pId}
+     </if>
+     <if test="pId ==null">
+         and p_id is null
+     </if>
+      order by sort asc
+ </select>
+</mapper>

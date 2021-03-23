@@ -1,0 +1,248 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.dxjr.portal.fix.mapper.FixTenderDetailMapper">
+	<resultMap id="fixTenderDetailMap" type="com.dxjr.portal.fix.vo.FixTenderDetailVo">
+		<result property="userId" column="USER_ID" />
+		<result property="fixBorrowId" column="FIX_BORROW_ID" />
+		<result property="status" column="STATUS" />
+		<result property="account" column="ACCOUNT" />
+		<result property="drawMoney" column="DRAW_MONEY" />
+		<result property="noDrawMoney" column="NO_DRAW_MONEY" />
+		<result property="addTime" column="ADDTIME" />
+		<result property="addIp" column="ADDIP" />
+		<result property="platForm" column="PLATFORM" />
+		<result property="fixTenderRealId" column="FIX_TENDER_REAL_ID" />
+		<result property="userName" column="USERNAME" />
+		<result property="name" column="name" />
+		<result property="apr" column="apr" />
+		<result property="lockLimit" column="LOCK_LIMIT" />
+		<result property="contractNo" column="CONTRACT_NO" />
+		<result property="sumAccount" column="SUMACCOUNT" />
+		<result property="tenderType" column="TENDER_TYPE" />
+		<result property="areaType" column="AREA_TYPE" />
+		<result property="areaChangeTime" column="AREA_CHANGE_TIME" />
+		<result property="redMoney" column="RED_MONEY" />
+	</resultMap>
+
+	<!-- 分组查询用户认购总额，按第一笔认购时间顺序排序 -->
+	<select id="querySumAccountGroupByUser" parameterType="java.lang.Integer"
+		resultMap="fixTenderDetailMap">
+		SELECT
+		USER_ID,
+		SUM(ACCOUNT) as SUMACCOUNT,
+		MIN(ADDTIME) FIRSTTIME
+		FROM T_FIX_TENDER_DETAIL
+		WHERE FIX_BORROW_ID=#{FIXBORROWID}
+		GROUP BY USER_ID
+		ORDER BY FIRSTTIME
+	</select>
+
+	<!-- -->
+	<select id="getFixTenderDetailByBorrowId" parameterType="com.dxjr.portal.fix.vo.FixTenderDetailCnd"
+		resultMap="fixTenderDetailMap">
+		SELECT * from t_fix_tender_detail a where 1=1
+
+		<if test="fixBorrowId!=null">
+			and fix_borrow_id = #{fixBorrowId}
+		</if>
+		<if test="userId!=null">
+			and user_Id = #{userId}
+		</if>
+	</select>
+
+
+
+	<!-- t -->
+	<select id="getFixTenderDetailStaticByBorrowId" parameterType="com.dxjr.portal.fix.vo.FixTenderDetailCnd"
+		resultType="com.dxjr.portal.fix.vo.FixTenderDetailVo">
+		SELECT detail.* ,fixBorrow.name,fixBorrow.apr,fixBorrow.LOCK_LIMIT locklimit ,fixBorrow.CONTRACT_NO
+		contractNo,detail.fix_borrow_id fixBorrowId from t_fix_borrow fixBorrow LEFT JOIN
+		(SELECT user_id,fix_borrow_id,sum(ACCOUNT) account from
+		t_fix_tender_detail tdetail 
+		where 1=1
+		<if test="userId!=null">
+			and tdetail.USER_ID = #{userId}
+		</if>
+		GROUP BY user_id,fix_borrow_id ) detail on (fixBorrow.id =
+		detail.fix_borrow_id) where 1=1
+
+		<if test="fixBorrowId!=null">
+			and fixBorrow.id = #{fixBorrowId}
+		</if>
+
+		<if test="userId!=null">
+			and detail.USER_ID = #{userId}
+		</if>
+	</select>
+
+
+	<!-- 封装查询条件 -->
+	<sql id="fixBorrow_Where_Clause">
+		<if test="tag != null and tag!='' ">
+			and fixBorrow.lock_limit = #{tag}
+		</if>
+	</sql>
+	<!-- 统计查询定期宝的认购总次数 -->
+	<select id="queryTotalJoinCounts" resultType="java.lang.Integer">
+		SELECT COUNT(1)
+		FROM T_FIX_TENDER_DETAIL WHERE STATUS IN (0,1,3)
+	</select>
+
+    <!-- 通过用户和定期宝查询加入记录数 -->
+	<select id="queryTotalJoinInfoByUserCounts" parameterType="com.dxjr.portal.fix.vo.FixTenderDetailCnd"
+		resultType="java.lang.Integer">
+		SELECT count(1) from t_fix_borrow fixBorrow LEFT JOIN
+		(SELECT user_id,fix_borrow_id,sum(ACCOUNT) account from
+		t_fix_tender_detail b where user_id=#{userId} GROUP BY user_id,fix_borrow_id ) detail on (fixBorrow.id = detail.fix_borrow_id)
+		where detail.USER_ID=#{userId} and fixBorrow.STATUS=3
+		<include refid="fixBorrow_Where_Clause" />
+
+	</select>
+
+    <!-- 通过用户和定期宝查询加入明细 -->
+	<select id="queryTotalJoinInfoByUser" parameterType="com.dxjr.portal.fix.vo.FixTenderDetailCnd"
+		resultMap="fixTenderDetailMap">
+		SELECT fixBorrow.*,detail.*,
+	    (SELECT IFNULL(SUM(MONEY),0) FROM t_red_envelop_account_log WHERE BIZ_TYPE=1 AND `STATUS`=3 AND USEBIZ_ID = fixBorrow.ID AND USER_ID = detail.USER_ID) as RED_MONEY
+		 from t_fix_borrow fixBorrow LEFT JOIN
+		(SELECT user_id,fix_borrow_id,sum(ACCOUNT) account,TENDER_TYPE from
+		t_fix_tender_detail b where user_id=#{userId} GROUP BY user_id,fix_borrow_id ) detail on (fixBorrow.id = detail.fix_borrow_id)
+		where detail.USER_ID=#{userId} and fixBorrow.STATUS=3
+		<include refid="fixBorrow_Where_Clause" />
+		order by fixBorrow.PUBLISH_TIME asc,fixBorrow.addtime asc
+	</select>
+    <!-- 通过用户和定期宝查询加入记录数 -->
+	<select id="queryJoinInfoByUserCounts" parameterType="com.dxjr.portal.fix.vo.FixTenderDetailCnd"
+		resultType="java.lang.Integer">
+		select count(1) from t_fix_tender_detail detail where 1=1
+		<if test="userId != null">
+			and detail.user_ID = #{userId}
+		</if>
+
+		<if test="fixBorrowId != null">
+			and detail.fix_borrow_Id = #{fixBorrowId}
+		</if>
+	</select>
+
+	<!-- 通过用户和定期宝查询加入明细 -->
+	<select id="queryJoinInfoByUser" parameterType="com.dxjr.portal.fix.vo.FixTenderDetailCnd"
+		resultMap="fixTenderDetailMap">
+		select ACCOUNT ,ADDTIME,tender_type from t_fix_tender_detail detail where 1=1
+
+
+		<if test="userId != null">
+			and detail.user_ID = #{userId}
+		</if>
+
+		<if test="fixBorrowId != null">
+			and detail.fix_borrow_Id = #{fixBorrowId}
+		</if>
+		order by detail.id desc
+	</select>
+
+
+
+
+	<resultMap id="fixTenderDetailResultMap" type="com.dxjr.portal.fix.vo.FixTenderDetailVo">
+		<result property="userName" column="USERNAME" />
+		<result property="account" column="ACCOUNT" />
+		<result property="addTime" column="ADDTIME" />
+		<result property="userId" column="USER_ID"/>
+		<result property="tenderType" column="tender_type" />
+		<result property="redMoney" column="RED_MONEY" />
+		<result property="platForm" column="PLATFORM" />
+	</resultMap>
+
+	<!-- 分页查询某个定期宝的认购记录 -->
+	<select id="queryFixTenderDetailVoList" parameterType="java.lang.Integer"
+		resultMap="fixTenderDetailResultMap">
+		select 
+		member.USERNAME,
+		detail.USER_ID as USER_ID,
+		detail.ACCOUNT,
+		detail.ADDTIME as addTime,
+		detail.PLATFORM,
+		tender_type as tender_type,
+		IFNULL((SELECT MONEY from t_red_envelop_account_log WHERE BIZ_TYPE=1 AND `STATUS`=3 AND USEBIZ_ID=detail.FIX_BORROW_ID AND BIZ_ID=detail.id),0) as RED_MONEY,
+		member.USERIDMD5 as userIdMD5
+		from T_FIX_TENDER_DETAIL detail
+		inner join rocky_member member on member.ID=detail.USER_ID
+		where detail.FIX_BORROW_ID=#{fixBorrowId}
+		order by detail.ID desc
+	</select>
+
+	<!-- 查询某个定期宝的认购记录分页时使用 -->
+	<select id="queryFixTenderDetailVoCounts" parameterType="java.lang.Integer"
+		resultType="java.lang.Integer">
+		select count(1) from T_FIX_TENDER_DETAIL where FIX_BORROW_ID=#{fixBorrowId}
+	</select>
+
+	<!-- 新增认购明细记录 -->
+	<insert id="insertFixTenderDetail" parameterType="com.dxjr.portal.fix.vo.FixTenderDetailVo">
+		INSERT INTO
+		t_fix_tender_detail (
+		ID,
+		USER_ID,
+		FIX_BORROW_ID,
+		STATUS,
+		ACCOUNT,
+		DRAW_MONEY,
+		NO_DRAW_MONEY,
+		ADDTIME,
+		ADDIP,
+		PLATFORM
+		) VALUES (
+		#{id},
+		#{userId},
+		#{fixBorrowId},
+		#{status},
+		#{account},
+		#{drawMoney},
+		#{noDrawMoney},
+		now(),
+		#{addIp},
+		#{platForm}
+		)
+		<selectKey resultType="java.lang.Integer" order="AFTER" keyProperty="id">  
+     	   SELECT LAST_INSERT_ID() AS ID    
+  		</selectKey>
+	</insert>
+
+	<!-- 根据定期宝id查询定期宝的所有认购金额 -->
+	<select id="getSumAccountByFixBorrowId" parameterType="java.lang.Integer"
+		resultType="java.math.BigDecimal">
+		SELECT ifnull(SUM(ACCOUNT),0) FROM T_FIX_TENDER_DETAIL WHERE
+		FIX_BORROW_ID = #{fixBorrowId}
+	</select>
+
+	<!-- 更新认购明细记录 -->
+	<update id="updateFixTenderDetail" parameterType="com.dxjr.portal.fix.vo.FixTenderDetailVo">
+		update t_fix_tender_detail
+		<set>
+			<if test="fixTenderRealId != null ">
+				FIX_TENDER_REAL_ID = #{fixTenderRealId},
+			</if>
+			<if test="status != null ">
+				STATUS = #{status},
+			</if>
+		</set>
+		where USER_ID = #{userId} and FIX_BORROW_ID = #{fixBorrowId}
+	</update>
+	
+	
+	
+	<!-- 查询定期宝的预期收益-->
+	<select id="getYqsyByJrz" parameterType="com.dxjr.portal.fix.vo.FixTenderDetailCnd"
+		resultType="java.math.BigDecimal">
+		SELECT sum( detail.ACCOUNT*fixBorrow.lock_limit/1200*fixBorrow.apr) 
+		from t_fix_tender_detail detail ,
+		t_fix_borrow fixBorrow where detail.FIX_BORROW_ID = fixBorrow.id and detail.USER_ID= #{userId} and fixBorrow.status =3
+	</select>
+	
+	<!--  根据锁定期限和用户ID查看是否存在定期宝投资记录-->
+	<select id="getUserAccount" parameterType="java.util.Map" resultType="java.lang.Integer">
+		select COUNT(1) from  t_fix_tender_detail tfd INNER JOIN t_fix_borrow tb ON tfd.fix_borrow_id=tb.ID
+        WHERE tb.LOCK_LIMIT=#{lock_limit} and tfd.USER_ID =#{userId} AND tfd.STATUS in(0,1,3) 
+	</select>	
+</mapper>  

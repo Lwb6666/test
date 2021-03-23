@@ -1,0 +1,291 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dxjr.portal.floatCoupon.mapper.ProductConfigMapper" >
+  <resultMap id="BaseResultMap" type="com.dxjr.portal.floatCoupon.entity.ProductConfig" >
+    <id column="ID" property="id" jdbcType="INTEGER" />
+    <result column="TYPE" property="type" jdbcType="INTEGER" />
+    <result column="TARGET_TYPE" property="targetType" jdbcType="INTEGER" />
+    <result column="STATUS" property="status" jdbcType="INTEGER" />
+    <result column="MONEY" property="money" jdbcType="DECIMAL" />
+    <result column="APR_TYPE" property="aprType" jdbcType="INTEGER" />
+    <result column="APR_YEAR" property="aprYear" jdbcType="DECIMAL" />
+    <result column="APR_MONTH" property="aprMonth" jdbcType="DECIMAL" />
+    <result column="LOCK_LIMIT" property="lockLimit" jdbcType="TINYINT" />
+    <result column="ACTIVE_TIME" property="activeTime" jdbcType="TIMESTAMP" />
+    <result column="DEACTIVE_TIME" property="deactiveTime" jdbcType="TIMESTAMP" />
+    <result column="COUNT_DAYS" property="countDays" jdbcType="INTEGER" />
+    <result column="VALID_DAYS" property="validDays" jdbcType="INTEGER" />
+    <result column="REMARK" property="remark" jdbcType="VARCHAR" />
+    <result column="ADDUSER" property="adduser" jdbcType="INTEGER" />
+    <result column="ADDIP" property="addip" jdbcType="VARCHAR" />
+    <result column="ADDTIME" property="addtime" jdbcType="TIMESTAMP" />
+    <result column="LAST_MODIFY_TIME" property="lastModifyTime" jdbcType="TIMESTAMP" />
+    <result column="LAST_MODIFY_USER" property="lastModifyUser" jdbcType="INTEGER" />
+    <result column="LAST_MODIFY_REMARK" property="lastModifyRemark" jdbcType="VARCHAR" />
+    <result column="IS_CUSTODY" property="isCustody" jdbcType="BIT" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    ID, TYPE, TARGET_TYPE, STATUS, MONEY, APR_TYPE, APR_YEAR, APR_MONTH, LOCK_LIMIT, 
+    ACTIVE_TIME, DEACTIVE_TIME, COUNT_DAYS, VALID_DAYS, REMARK, ADDUSER, ADDIP, ADDTIME, 
+    LAST_MODIFY_TIME, LAST_MODIFY_USER, LAST_MODIFY_REMARK, IS_CUSTODY
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from t_product_config
+    where ID = #{id,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from t_product_config
+    where ID = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.dxjr.portal.floatCoupon.entity.ProductConfig" >
+    insert into t_product_config (ID, TYPE, TARGET_TYPE, 
+      STATUS, MONEY, APR_TYPE, 
+      APR_YEAR, APR_MONTH, LOCK_LIMIT, 
+      ACTIVE_TIME, DEACTIVE_TIME, COUNT_DAYS, 
+      VALID_DAYS, REMARK, ADDUSER, 
+      ADDIP, ADDTIME, LAST_MODIFY_TIME, 
+      LAST_MODIFY_USER, LAST_MODIFY_REMARK, IS_CUSTODY
+      )
+    values (#{id,jdbcType=INTEGER}, #{type,jdbcType=INTEGER}, #{targetType,jdbcType=INTEGER}, 
+      #{status,jdbcType=INTEGER}, #{money,jdbcType=DECIMAL}, #{aprType,jdbcType=INTEGER}, 
+      #{aprYear,jdbcType=DECIMAL}, #{aprMonth,jdbcType=DECIMAL}, #{lockLimit,jdbcType=TINYINT}, 
+      #{activeTime,jdbcType=TIMESTAMP}, #{deactiveTime,jdbcType=TIMESTAMP}, #{countDays,jdbcType=INTEGER}, 
+      #{validDays,jdbcType=INTEGER}, #{remark,jdbcType=VARCHAR}, #{adduser,jdbcType=INTEGER}, 
+      #{addip,jdbcType=VARCHAR}, #{addtime,jdbcType=TIMESTAMP}, #{lastModifyTime,jdbcType=TIMESTAMP}, 
+      #{lastModifyUser,jdbcType=INTEGER}, #{lastModifyRemark,jdbcType=VARCHAR}, #{isCustody,jdbcType=BIT}
+      )
+  </insert>
+  <insert id="insertSelective" parameterType="com.dxjr.portal.floatCoupon.entity.ProductConfig" >
+    insert into t_product_config
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        ID,
+      </if>
+      <if test="type != null" >
+        TYPE,
+      </if>
+      <if test="targetType != null" >
+        TARGET_TYPE,
+      </if>
+      <if test="status != null" >
+        STATUS,
+      </if>
+      <if test="money != null" >
+        MONEY,
+      </if>
+      <if test="aprType != null" >
+        APR_TYPE,
+      </if>
+      <if test="aprYear != null" >
+        APR_YEAR,
+      </if>
+      <if test="aprMonth != null" >
+        APR_MONTH,
+      </if>
+      <if test="lockLimit != null" >
+        LOCK_LIMIT,
+      </if>
+      <if test="activeTime != null" >
+        ACTIVE_TIME,
+      </if>
+      <if test="deactiveTime != null" >
+        DEACTIVE_TIME,
+      </if>
+      <if test="countDays != null" >
+        COUNT_DAYS,
+      </if>
+      <if test="validDays != null" >
+        VALID_DAYS,
+      </if>
+      <if test="remark != null" >
+        REMARK,
+      </if>
+      <if test="adduser != null" >
+        ADDUSER,
+      </if>
+      <if test="addip != null" >
+        ADDIP,
+      </if>
+      <if test="addtime != null" >
+        ADDTIME,
+      </if>
+      <if test="lastModifyTime != null" >
+        LAST_MODIFY_TIME,
+      </if>
+      <if test="lastModifyUser != null" >
+        LAST_MODIFY_USER,
+      </if>
+      <if test="lastModifyRemark != null" >
+        LAST_MODIFY_REMARK,
+      </if>
+      <if test="isCustody != null" >
+        IS_CUSTODY,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="type != null" >
+        #{type,jdbcType=INTEGER},
+      </if>
+      <if test="targetType != null" >
+        #{targetType,jdbcType=INTEGER},
+      </if>
+      <if test="status != null" >
+        #{status,jdbcType=INTEGER},
+      </if>
+      <if test="money != null" >
+        #{money,jdbcType=DECIMAL},
+      </if>
+      <if test="aprType != null" >
+        #{aprType,jdbcType=INTEGER},
+      </if>
+      <if test="aprYear != null" >
+        #{aprYear,jdbcType=DECIMAL},
+      </if>
+      <if test="aprMonth != null" >
+        #{aprMonth,jdbcType=DECIMAL},
+      </if>
+      <if test="lockLimit != null" >
+        #{lockLimit,jdbcType=TINYINT},
+      </if>
+      <if test="activeTime != null" >
+        #{activeTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="deactiveTime != null" >
+        #{deactiveTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="countDays != null" >
+        #{countDays,jdbcType=INTEGER},
+      </if>
+      <if test="validDays != null" >
+        #{validDays,jdbcType=INTEGER},
+      </if>
+      <if test="remark != null" >
+        #{remark,jdbcType=VARCHAR},
+      </if>
+      <if test="adduser != null" >
+        #{adduser,jdbcType=INTEGER},
+      </if>
+      <if test="addip != null" >
+        #{addip,jdbcType=VARCHAR},
+      </if>
+      <if test="addtime != null" >
+        #{addtime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="lastModifyTime != null" >
+        #{lastModifyTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="lastModifyUser != null" >
+        #{lastModifyUser,jdbcType=INTEGER},
+      </if>
+      <if test="lastModifyRemark != null" >
+        #{lastModifyRemark,jdbcType=VARCHAR},
+      </if>
+      <if test="isCustody != null" >
+        #{isCustody,jdbcType=BIT},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.dxjr.portal.floatCoupon.entity.ProductConfig" >
+    update t_product_config
+    <set >
+      <if test="type != null" >
+        TYPE = #{type,jdbcType=INTEGER},
+      </if>
+      <if test="targetType != null" >
+        TARGET_TYPE = #{targetType,jdbcType=INTEGER},
+      </if>
+      <if test="status != null" >
+        STATUS = #{status,jdbcType=INTEGER},
+      </if>
+      <if test="money != null" >
+        MONEY = #{money,jdbcType=DECIMAL},
+      </if>
+      <if test="aprType != null" >
+        APR_TYPE = #{aprType,jdbcType=INTEGER},
+      </if>
+      <if test="aprYear != null" >
+        APR_YEAR = #{aprYear,jdbcType=DECIMAL},
+      </if>
+      <if test="aprMonth != null" >
+        APR_MONTH = #{aprMonth,jdbcType=DECIMAL},
+      </if>
+      <if test="lockLimit != null" >
+        LOCK_LIMIT = #{lockLimit,jdbcType=TINYINT},
+      </if>
+      <if test="activeTime != null" >
+        ACTIVE_TIME = #{activeTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="deactiveTime != null" >
+        DEACTIVE_TIME = #{deactiveTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="countDays != null" >
+        COUNT_DAYS = #{countDays,jdbcType=INTEGER},
+      </if>
+      <if test="validDays != null" >
+        VALID_DAYS = #{validDays,jdbcType=INTEGER},
+      </if>
+      <if test="remark != null" >
+        REMARK = #{remark,jdbcType=VARCHAR},
+      </if>
+      <if test="adduser != null" >
+        ADDUSER = #{adduser,jdbcType=INTEGER},
+      </if>
+      <if test="addip != null" >
+        ADDIP = #{addip,jdbcType=VARCHAR},
+      </if>
+      <if test="addtime != null" >
+        ADDTIME = #{addtime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="lastModifyTime != null" >
+        LAST_MODIFY_TIME = #{lastModifyTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="lastModifyUser != null" >
+        LAST_MODIFY_USER = #{lastModifyUser,jdbcType=INTEGER},
+      </if>
+      <if test="lastModifyRemark != null" >
+        LAST_MODIFY_REMARK = #{lastModifyRemark,jdbcType=VARCHAR},
+      </if>
+      <if test="isCustody != null" >
+        IS_CUSTODY = #{isCustody,jdbcType=BIT},
+      </if>
+    </set>
+    where ID = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.dxjr.portal.floatCoupon.entity.ProductConfig" >
+    update t_product_config
+    set TYPE = #{type,jdbcType=INTEGER},
+      TARGET_TYPE = #{targetType,jdbcType=INTEGER},
+      STATUS = #{status,jdbcType=INTEGER},
+      MONEY = #{money,jdbcType=DECIMAL},
+      APR_TYPE = #{aprType,jdbcType=INTEGER},
+      APR_YEAR = #{aprYear,jdbcType=DECIMAL},
+      APR_MONTH = #{aprMonth,jdbcType=DECIMAL},
+      LOCK_LIMIT = #{lockLimit,jdbcType=TINYINT},
+      ACTIVE_TIME = #{activeTime,jdbcType=TIMESTAMP},
+      DEACTIVE_TIME = #{deactiveTime,jdbcType=TIMESTAMP},
+      COUNT_DAYS = #{countDays,jdbcType=INTEGER},
+      VALID_DAYS = #{validDays,jdbcType=INTEGER},
+      REMARK = #{remark,jdbcType=VARCHAR},
+      ADDUSER = #{adduser,jdbcType=INTEGER},
+      ADDIP = #{addip,jdbcType=VARCHAR},
+      ADDTIME = #{addtime,jdbcType=TIMESTAMP},
+      LAST_MODIFY_TIME = #{lastModifyTime,jdbcType=TIMESTAMP},
+      LAST_MODIFY_USER = #{lastModifyUser,jdbcType=INTEGER},
+      LAST_MODIFY_REMARK = #{lastModifyRemark,jdbcType=VARCHAR},
+      IS_CUSTODY = #{isCustody,jdbcType=BIT}
+    where ID = #{id,jdbcType=INTEGER}
+  </update>
+  
+  <!-- 查询有效的定期宝加息券 -->
+  <select id="selectProductConfigForFix" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from t_product_config
+    WHERE TYPE = 1 AND TARGET_TYPE = 2 AND `STATUS` = 1 AND LOCK_LIMIT = #{lockLimit}
+  </select>
+</mapper>

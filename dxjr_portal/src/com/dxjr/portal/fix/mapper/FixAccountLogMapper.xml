@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.dxjr.portal.fix.mapper.FixAccountLogMapper">
+	
+	<!-- 新增账户日志 -->
+	<insert id="insertFixAccountLog" parameterType="com.dxjr.base.entity.FixAccountLog">
+			INSERT INTO t_fix_account_log ( 
+				FIX_BORROW_ID,
+				TYPE,
+				<if test="borrowId != null ">
+				BORROW_ID,
+				BORROW_NAME,
+				ID_TYPE,
+				</if>
+				MONEY,
+				TOTAL,
+				USE_MONEY,
+				NO_USE_MONEY,
+				COLLECTION,
+				CAPITAL,
+				PROFIT,				
+				ADDUSER,
+				ADDTIME,
+				<if test="remark != null">
+				REMARK,
+				</if>
+				ADDIP
+			) VALUES (
+		        #{fixBorrowId},
+		        #{type},
+		        <if test="borrowId != null ">
+		        #{borrowId},
+		        #{borrowName},
+		        #{idType},
+		        </if>
+		        #{money},
+		        #{total},
+		        #{useMoney},
+		        #{noUseMoney},
+		        #{collection},
+		        #{capital},
+		        #{profit},		  		        
+		        #{adduser},
+		        now(),
+		        <if test="remark != null">
+		        #{remark},	
+		        </if>
+		        #{addip}
+			)
+	</insert>
+	
+	<!-- 新增账户日志 -->
+	<insert id="insertFixAccountVoLog" parameterType="com.dxjr.portal.fix.vo.FixAccountLogVo">
+			INSERT INTO t_fix_account_log ( 
+				FIX_BORROW_ID,
+				TYPE,
+				<if test="borrowId != null ">
+				BORROW_ID,
+				BORROW_NAME,
+				ID_TYPE,
+				</if>
+				MONEY,
+				TOTAL,
+				USE_MONEY,
+				NO_USE_MONEY,
+				COLLECTION,
+				CAPITAL,
+				PROFIT,
+				ADDUSER,
+				ADDTIME,
+				<if test="remark != null">
+				REMARK,
+				</if>
+				ADDIP
+			) VALUES (
+		        #{fixBorrowId},
+		        #{type},
+		        <if test="borrowId != null ">
+		        #{borrowId},
+		        #{borrowName},
+		        #{idType},
+		        </if>
+		        #{money},
+		        #{total},
+		        #{useMoney},
+		        #{noUseMoney},
+		        #{collection},
+		        #{capital},
+		        #{profit},
+		        #{addUser},
+		         now(),
+		        <if test="remark != null">
+		        #{remark},	
+		        </if>
+		        #{addIp}
+			)
+	</insert>
+	
+</mapper>	

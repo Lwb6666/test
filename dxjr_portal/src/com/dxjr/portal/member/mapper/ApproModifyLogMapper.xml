@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.dxjr.portal.member.mapper.ApproModifyLogMapper">
+	
+	<!-- 插入记录，返回主键 -->
+	<insert id="insertEntity" parameterType="com.dxjr.portal.member.vo.ApproModifyLog">
+		INSERT INTO t_appro_modify_log 
+		(USER_ID,OLD_CONTENT, 	NEW_CONTENT,	TYPE,	ADDTIME, STAFF_ID,	ADD_IP,	ADD_MAC,	REMARK,platform,isPassed)
+		VALUES
+		(#{userId},#{oldContent},#{newContent},#{type}, NOW(),#{staffId},#{addIp},#{addMac},#{remark},#{platform},#{isPassed})
+		
+ 		 <selectKey resultType="java.lang.Integer" order="AFTER" keyProperty="id">  
+      	    SELECT LAST_INSERT_ID() AS ID    
+   		 </selectKey>
+	</insert>
+  
+	<!-- 根据userId查询更新手机号的记录数量 -->
+	<select id="queryCountForUpdateMObile" resultType="java.lang.Integer" parameterType="java.lang.Integer" >
+	   SELECT count(*) FROM t_appro_modify_log WHERE USER_ID = #{userId} AND TYPE = 2 AND ISPASSED = 1
+    </select>
+</mapper>  

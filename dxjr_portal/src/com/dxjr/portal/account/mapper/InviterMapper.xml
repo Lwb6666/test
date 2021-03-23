@@ -1,0 +1,389 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.dxjr.portal.account.mapper.InviterMapper">
+
+	<resultMap id="inviteDetailRM" type="com.dxjr.base.entity.InviteDetail">
+		<id column="ID" property="id" jdbcType="INTEGER" />
+		<result column="USERID" property="userid" jdbcType="INTEGER" />
+		<result column="INVITED_USERID" property="invitedUserid" jdbcType="INTEGER" />
+		<result column="TYPE" property="type" jdbcType="TINYINT" />
+		<result column="REGISTER_TIME" property="registerTime" jdbcType="TIMESTAMP" />
+		<result column="MOBILE_APPROVED_TIME" property="mobileApprovedTime" jdbcType="TIMESTAMP" />
+		<result column="EMAIL_APPROVED_TIME" property="emailApprovedTime" jdbcType="TIMESTAMP" />
+		<result column="REALNAME_APPROVED_TIME" property="realnameApprovedTime" jdbcType="TIMESTAMP" />
+		<result column="VIP_APPROVED_TIME" property="vipApprovedTime" jdbcType="TIMESTAMP" />
+		<result column="RECHARGE_TIME" property="rechargeTime" jdbcType="TIMESTAMP" />
+		<result column="INVITE_SUCCESS_TIME" property="inviteSuccessTime" jdbcType="TIMESTAMP" />
+		<result column="TOTAL_INTEREST" property="totalInterest" jdbcType="DECIMAL" />
+		<result column="MONTH_INTEREST" property="monthInterest" jdbcType="DECIMAL" />
+		<result column="MONTH" property="month" jdbcType="TINYINT" />
+		<result column="ADD_TIME" property="addTime" jdbcType="TIMESTAMP" />
+		<result column="UPDATE_TIME" property="updateTime" jdbcType="TIMESTAMP" />
+	</resultMap>
+	
+	<resultMap id="inviteDetailVoRM" type="com.dxjr.portal.account.vo.InviteDetailVo" extends="inviteDetailRM">
+		<result column="INVITED_USERNAME" property="invitedUsername" jdbcType="VARCHAR" />
+		<result column="AWARDMONEY" property="awardMoney" jdbcType="DECIMAL" />
+		<result column="MOBILE_PASSED" property="mobilePassed" jdbcType="INTEGER" />
+		<result column="EMAIL_PASSED" property="emailPassed" jdbcType="INTEGER" />
+		<result column="REALNAME_PASSED" property="realnamePassed" jdbcType="INTEGER" />
+		<result column="VIP_PASSED" property="vipPassed" jdbcType="INTEGER" />
+		<result column="RECHARGE_PASSED" property="rechargePassed" jdbcType="INTEGER" />
+		<result column="TENDER_PASSED" property="tenderPassed" jdbcType="INTEGER" />
+	</resultMap>
+	
+	
+	<select id="countInviteDetailsByUserId" parameterType="java.lang.Integer" resultType="java.lang.Integer">
+		select count(*) from rocky_member m where m.INVITERID = #{userId}
+	</select>
+	
+	<select id="queryInviteDetailsByUserId" parameterType="java.lang.Integer" resultMap="inviteDetailVoRM">
+		select
+		  INVITED_USERID, INVITED_USERNAME, AWARDMONEY, REGISTER_TIME,
+		  MOBILE_PASSED, EMAIL_PASSED, REALNAME_PASSED, RECHARGE_PASSED, TENDER_PASSED,		  
+		  if(AWARDMONEY is null, null, 
+		  case 
+		  when INVITE_SUCCESS_TIME1 &lt; date('2015-07-10')
+		  then INVITE_SUCCESS_TIME1
+		  else IFNULL(INVITE_SUCCESS_TIME2,INVITE_SUCCESS_TIME1)
+		  end
+		  ) as INVITE_SUCCESS_TIME		   
+		from (
+		  select
+		    INVITED_USERID, INVITED_USERNAME, if(AWARDMONEY = 0, null, AWARDMONEY) as AWARDMONEY,
+		    from_unixtime(REGISTER_TIME, '%Y-%m-%d %H:%i:%S') as REGISTER_TIME,
+		    MOBILE_PASSED, EMAIL_PASSED, REALNAME_PASSED,
+		    if(min(RECHARGE_TIME) is null, 0, 1) as RECHARGE_PASSED,
+		    if(min(TENDER_TIME) is null, 0, 1) as TENDER_PASSED,
+		    from_unixtime(greatest(REGISTER_TIME, IFNULL(MOBILE_APPROVED_TIME,0), IFNULL(EMAIL_APPROVED_TIME,0), IFNULL(REALNAME_APPROVED_TIME,0),  IFNULL(min(RECHARGE_TIME),0)), '%Y-%m-%d %H:%i:%S') as INVITE_SUCCESS_TIME1,
+		    from_unixtime(greatest(REGISTER_TIME, IFNULL(MOBILE_APPROVED_TIME,0), IFNULL(EMAIL_APPROVED_TIME,0), IFNULL(REALNAME_APPROVED_TIME,0),  IFNULL(min(TENDER_TIME),0)), '%Y-%m-%d %H:%i:%S') as INVITE_SUCCESS_TIME2
+		  from (
+		    select
+		      m.ID as INVITED_USERID,
+		      m.USERNAME as INVITED_USERNAME,
+		      m.AWARDMONEY as AWARDMONEY,
+		      m.ADDTIME as REGISTER_TIME,
+		      if(ma.PASSED = 1, ma.APPROTIME, null) as MOBILE_APPROVED_TIME,
+		      if(ea.CHECKED = 1, ea.APPRTIME, null) as EMAIL_APPROVED_TIME,
+		      if(ra.ISPASSED = 1, ra.APPROVETIME, null) as REALNAME_APPROVED_TIME,
+		      ma.PASSED as MOBILE_PASSED,
+		      ea.CHECKED as EMAIL_PASSED,
+		      ra.ISPASSED as REALNAME_PASSED,
+		      @sumMoney := convert(if(@tmpId = m.ID, @sumMoney + rr.MONEY, rr.MONEY), decimal(20,2)) as RECHARGE_MONEY,
+		      null as TENDER_MONEY,
+		      @rn := if(@tmpId = m.ID, @rn, 0),
+		      @rechargeTime := if(@sumMoney >= 1000, rr.ADDTIME, null) as RECHARGE_TIME,
+		      null as TENDER_TIME,
+		      @rn := if(@sumMoney >= 1000, @rn + 1, 0) as RN,
+		      @tmpId := m.ID
+		    from rocky_member m
+		    left join rocky_email_appro ea on ea.USER_ID = m.ID
+		    left join rocky_mobile_appro ma on ma.USER_ID = m.ID
+		    left join rocky_realname_appro ra on ra.USER_ID = m.ID
+		    left join rocky_rechargerecord rr on rr.USER_ID = m.ID and rr.`STATUS` = 1 and m.ADDTIME >= convert(1417363200, char)
+		    inner join (select @rn := 0, @tmpId := 0, @sumMoney := 0, @rechargeTime := null) x
+		    where m.INVITERID = #{userId}
+		
+		    union all
+		
+		    select
+		      m.ID as INVITED_USERID,
+		      m.USERNAME as INVITED_USERNAME,
+		      m.AWARDMONEY as AWARDMONEY,
+		      m.ADDTIME as REGISTER_TIME,
+		      if(ma.PASSED = 1, ma.APPROTIME, null) as MOBILE_APPROVED_TIME,
+		      if(ea.CHECKED = 1, ea.APPRTIME, null) as EMAIL_APPROVED_TIME,
+		      if(ra.ISPASSED = 1, ra.APPROVETIME, null) as REALNAME_APPROVED_TIME,
+		      ma.PASSED as MOBILE_PASSED,
+		      ea.CHECKED as EMAIL_PASSED,
+		      ra.ISPASSED as REALNAME_PASSED,
+		      null as RECHARGE_MONEY,
+		      @sumMoney2 := convert(if(@tmpId2 = m.ID, @sumMoney2 + tz.ACCOUNT, tz.ACCOUNT), decimal(20,2)) as TENDER_MONEY,
+		      @rn2 := if(@tmpId2 = m.ID, @rn2, 0),
+		      null as RECHARGE_TIME,
+		      @tenderTime2 := if(@sumMoney2 >= 1000, tz.ADDTIME, null) as TENDER_TIME,
+		      @rn2 := if(@sumMoney2 >= 1000, @rn2 + 1, 0) as RN,
+		      @tmpId2 := m.ID
+		    from rocky_member m
+		    left join rocky_email_appro ea on ea.USER_ID = m.ID and ea.CHECKED = 1
+		    left join rocky_mobile_appro ma on ma.USER_ID = m.ID and ma.PASSED = 1
+		    left join rocky_realname_appro ra on ra.USER_ID = m.ID and ra.ISPASSED = 1
+		    left join (
+		      select * from (
+		        select USER_ID, ACCOUNT, ADDTIME
+		        from rocky_b_tenderrecord
+		        where (TENDER_TYPE = 2 or (TENDER_TYPE in (0,1) and PARENT_ID is null))
+		        and `STATUS` in (1,2)
+		        and ADDTIME >= convert(UNIX_TIMESTAMP('2014-12-01'), char)
+		        union all
+		        select USER_ID, ACCOUNT, unix_timestamp(ADD_TIME)
+		        from rocky_b_subscribe
+		        where `STATUS` = 3
+		        and ADD_TIME >= date('2014-12-01')
+		        UNION ALL
+				select USER_ID, sum(ACCOUNT) ACCOUNT, unix_timestamp(ADDTIME) 
+				from t_fix_tender_detail 
+				where `STATUS` in (1,3) 				 
+				and ADDTIME >= date('2014-12-01')
+				group by USER_ID
+		      ) _tz order by ADDTIME
+		    ) tz on tz.USER_ID = m.ID
+		    inner join (select @rn2 := 0, @tmpId2 := 0, @sumMoney2 := 0, @tenderTime2 := null) a
+		    where m.INVITERID = #{userId}
+		  ) t where RN in (0, 1)
+		  group by INVITED_USERID
+		) tt order by INVITED_USERID desc
+	</select>
+	
+	<select id="countInviteNumRankList" parameterType="java.util.Map" resultType="java.lang.Integer">
+		select count(distinct USERID, `MONTH`)
+		from t_invite_detail
+		where `MONTH` = (select if(max(if(MONTH = 12, 0, MONTH)) = 0, 12, max(if(MONTH = 12, 0, MONTH))) from t_invite_detail)
+		and TYPE = 0
+		<if test="startDate != null">and INVITE_SUCCESS_TIME >= #{startDate}</if>
+		<if test="endDate != null">and INVITE_SUCCESS_TIME &lt; #{endDate}</if>
+	</select>
+	
+	<select id="queryInviteNumRankList" parameterType="java.util.Map" resultType="com.dxjr.portal.account.vo.InviteRankVo">
+		select USERID, USERNAME, NUM, RANK from (
+		  select t.*, @rn := @rn + 1 RANK from (
+		    select i.*,
+		      (select round(sum(d.COLLECTION) / 180, 2) from rocky_account_day_log d where d.USER_ID = i.USERID and d.ADDTIME &lt; <choose><when test="endDate != null">#{endDate}</when><otherwise>date('2015-12-01')</otherwise></choose>) as DAYINTERST
+		    from (
+		      select USERID, USERNAME, count(*) NUM
+		      from t_invite_detail
+		      where `MONTH` = (select if(max(if(MONTH = 12, 0, MONTH)) = 0, 12, max(if(MONTH = 12, 0, MONTH))) from t_invite_detail)
+		      and TYPE = 0
+		      <if test="startDate != null">and INVITE_SUCCESS_TIME >= #{startDate}</if>
+		      <if test="endDate != null">and INVITE_SUCCESS_TIME &lt; #{endDate}</if>
+		      group by USERID
+		    ) i order by NUM desc, DAYINTERST desc, USERID asc
+		  ) t, (select @rn := 0) x
+		) tt
+	</select>
+
+	<select id="countInviteInterestRankList" parameterType="java.util.Map" resultType="java.lang.Integer">
+		<!-- select count(distinct USERID, `MONTH`)
+		from t_invite_detail
+		where `MONTH` = <if test="interestType == 'MONTH_INTEREST'">#{month}</if><if test="interestType == 'TOTAL_INTEREST'">(select if(max(if(MONTH = 12, 0, MONTH)) = 0, 12, max(if(MONTH = 12, 0, MONTH))) from t_invite_detail)</if> -->
+		<if test="interestType == 'MONTH_INTEREST'">
+		select count(*) from t_invite_reward_issue where TYPE = 4 and `MONTH` = #{month}
+		</if>
+		<if test="interestType == 'TOTAL_INTEREST'">
+		select count(distinct USERID, TYPE) from t_invite_reward_issue where TYPE = 4
+		</if>
+	</select>
+	
+	<select id="queryInviteInterestRankList" parameterType="java.util.Map" resultType="com.dxjr.portal.account.vo.InviteRankVo">
+		<!-- select USERID, USERNAME, INTEREST, RANK from (
+		  select t.*, @rn := @rn + 1 RANK from (
+		    select i.*,
+		      (select round(sum(d.COLLECTION) / 180, 2) from rocky_account_day_log d where d.USER_ID = i.USERID and d.ADDTIME &lt; <if test="interestType == 'MONTH_INTEREST'">('2014-12-01' + interval (if(#{month} = 12, 0, #{month}) + 1) month)</if><if test="interestType == 'TOTAL_INTEREST'">date('2015-12-01')</if>) as DAYINTERST
+		    from (
+		      select USERID, USERNAME,
+		        round(sum(${interestType} * convert(case TYPE when 0 then 0.03 when 1 then 0.01 end, decimal(3,2))), 2) INTEREST
+		      from t_invite_detail
+		      where `MONTH` = <if test="interestType == 'MONTH_INTEREST'">#{month}</if><if test="interestType == 'TOTAL_INTEREST'">(select if(max(if(MONTH = 12, 0, MONTH)) = 0, 12, max(if(MONTH = 12, 0, MONTH))) from t_invite_detail)</if>
+		      group by USERID
+		    ) i order by INTEREST desc, DAYINTERST desc, USERID asc
+		  ) t, (select @rn := 0) x
+		) tt -->
+		select tt.*, @rn := @rn + 1 RANK from (
+		  select t.*,
+		    (select round(sum(d.COLLECTION) / 180, 2) from rocky_account_day_log d where d.USER_ID = t.USERID and d.ADDTIME &lt; <if test="interestType == 'MONTH_INTEREST'">('2014-12-01' + interval (if(#{month} = 12, 0, #{month}) + 1) month)</if><if test="interestType == 'TOTAL_INTEREST'">date('2015-12-01')</if>) as DAYINTERST
+		  from (
+		    <if test="interestType == 'MONTH_INTEREST'">
+		    select USERID, USERNAME, ifnull(ACTUAL_MONEY, MONEY) as INTEREST from t_invite_reward_issue where TYPE = 4 and `MONTH` = #{month}
+		    </if>
+		    <if test="interestType == 'TOTAL_INTEREST'">
+		    select USERID, USERNAME, sum(ifnull(ACTUAL_MONEY, MONEY)) as INTEREST from t_invite_reward_issue where TYPE = 4 group by USERID
+		    </if>
+		  ) t
+		  order by INTEREST desc, DAYINTERST desc, USERID asc
+		) tt, (select @rn := 0) x
+	</select>
+	
+	<select id="countInviteNumDetailList" parameterType="java.util.Map" resultType="java.lang.Integer" >
+		select count(*)
+		from t_invite_detail
+		where `MONTH` = (select if(max(if(MONTH = 12, 0, MONTH)) = 0, 12, max(if(MONTH = 12, 0, MONTH))) from t_invite_detail)
+		and USERID = #{userId}
+		and TYPE = 0
+		<if test="startDate != null">and INVITE_SUCCESS_TIME >= #{startDate}</if>
+		<if test="endDate != null">and INVITE_SUCCESS_TIME &lt; #{endDate}</if>
+	</select>
+	
+	<select id="queryInviteNumDetailList" parameterType="java.util.Map" resultMap="inviteDetailVoRM">
+      select USERID, USERNAME, INVITED_USERID, INVITED_USERNAME, INVITE_SUCCESS_TIME
+      from t_invite_detail
+      where `MONTH` = (select if(max(if(MONTH = 12, 0, MONTH)) = 0, 12, max(if(MONTH = 12, 0, MONTH))) from t_invite_detail)
+      and USERID = #{userId}
+      and TYPE = 0
+      <if test="startDate != null">and INVITE_SUCCESS_TIME >= #{startDate}</if>
+      <if test="endDate != null">and INVITE_SUCCESS_TIME &lt; #{endDate}</if>
+      order by INVITED_USERID desc
+	</select>
+	
+	<select id="queryInviteInterestDetailList" parameterType="java.lang.Integer" resultType="com.dxjr.portal.account.vo.InviteRankVo">
+		select m.`MONTH`, ifnull(r.ACTUAL_MONEY, r.MONEY) as INTEREST, r.UPDATE_TIME REWARDISSUEDTIME
+		<!-- ifnull(`MONEY`, round(sum(i.MONTH_INTEREST * convert(case i.TYPE when 0 then 0.03 when 1 then 0.01 end, decimal(3,2))), 2)) INTEREST, --> 
+		from (
+		  select 12 as `MONTH` union all
+		  select 1 union all
+		  select 2 union all
+		  select 3 union all
+		  select 4 union all
+		  select 5 union all
+		  select 6 union all
+		  select 7 union all
+		  select 8 union all
+		  select 9 union all
+		  select 10 union all
+		  select 11
+		) m
+		<!-- left join t_invite_detail i on i.`MONTH` = m.`MONTH` and i.USERID = #{userId} -->
+		left join t_invite_reward_issue r on r.`MONTH` = m.`MONTH` and r.`TYPE` = 4 and r.USERID = #{userId}
+		group by m.`MONTH`
+		order by if(m.`MONTH` = 12 , 0, m.`MONTH`)
+	</select>
+	
+	<select id="queryInviteIssuedReward" parameterType="java.lang.Integer" resultType="java.math.BigDecimal">
+		select ACTUAL_MONEY from t_invite_reward_issue where USERID = #{userId} and TYPE = #{type}<if test="month != null"> and `MONTH` = #{month}</if>
+	</select>
+	
+	<!-- 调用首充1000元奖励10元的存储过程 -->
+	<select id="awardInviter" parameterType="java.util.Map" statementType="CALLABLE">  
+		{call award_inviter (#{msg,mode=OUT,jdbcType=VARCHAR})}
+	</select>
+	
+	<!-- 根据userId查询投资总额 -->
+	<select id="queryInvestTotalByUserId" parameterType="java.lang.Integer" resultType="java.math.BigDecimal">
+		SELECT IFNULL((
+			select sum(ACCOUNT) ACCOUNT from rocky_b_tenderrecord 
+			where (TENDER_TYPE = 2 or (TENDER_TYPE in (0,1) and PARENT_ID is null)) and `STATUS` in (1,2) AND USER_ID = #{userId}
+			),0)
+			+ IFNULL((
+			select sum(ACCOUNT) ACCOUNT from rocky_b_subscribe where `STATUS` = 3 AND USER_ID = #{userId}
+			),0) + IFNULL((
+			SELECT sum(ACCOUNT) ACCOUNT FROM t_fix_tender_real where USER_ID = #{userId}
+			),0)
+		FROM DUAL
+	</select>
+	
+	<select id="countInviteDetailsByUserIdNew" parameterType="com.dxjr.portal.account.vo.FriendCnd" resultType="java.lang.Integer">
+	    		select count(*) from rocky_member m where m.INVITERID =#{userId}
+	    		<if test="isRecommendSuccess != null and isRecommendSuccess !='' and isRecommendSuccess==1 ">
+				    and  m.AWARDMONEY &gt;0
+				</if>
+				<if test="isRecommendSuccess != null and isRecommendSuccess !='' and isRecommendSuccess==2 ">
+				     and  m.AWARDMONEY =0
+				</if>
+	    
+	</select>
+	
+	<select id="queryInviteDetailsByUserIdNew" parameterType="com.dxjr.portal.account.vo.FriendCnd" resultMap="inviteDetailVoRM">
+		select * from (select
+		  INVITED_USERID, INVITED_USERNAME, AWARDMONEY, REGISTER_TIME,
+		  MOBILE_PASSED, EMAIL_PASSED, REALNAME_PASSED, RECHARGE_PASSED, TENDER_PASSED,
+		  if(AWARDMONEY is null, null, 
+		  case 
+		  when INVITE_SUCCESS_TIME1 &lt; date('2015-07-10')
+		  then INVITE_SUCCESS_TIME1
+		  else IFNULL(INVITE_SUCCESS_TIME2,INVITE_SUCCESS_TIME1)
+		  end
+		  ) as INVITE_SUCCESS_TIME		   
+		from (
+		  select
+		    INVITED_USERID, INVITED_USERNAME, if(AWARDMONEY = 0, null, AWARDMONEY) as AWARDMONEY,
+		    from_unixtime(REGISTER_TIME, '%Y-%m-%d %H:%i:%S') as REGISTER_TIME,
+		    MOBILE_PASSED, EMAIL_PASSED, REALNAME_PASSED,
+		    if(min(RECHARGE_TIME) is null, 0, 1) as RECHARGE_PASSED,
+		    if(min(TENDER_TIME) is null, 0, 1) as TENDER_PASSED,
+		    from_unixtime(greatest(REGISTER_TIME, IFNULL(MOBILE_APPROVED_TIME,0), IFNULL(EMAIL_APPROVED_TIME,0), IFNULL(REALNAME_APPROVED_TIME,0),  IFNULL(min(RECHARGE_TIME),0)), '%Y-%m-%d %H:%i:%S') as INVITE_SUCCESS_TIME1,
+		    from_unixtime(greatest(REGISTER_TIME, IFNULL(MOBILE_APPROVED_TIME,0), IFNULL(EMAIL_APPROVED_TIME,0), IFNULL(REALNAME_APPROVED_TIME,0),  IFNULL(min(TENDER_TIME),0)), '%Y-%m-%d %H:%i:%S') as INVITE_SUCCESS_TIME2
+		  from (
+		    select
+		      m.ID as INVITED_USERID,
+		      m.USERNAME as INVITED_USERNAME,
+		      m.AWARDMONEY as AWARDMONEY,
+		      m.ADDTIME as REGISTER_TIME,
+		      if(ma.PASSED = 1, ma.APPROTIME, null) as MOBILE_APPROVED_TIME,
+		      if(ea.CHECKED = 1, ea.APPRTIME, null) as EMAIL_APPROVED_TIME,
+		      if(ra.ISPASSED = 1, ra.APPROVETIME, null) as REALNAME_APPROVED_TIME,
+		      ma.PASSED as MOBILE_PASSED,
+		      ea.CHECKED as EMAIL_PASSED,
+		      ra.ISPASSED as REALNAME_PASSED,
+		      @sumMoney := convert(if(@tmpId = m.ID, @sumMoney + rr.MONEY, rr.MONEY), decimal(20,2)) as RECHARGE_MONEY,
+		      null as TENDER_MONEY,
+		      @rn := if(@tmpId = m.ID, @rn, 0),
+		      @rechargeTime := if(@sumMoney >= 1000, rr.ADDTIME, null) as RECHARGE_TIME,
+		      null as TENDER_TIME,
+		      @rn := if(@sumMoney >= 1000, @rn + 1, 0) as RN,
+		      @tmpId := m.ID
+		    from rocky_member m
+		    left join rocky_email_appro ea on ea.USER_ID = m.ID
+		    left join rocky_mobile_appro ma on ma.USER_ID = m.ID
+		    left join rocky_realname_appro ra on ra.USER_ID = m.ID
+		    left join rocky_rechargerecord rr on rr.USER_ID = m.ID and rr.`STATUS` = 1 and m.ADDTIME >= convert(1417363200, char)
+		    inner join (select @rn := 0, @tmpId := 0, @sumMoney := 0, @rechargeTime := null) x
+		    where m.INVITERID = #{userId}
+		
+		    union all
+		
+		    select
+		      m.ID as INVITED_USERID,
+		      m.USERNAME as INVITED_USERNAME,
+		      m.AWARDMONEY as AWARDMONEY,
+		      m.ADDTIME as REGISTER_TIME,
+		      if(ma.PASSED = 1, ma.APPROTIME, null) as MOBILE_APPROVED_TIME,
+		      if(ea.CHECKED = 1, ea.APPRTIME, null) as EMAIL_APPROVED_TIME,
+		      if(ra.ISPASSED = 1, ra.APPROVETIME, null) as REALNAME_APPROVED_TIME,
+		      ma.PASSED as MOBILE_PASSED,
+		      ea.CHECKED as EMAIL_PASSED,
+		      ra.ISPASSED as REALNAME_PASSED,
+		      null as RECHARGE_MONEY,
+		      @sumMoney2 := convert(if(@tmpId2 = m.ID, @sumMoney2 + tz.ACCOUNT, tz.ACCOUNT), decimal(20,2)) as TENDER_MONEY,
+		      @rn2 := if(@tmpId2 = m.ID, @rn2, 0),
+		      null as RECHARGE_TIME,
+		      @tenderTime2 := if(@sumMoney2 >= 1000, tz.ADDTIME, null) as TENDER_TIME,
+		      @rn2 := if(@sumMoney2 >= 1000, @rn2 + 1, 0) as RN,
+		      @tmpId2 := m.ID
+		    from rocky_member m
+		    left join rocky_email_appro ea on ea.USER_ID = m.ID and ea.CHECKED = 1
+		    left join rocky_mobile_appro ma on ma.USER_ID = m.ID and ma.PASSED = 1
+		    left join rocky_realname_appro ra on ra.USER_ID = m.ID and ra.ISPASSED = 1
+		    left join (
+		      select * from (
+		        select USER_ID, ACCOUNT, ADDTIME
+		        from rocky_b_tenderrecord
+		        where (TENDER_TYPE = 2 or (TENDER_TYPE in (0,1) and PARENT_ID is null))
+		        and `STATUS` in (1,2)
+		        and ADDTIME >= convert(UNIX_TIMESTAMP('2014-12-01'), char)
+		        union all
+		        select USER_ID, ACCOUNT, unix_timestamp(ADD_TIME)
+		        from rocky_b_subscribe
+		        where `STATUS` = 3
+		        and ADD_TIME >= date('2014-12-01')
+		        UNION ALL
+				select USER_ID, sum(ACCOUNT) ACCOUNT, unix_timestamp(ADDTIME) 
+				from t_fix_tender_detail 
+				where `STATUS` in (1,3) 				 
+				and ADDTIME >= date('2014-12-01')
+				group by USER_ID
+		      ) _tz order by ADDTIME
+		    ) tz on tz.USER_ID = m.ID
+		    inner join (select @rn2 := 0, @tmpId2 := 0, @sumMoney2 := 0, @tenderTime2 := null) a
+		    where m.INVITERID = #{userId}
+		  ) t where RN in (0, 1)
+		  group by INVITED_USERID
+		) tt order by INVITED_USERID desc
+		) ttt  where 1=1 
+	    	<if test="isRecommendSuccess != null and isRecommendSuccess !='' and isRecommendSuccess==1 ">
+				  and ttt.AWARDMONEY &gt;0
+			</if>
+			<if test="isRecommendSuccess != null and isRecommendSuccess !='' and isRecommendSuccess==2 ">
+			     and ttt.AWARDMONEY is null
+			</if>
+	</select>
+</mapper>  

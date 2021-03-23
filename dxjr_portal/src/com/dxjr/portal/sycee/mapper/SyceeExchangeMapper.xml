@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.dxjr.portal.sycee.mapper.SyceeExchangeMapper">
+
+<resultMap type="com.dxjr.portal.sycee.entity.SyceeExchange" id="syceeExchangeMap">
+	<id 	property="id" 				column="id" />
+	<result property="syceeGoodsId" 	column="sycee_goods_id" />
+	<result property="userId" 			column="user_id" />
+	<result property="exchangeTime"		column="exchange_time" />
+	<result property="dealStatus"		column="deal_status" />
+	<result property="dealUser"			column="deal_user" />
+	<result property="dealUsername"		column="deal_username" />
+	<result property="dealTime"			column="deal_time" />
+	<result property="dealRemark"		column="deal_remark" />
+</resultMap>
+
+<!-- 查询所有 -->
+<select id="getAll" resultMap="syceeExchangeMap">
+	select * from t_sycee_exchange
+</select>
+
+<!-- 根据ID查询 -->
+<select id="getById" parameterType="Integer" resultMap="syceeExchangeMap">
+	select * from t_sycee_exchange where id=#{id}
+</select>
+
+<!-- 新增 -->
+<insert id="add" parameterType="com.dxjr.portal.sycee.entity.SyceeExchange" >
+	insert into t_sycee_exchange(sycee_goods_id,user_id,sycee,num,price,exchange_time,deal_status,deal_username,deal_time,deal_remark,remark)
+	values(#{syceeGoodsId},#{userId},#{sycee},#{num},#{price},now(),#{dealStatus},#{dealUsername},
+	<if test="dealStatus == 1" >now(),</if>
+	<if test="dealStatus != 1" >null,</if>
+	#{dealRemark},#{remark})
+</insert>
+
+</mapper>

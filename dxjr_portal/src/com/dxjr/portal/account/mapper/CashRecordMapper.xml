@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.dxjr.portal.account.mapper.CashRecordMapper">
+	
+	<!-- 返回的结果集 -->
+	<resultMap type="com.dxjr.portal.account.vo.CashRecordVo" id="cashRecordResultMap">
+		<id property="id" column="id" />
+		<result property="userId" 					column="USER_ID" />
+		<result property="status" 					column="STATUS" />
+		<result property="account" 					column="ACCOUNT" />
+		<result property="bank" 					column="BANK" />
+		<result property="branch" 					column="BRANCH"/>
+		<result property="total"	    			column="TOTAL" />
+		<result property="credited"  				column="CREDITED" />
+		<result property="fee"	 					column="FEE" />
+		<result property="verifyUserid" 			column="VERIFY_USERID" /> 
+		<result property="verifyTime" 				column="VERIFY_TIME" />
+		<result property="verifyRemark" 			column="VERIFY_REMARK" /> 
+		<result property="verifyUserid2" 			column="VERIFY_USERID2" /> 
+		<result property="verifyTime2" 				column="VERIFY_TIME2" />
+		<result property="verifyRemark2" 			column="VERIFY_REMARK2" />
+		<result property="verifyUserid3" 			column="VERIFY_USERID3" />
+		<result property="verifyTime3" 			    column="VERIFY_TIME3" />
+		<result property="verifyRemark3" 			column="VERIFY_REMARK3" />
+		<result property="addtime" 					column="ADDTIME" />
+		<result property="addip" 					column="ADDIP" /> 
+		<result property="version" 				 	column="VERSION" />
+		<result property="isCustody" 				 	column="IS_CUSTODY" />
+	</resultMap>
+ 
+	
+	<!--基本列 -->
+	<sql id="cashRecordBaseColumn">
+		c.ID, 
+		c.USER_ID, 
+		c.STATUS, 
+		c.ACCOUNT, 
+		c.BANK, 
+		c.BRANCH,
+		c.TOTAL, 
+		c.CREDITED, 
+		c.FEE, 
+		c.VERIFY_USERID, 
+		c.VERIFY_TIME, 
+		c.VERIFY_REMARK, 
+		c.VERIFY_USERID2, 
+		c.VERIFY_TIME2, 
+		c.VERIFY_REMARK2,
+		c.VERIFY_USERID3,
+		c.VERIFY_TIME3,
+		c.VERIFY_REMARK3,
+		c.ADDTIME, 
+		c.ADDIP,
+		c.VERSION,
+		c.IS_CUSTODY 
+	</sql>
+	
+	<!-- 封装查询条件 -->
+	<sql id="cashRecord_Where_Clause">
+		<if test="id != null">
+			and c.id =#{id}
+		</if>
+		<if test="userId != null ">
+			and c.USER_ID = #{userId}
+		</if>	
+		<if test="rechargeStatus != null ">
+			and c.STATUS = #{rechargeStatus}
+		</if>	
+		<if test="beginTime != null">
+			and c.ADDTIME <![CDATA[>=]]> UNIX_TIMESTAMP(#{beginTime})
+		</if>
+		<if test="endTime != null">
+			and c.ADDTIME <![CDATA[<=]]> UNIX_TIMESTAMP(#{endTime})
+		</if>
+        <if test="bizNo != null">
+            and c.BIZ_NO = #{bizNo}
+        </if>
+        <if test="isCustody !=null">
+          <if test="isCustody==0 ">
+		    and (c.IS_CUSTODY  = #{isCustody} or c.IS_CUSTODY is null) 
+		  </if>
+		  <if test="isCustody==1 ">
+		    and c.IS_CUSTODY  = #{isCustody}
+		  </if>
+		</if>
+	</sql>
+	
+  	<!-- 根据条件查询记录集合 -->
+	<select id="queryCashRecordList" parameterType="com.dxjr.portal.account.vo.CashRecordCnd" resultMap="cashRecordResultMap" >
+		select 	
+		   <include refid="cashRecordBaseColumn"/>
+		from
+			rocky_cashrecord c
+		where 1=1
+		<include refid="cashRecord_Where_Clause"/>
+		ORDER BY c.ADDTIME desc
+		<if test="lockedRecordYn != null and lockedRecordYn == 'yes'">
+			FOR UPDATE
+		</if>	
+  	</select>
+  	
+  	<!-- 根据条件查询记录数量-->
+	<select id="queryCashRecordCount" parameterType="com.dxjr.portal.account.vo.CashRecordCnd" resultType="java.lang.Integer" >
+		select count(c.id)
+		from
+			rocky_cashrecord c
+		where 1=1
+		<include refid="cashRecord_Where_Clause"/>
+  	</select>
+  	
+  	<!-- 根据查询条件统计提现总额 -->
+  	<select id="queryCashRecordTotalByCnd" parameterType="com.dxjr.portal.account.vo.CashRecordCnd" resultType="java.math.BigDecimal" >
+		select 	
+			ifnull(sum(c.TOTAL), 0)
+		from
+			rocky_cashrecord c
+		where 1=1
+		<include refid="cashRecord_Where_Clause"/>
+  	</select>
+  	
+  	<!-- 根据用户查询逾期未还款的净值标数量-->
+	<select id="queryRepaymentlaterCountForJZ" parameterType="java.lang.Integer" resultType="java.lang.Integer" >
+	  SELECT
+        count(r.id)
+      FROM rocky_b_repaymentrecord r,
+        	rocky_borrow b
+      WHERE b.BORROWTYPE = 3
+      AND b.USER_ID = #{memberId}
+      AND r.BORROW_ID = b.ID
+      AND (
+			(
+		      UNIX_TIMESTAMP(SUBSTR(FROM_UNIXTIME(r.REPAYMENT_TIME)FROM 1 FOR 10)) <![CDATA[<]]> UNIX_TIMESTAMP(SUBSTR(NOW()FROM 1 FOR 10))
+              AND r.status = 0
+          	)
+            OR (r.status = 0 AND r.webstatus = 1)
+      )			
+  	</select> 
+
+	<!-- 查询某月内的提现次数-->
+	<select id="getCashedCount" resultType="java.lang.Integer" >
+		SELECT count(id) 
+		FROM rocky_cashrecord 
+		WHERE USER_ID = #{userId} and (IS_CUSTODY is null or IS_CUSTODY=0)
+		AND FROM_UNIXTIME(ADDTIME, '%Y-%m-%d') <![CDATA[>=]]> DATE_FORMAT(#{beginDate}, '%Y-%m-%d')
+		AND FROM_UNIXTIME(ADDTIME, '%Y-%m-%d') <![CDATA[<=]]> DATE_FORMAT(#{endDate}, '%Y-%m-%d')
+  	</select>	
+</mapper>  

@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dxjr.portal.borrow.mapper.BorrowerDealErrorMapper" >
+  <resultMap id="BaseResultMap" type="com.dxjr.portal.borrow.entity.BorrowerDealError" >
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="status" property="status" jdbcType="INTEGER" />
+    <result column="borrow_id" property="borrowId" jdbcType="INTEGER" />
+    <result column="P2PID" property="p2pid" jdbcType="VARCHAR" />
+    <result column="serialNo" property="serialno" jdbcType="VARCHAR" />
+    <result column="ACCOUNT" property="account" jdbcType="DECIMAL" />
+    <result column="fee" property="fee" jdbcType="DECIMAL" />
+    <result column="tradetime" property="tradetime" jdbcType="TIMESTAMP" />
+    <result column="addtime" property="addtime" jdbcType="TIMESTAMP" />
+    <result column="updtime" property="updtime" jdbcType="TIMESTAMP" />
+    <result column="updateUser" property="updateuser" jdbcType="INTEGER" />
+    <result column="addUser" property="adduser" jdbcType="INTEGER" />
+    <result column="dispose_status" property="disposeStatus" jdbcType="TINYINT" />
+    <result column="remark" property="remark" jdbcType="VARCHAR" />
+  </resultMap>
+ 
+ 
+  <sql id="Base_Column_List" >
+    id, status, borrow_id, P2PID, serialNo, ACCOUNT, fee, tradetime, addtime, updtime, 
+    updateUser, addUser, dispose_status, remark
+  </sql>
+ 
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+   
+    select 
+    <include refid="Base_Column_List" />
+    from t_borrower_deal_error
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+  
+  <select id="findBorrowErrorCount" resultType="java.lang.Integer" parameterType="java.lang.Integer" >
+    select 
+    count(id)
+    from t_borrower_deal_error
+    where borrow_id=#{borrowId}
+  </select>
+  
+  
+  
+  <insert id="insert" parameterType="com.dxjr.portal.borrow.entity.BorrowerDealError" >
+  
+    insert into t_borrower_deal_error (status, borrow_id, 
+      P2PID, serialNo, ACCOUNT, 
+      fee, tradetime, addtime, 
+      updtime, updateUser, addUser, 
+      dispose_status, remark,oriSerialNo,user_id)
+    values ( #{status,jdbcType=INTEGER}, #{borrowId,jdbcType=INTEGER}, 
+      #{p2pid,jdbcType=VARCHAR}, #{serialno,jdbcType=VARCHAR}, #{account,jdbcType=DECIMAL}, 
+      #{fee,jdbcType=DECIMAL}, #{tradetime,jdbcType=TIMESTAMP}, now(), 
+      #{updtime,jdbcType=TIMESTAMP}, #{updateuser,jdbcType=INTEGER}, #{adduser,jdbcType=INTEGER}, 
+      #{disposeStatus,jdbcType=TINYINT}, #{remark,jdbcType=VARCHAR},#{oriSerialNo},#{userId})
+  </insert>
+ 
+ 
+ 
+</mapper>

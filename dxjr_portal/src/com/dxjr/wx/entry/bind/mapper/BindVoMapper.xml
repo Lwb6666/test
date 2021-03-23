@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dxjr.wx.entry.bind.mapper.BindVoMapper" >
+  <select id="selectByWxId" parameterType="java.lang.Integer" resultType="com.dxjr.portal.member.vo.MemberVo" >
+		select 	
+		  id, username,logpassword
+		from
+			rocky_member m
+		where status = 0 
+		and id=(select u_id from wx_bind where status=1 and w_id=#{wxId})
+		limit 1
+  	</select>
+  <insert id="insert" parameterType="com.dxjr.wx.entry.bind.vo.BindVo" useGeneratedKeys="true" keyProperty="id">
+   		insert into wx_bind (w_id,u_id,remove_tag,create_time,update_time,status) 
+		values
+		(#{wxId},#{userId},1,#{createTime},#{updateTime},#{status})
+  </insert>
+  <select id="selectWxIdByMember" parameterType="com.dxjr.wx.entry.bind.vo.BindVo" resultType="java.lang.Integer">
+    	select w_id from wx_bind where u_id=(select id from rocky_member where USERNAME=#{username} 
+    	 AND LOGPASSWORD =#{password}) and status=1
+  </select>
+  <update id="update" parameterType="com.dxjr.wx.entry.bind.vo.BindVo">
+     	UPDATE wx_bind 
+      	SET status=#{status},update_time=#{updateTime}
+ 		WHERE status=#{fromstatus} and w_id=#{wxId}
+  </update>
+  
+  <update id="updateBindunsub" parameterType="java.util.Map">
+      update wx_bind set status=0,update_time=#{updateTime} 
+      where status=1 and w_id in ${ids}
+  </update>
+  
+  <update id="clearunBind">
+      delete from wx_bind where status=0;
+  </update>
+  
+  <select id="queryWxIdByUserId" parameterType="java.lang.Integer" resultType="java.lang.Integer">
+      select w_id from wx_bind where u_id=#{userId} and status=1
+  </select>
+  
+  <select id="queryHadBind" parameterType="java.lang.Integer" resultType="java.lang.Integer">
+  	select count(*) from wx_bind where w_id =#{wxId} and remove_tag=1 and status=1
+  </select>
+</mapper>

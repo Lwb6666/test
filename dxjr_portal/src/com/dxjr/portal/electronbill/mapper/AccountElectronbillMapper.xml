@@ -1,0 +1,302 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dxjr.portal.electronbill.mapper.AccountElectronbillMapper" >
+
+
+	<!-- 当月定期宝收益 -->
+	<select id="sumTheMonthFixIncome" parameterType="Map" resultType="java.math.BigDecimal">
+		SELECT IFNULL(SUM(fc.REPAY_YESACCOUNT-fc.CAPITAL),0.00) as sumTheMonthFixIncome 
+		from t_fix_collectionrecord fc WHERE DATE_FORMAT(fc.REPAY_YESTIME, '%Y%m') =#{yearMonth} 
+		and fc.STATUS=1 and fc.USER_ID=#{userId};
+	</select>
+	
+	<!-- 当月活期宝收益 -->
+	<select id="sumTheMonthCurIncome" parameterType="Map" resultType="java.math.BigDecimal">
+		SELECT IFNULL(SUM(c.MONEY),0.00) as sumTheMonthCurIncome 
+		from t_cur_interest_detail c WHERE DATE_FORMAT(c.INTEREST_DATE, '%Y%m') = #{yearMonth} 	
+		and c.USER_ID=#{userId};
+	</select>
+	
+	<!-- 当月散标收益 -->
+	<select id="sumTheMonthBidIncome" parameterType="Map" resultType="java.math.BigDecimal">
+		select IFNULL(SUM(t1.money),0.00) as sumTheMonthBidIncome from 
+		(SELECT IFNULL(SUM(coll1.REPAY_YESACCOUNT-coll1.CAPITAL),0.00) as money
+		from rocky_b_collectionrecord coll1
+		where coll1.`STATUS`=1 and FROM_UNIXTIME(coll1.REPAY_YESTIME,'%Y%m')  = #{yearMonth} and coll1.USER_ID=#{userId}
+		UNION 
+		SELECT IFNULL(SUM(coll2.REPAY_YESACCOUNT-coll2.CAPITAL),0.00) as money
+		from rocky_b_collectionrecord coll2
+		where coll2.`STATUS` in(2,3) and DATE_FORMAT(coll2.ADVANCETIME,'%Y%m')  = #{yearMonth} and coll2.USER_ID=#{userId}
+		UNION 
+		select IFNULL(SUM(INTEREST),0.00) as money 
+		from rocky_b_transfer where `STATUS`=4 and DATE_FORMAT(SUCCESS_TIME,'%Y%m')= #{yearMonth} and USER_ID=#{userId}
+		)t1;
+	</select>
+	
+	<!-- 当月定期宝投资金额 -->
+	<select id="sumTheMonthFixInvest" parameterType="Map" resultType="java.math.BigDecimal">
+		SELECT IFNULL(sum(ACCOUNT),0.00) as sumTheMonthFixInvest
+		from t_fix_tender_detail 
+		where STATUS in (1,3) and  DATE_FORMAT(ADDTIME, '%Y%m') = #{yearMonth} and USER_ID=#{userId};
+	</select>
+	
+	<!-- 当月活期宝投资金额 -->
+	<select id="sumTheMonthCurInvest" parameterType="Map" resultType="java.math.BigDecimal">
+		SELECT IFNULL(sum(ACCOUNT),0.00) as sumTheMonthCurInvest
+		from t_cur_in 
+		where DATE_FORMAT(ADDTIME, '%Y%m') = #{yearMonth} and TENDER_TYPE=1 and USER_ID=#{userId};
+	</select>
+	
+	<!-- 当月存管投资金额 -->
+	<select id="sumTheMonthCustodyInvest" parameterType="Map" resultType="java.math.BigDecimal">		
+		SELECT IFNULL(sum(t.ACCOUNT),0.00) as sumTheMonthCustodyInvest 
+		from
+		(SELECT IFNULL(sum(ACCOUNT),0.00) as ACCOUNT
+		from rocky_b_tenderrecord 
+		where STATUS not in(-1,0) and IS_CUSTODY=1 and FROM_UNIXTIME(ADDTIME,'%Y%m')=#{yearMonth}  and USER_ID=#{userId} and PARENT_ID is  null
+		union
+		SELECT IFNULL(sum(r2.ACCOUNT),0.00) as ACCOUNT
+		from rocky_b_tenderrecord r1 inner join rocky_b_subscribe r2
+		on r1.id=r2.TENDER_ID
+		and r1.STATUS not in(-1,0) and r1.IS_CUSTODY=1 and FROM_UNIXTIME(r1.ADDTIME,'%Y%m')=#{yearMonth}  and r1.USER_ID=#{userId}  and r1.PARENT_ID is not null)t
+	</select>
+	
+	<!-- 当月非存管投资金额 -->
+	<select id="sumTheMonthNotCustodyInvest" parameterType="Map" resultType="java.math.BigDecimal">
+		SELECT IFNULL(sum(t.ACCOUNT),0.00) as sumTheMonthNotCustodyInvest 
+		from
+		(SELECT IFNULL(sum(ACCOUNT),0.00) as ACCOUNT
+		from rocky_b_tenderrecord r1
+		where r1.STATUS !=-1 and r1.IS_CUSTODY!=1  and FROM_UNIXTIME(r1.ADDTIME,'%Y%m')=#{yearMonth}  and r1.USER_ID=#{userId} and r1.PARENT_ID is  null
+		and not EXISTS (select id FROM rocky_b_tenderrecord r2 where r1.id=r2.id and (r2.TENDER_TYPE =2 or r2.TENDER_TYPE=3 ))
+		union
+		SELECT IFNULL(SUM(r2.ACCOUNT),0.00) AS ACCOUNT
+		FROM   rocky_b_subscribe r2
+		WHERE r2.status!=2  AND DATE_FORMAT(r2.ADD_TIME,'%Y%m')=#{yearMonth}  AND r2.USER_ID=#{userId}
+		UNION
+		SELECT IFNULL(SUM(f.account),0.00) AS ACCOUNT FROM t_first_subscribe f WHERE f.status!=2
+		AND DATE_FORMAT(f.ADD_TIME,'%Y%m')=#{yearMonth} AND f.user_id=#{userId}
+		)t
+	</select>
+	
+	<!-- 定期宝累计赚取金额  按定期宝类型区分-->
+	<select id="sumFixIncomeByLimit" parameterType="Map" resultType="java.math.BigDecimal">
+		SELECT IFNULL(SUM(fc.REPAY_YESACCOUNT-fc.CAPITAL),0.00) as sumFixIncomeByLimit 
+		from t_fix_collectionrecord fc inner join t_fix_borrow fb 
+		on fc.FIX_BORROW_ID=fb.ID and fb.LOCK_LIMIT=#{fixLimit}
+		and fc.STATUS=1 and fc.USER_ID=#{userId} and DATE_FORMAT(fc.REPAY_YESTIME, '%Y%m') &lt;= #{yearMonth}
+	</select>
+	
+	<!-- 定期宝当月赚取金额和回收本金  按定期宝类型区分 -->
+	<select id="sumTheMonthFixIncomeAndCapitalByLimit" parameterType="Map" resultType="Map">
+		SELECT IFNULL(SUM(fc.REPAY_YESACCOUNT-fc.CAPITAL),0.00) as sumTheMonthFixIncomeByLimit,
+		IFNULL(SUM(fc.CAPITAL),0.00) as sumTheMonthFixCapitalByLimit
+		from t_fix_collectionrecord fc inner join t_fix_borrow fb 
+		where fc.FIX_BORROW_ID=fb.ID and fb.LOCK_LIMIT=#{fixLimit}
+		and DATE_FORMAT(fc.REPAY_YESTIME, '%Y%m') = #{yearMonth} 
+		and fc.STATUS=1 and fc.USER_ID=#{userId};
+	</select>
+	
+	<!-- 定期宝当月新增投资金额  按定期宝类型区分-->
+	<select id="sumTheMonthFixInvestByLimit" parameterType="Map" resultType="java.math.BigDecimal">
+		SELECT IFNULL(sum(ACCOUNT),0.00) as sumTheMonthFixInvestByLimit
+		from t_fix_tender_detail d inner join t_fix_borrow fb 
+		on d.FIX_BORROW_ID=fb.ID and fb.LOCK_LIMIT=#{fixLimit}
+		and d.STATUS in(1,3) and  DATE_FORMAT(d.ADDTIME, '%Y%m') = #{yearMonth} and d.USER_ID=#{userId};
+	</select>
+	
+	<!-- 存管标累计已赚取金额-->
+	<select id="sumCustodyIncome" parameterType="Map" resultType="java.math.BigDecimal">
+		select IFNULL(SUM(t1.money),0.00) as sumCustodyIncome from 
+		(SELECT IFNULL(SUM(coll1.REPAY_YESACCOUNT-coll1.CAPITAL),0.00) as money
+		from rocky_b_collectionrecord coll1
+		where coll1.`STATUS`=1 and coll1.IS_CUSTODY=1 and coll1.USER_ID=#{userId} and FROM_UNIXTIME(coll1.REPAY_YESTIME,'%Y%m')  &lt;= #{yearMonth}
+		UNION 
+		SELECT IFNULL(SUM(coll2.REPAY_YESACCOUNT-coll2.CAPITAL),0.00) as money
+		from rocky_b_collectionrecord coll2
+		where coll2.`STATUS` in(2,3) and coll2.IS_CUSTODY=1 and coll2.USER_ID=#{userId} and DATE_FORMAT(coll2.ADVANCETIME,'%Y%m')  &lt;= #{yearMonth}
+		)t1;
+	</select>
+	
+	<!-- 存管标当月已赚取金额和回收本金-->
+	<select id="sumTheMonthCustodyIncomeAndCapital" parameterType="Map" resultType="Map">
+		select IFNULL(SUM(t1.INTEREST),0.00) as sumTheMonthCustodyIncome,
+		IFNULL(SUM(t1.CAPITAL),0.00) as sumTheMonthCustodyCapital from 
+		(SELECT IFNULL(SUM(coll1.REPAY_YESACCOUNT-coll1.CAPITAL),0.00) as INTEREST,
+		IFNULL(SUM(coll1.CAPITAL),0.00) as CAPITAL
+		from rocky_b_collectionrecord coll1
+		where coll1.`STATUS`=1 and FROM_UNIXTIME(coll1.REPAY_YESTIME,'%Y%m')  = #{yearMonth} 
+		and  coll1.IS_CUSTODY=1 and coll1.USER_ID=#{userId}
+		UNION 
+		SELECT IFNULL(SUM(coll2.REPAY_YESACCOUNT-coll2.CAPITAL),0.00) as INTEREST,
+		IFNULL(SUM(coll2.CAPITAL),0.00) as CAPITAL
+		from rocky_b_collectionrecord coll2
+		where coll2.`STATUS` in(2,3) and DATE_FORMAT(coll2.ADVANCETIME,'%Y%m')  = #{yearMonth} 
+		and coll2.IS_CUSTODY=1 and coll2.USER_ID=#{userId}
+		)t1;
+	</select>
+	
+	<!-- 非存管标累计已赚取金额-->
+	<select id="sumNotCustodyIncome" parameterType="Map" resultType="java.math.BigDecimal">
+		select IFNULL(SUM(t1.money),0.00) as sumNotCustodyIncome from 
+		(SELECT IFNULL(SUM(coll1.REPAY_YESACCOUNT-coll1.CAPITAL),0.00) as money
+		from rocky_b_collectionrecord coll1
+		where coll1.`STATUS`=1 and coll1.IS_CUSTODY!=1 and coll1.USER_ID=#{userId} AND FROM_UNIXTIME(coll1.REPAY_YESTIME,'%Y%m') &lt;= #{yearMonth}
+		UNION 
+		SELECT IFNULL(SUM(coll2.REPAY_YESACCOUNT-coll2.CAPITAL),0.00) as money
+		from rocky_b_collectionrecord coll2
+		where coll2.`STATUS` in(2,3) and coll2.IS_CUSTODY!=1 and coll2.USER_ID=#{userId} AND DATE_FORMAT(coll2.ADVANCETIME,'%Y%m') &lt;= #{yearMonth}
+		UNION
+		select IFNULL(SUM(INTEREST),0.00) as money 
+		from rocky_b_transfer where `STATUS`=4 and IS_CUSTODY!=1  and USER_ID=#{userId} and DATE_FORMAT(SUCCESS_TIME,'%Y%m')  &lt;= #{yearMonth}
+		)t1
+	</select>
+	
+	<!-- 非存管标当月已赚取金额和回收本金-->
+	<select id="sumTheMonthNotCustodyIncomeAndCapital" parameterType="Map" resultType="Map">
+		select IFNULL(SUM(t1.INTEREST),0.00) as sumTheMonthNotCustodyIncome,
+		IFNULL(SUM(t1.CAPITAL),0.00) as sumTheMonthNotCustodyCapital from 
+		(SELECT IFNULL(SUM(coll1.REPAY_YESACCOUNT-coll1.CAPITAL),0.00) as INTEREST,
+		IFNULL(SUM(coll1.CAPITAL),0.00) as CAPITAL
+		from rocky_b_collectionrecord coll1
+		where coll1.`STATUS`=1 and FROM_UNIXTIME(coll1.REPAY_YESTIME,'%Y%m')  = #{yearMonth} 
+		and  coll1.IS_CUSTODY!=1 and coll1.USER_ID=#{userId}
+		UNION 
+		SELECT IFNULL(SUM(coll2.REPAY_YESACCOUNT-coll2.CAPITAL),0.00) as INTEREST,
+		IFNULL(SUM(coll2.CAPITAL),0.00) as CAPITAL
+		from rocky_b_collectionrecord coll2
+		where coll2.`STATUS` in(2,3) and DATE_FORMAT(coll2.ADVANCETIME,'%Y%m')  = #{yearMonth} 
+		and coll2.IS_CUSTODY!=1 and coll2.USER_ID=#{userId}
+		UNION
+		select IFNULL(SUM(INTEREST),0.00) as INTEREST,IFNULL(SUM(CAPITAL),0.00) as CAPITAL 
+		from rocky_b_transfer where `STATUS`=4 and DATE_FORMAT(SUCCESS_TIME,'%Y%m')  = #{yearMonth} 
+		and IS_CUSTODY!=1  and USER_ID=#{userId}
+		)t1;
+	</select>
+	
+	<!-- 活期宝累计赚取金额-->
+	<select id="sumCurIncome" parameterType="Map" resultType="java.math.BigDecimal">
+		SELECT IFNULL(SUM(c.MONEY),0.00) as sumCurIncome 
+		from t_cur_interest_detail c WHERE c.USER_ID=#{userId} and  DATE_FORMAT(c.INTEREST_DATE,'%Y%m') &lt;=#{yearMonth}
+	</select>
+	
+	<!-- 活期宝当月回收本金-->
+	<select id="sumTheMonthCurCapital" parameterType="Map" resultType="java.math.BigDecimal">
+		SELECT IFNULL(sum(ACCOUNT),0.00) as sumTheMonthCurCapital
+		from t_cur_out 
+		where DATE_FORMAT(ADDTIME, '%Y%m') = #{yearMonth}  and type=0 and USER_ID=#{userId};
+	</select>
+	
+	<!-- 当月获得的元宝-->
+	<select id="sumTheMonthAccmulatepointIncome" parameterType="Map" resultType="java.lang.Integer">
+		select IFNULL(sum(ACCUMULATEPOINTS),0) as sumTheMonthAccmulatepointIncome
+		from rocky_member_accumulate_points 
+		where DATE_FORMAT(GAINDATE, '%Y%m') = #{yearMonth} and ACCUMULATEPOINTS>=0 and MEMBERID=#{userId};
+	</select>
+	
+	<!-- 累计获得的元宝-->
+	<select id="sumAccmulatepointIncome" parameterType="Map" resultType="java.lang.Integer">
+		select IFNULL(sum(ACCUMULATEPOINTS),0) as sumAccmulatepointIncome
+		from rocky_member_accumulate_points 
+		where ACCUMULATEPOINTS &gt;=0 and MEMBERID=#{userId} and  DATE_FORMAT(GAINDATE,'%Y%m') &lt;=#{yearMonth}
+	</select>
+	
+	<!-- 已经使用的元宝-->
+	<select id="sumAccmulatepointIsUse" parameterType="Map" resultType="java.lang.Integer">
+		select abs(IFNULL(sum(ACCUMULATEPOINTS),0)) as sumAccmulatepointIsUse
+		from rocky_member_accumulate_points 
+		where  ACCUMULATEPOINTS &lt;0 and MEMBERID=#{userId} and  DATE_FORMAT(GAINDATE,'%Y%m') &lt;=#{yearMonth}
+	</select>
+	
+	<!-- 当前持有的元宝-->
+	<select id="myAccmulatepoint" parameterType="Map" resultType="java.lang.Integer">
+		select IFNULL(ACCUMULATEPOINTS,0) as myAccmulatepoint
+		from rocky_member where id=#{userId};	
+	</select>	
+	
+	<!-- 当月获得的红包-->
+	<select id="sumTheMonthRedAccIncome" parameterType="Map" resultType="java.math.BigDecimal">
+		select IFNULL(SUM(MONEY),0) as sumTheMonthRedAccIncome
+	    from t_red_envelop_account 
+		where DATE_FORMAT(ADD_TIME, '%Y%m') = #{yearMonth} and USER_ID=#{userId};	
+	</select>
+	
+	<!-- 累计获得的红包-->
+	<select id="sumRedAccIncome" parameterType="Map" resultType="java.math.BigDecimal">
+		select IFNULL(SUM(MONEY),0) as sumRedAccIncome
+	    from t_red_envelop_account 
+		where  USER_ID=#{userId} and DATE_FORMAT(ADD_TIME,'%Y%m')&lt;=#{yearMonth}
+	</select>
+	
+	<!-- 已经使用的红包-->
+	<select id="sumRedAccIsUse" parameterType="Map" resultType="java.math.BigDecimal">
+		select IFNULL(SUM(MONEY), 0) as sumRedAccIsUse
+		from t_red_envelop_account
+		where  USER_ID=#{userId} and STATUS=4 and DATE_FORMAT(ADD_TIME,'%Y%m')&lt;=#{yearMonth}
+	</select>
+	
+	<!--当前持有的红包-->
+	<select id="myRedAcc" parameterType="Map" resultType="java.math.BigDecimal">
+		select IFNULL(SUM(MONEY),0) as myRedAcc
+		from t_red_envelop_account
+		where  USER_ID=#{userId} and STATUS in(1,2,3);	
+	</select>
+	
+	<!--当月获得的其他奖励-->
+	<select id="sumTheMonthOtherIncome" parameterType="Map" resultType="java.math.BigDecimal">
+		select IFNULL(SUM(t.money),0.00) as sumTheMonthOtherIncome from
+		(select IFNULL(SUM(ACTUAL_MONEY),0.00) as money from t_invite_reward_issue where USERID=#{userId} 
+		and DATE_FORMAT(UPDATE_TIME,'%Y%m')= #{yearMonth}
+		union
+		select IFNULL(SUM(money),0.00) as money from rocky_accountlog
+		where type like 'invited_%' and FROM_UNIXTIME(ADDTIME,'%Y%m')= #{yearMonth} and USER_ID=#{userId})t	
+	</select>
+	
+	<!--累计获得的其他奖励-->
+	<select id="sumOtherIncome" parameterType="Map" resultType="java.math.BigDecimal">
+		select IFNULL(SUM(t.money),0.00) as sumOtherIncome from
+		(select IFNULL(SUM(ACTUAL_MONEY),0.00) as money from t_invite_reward_issue where USERID=#{userId}
+		and DATE_FORMAT(ADD_TIME,'%Y%m') &lt;=#{yearMonth}
+		union
+		select IFNULL(SUM(money),0.00) as money from rocky_accountlog
+		where type like 'invited_%' and USER_ID=#{userId} and FROM_UNIXTIME(ADDTIME,'%Y%m') &lt;=#{yearMonth})t
+	</select>
+	
+	<!--当月获得抽奖机会-->
+	<select id="sumTheMonthLottChance" parameterType="Map" resultType="java.lang.Integer">
+		SELECT IFNULL(sum(LOTTERY_NUM),0) as sumTheMonthLottChance 
+		FROM t_lottery_chance_info WHERE DATE_FORMAT(ADD_TIME,'%Y%m')=#{yearMonth} and USER_ID =#{userId};
+	</select>
+	
+	<!--当月充值金额-->
+	<select id="sumTheMonthRecharge" parameterType="Map" resultType="java.math.BigDecimal">
+		SELECT IFNULL(sum(MONEY),0.00) as sumTheMonthRecharge
+		FROM rocky_rechargerecord
+		WHERE STATUS=1 and FROM_UNIXTIME(VERIFY_TIME2,'%Y%m')=#{yearMonth} and USER_ID =#{userId};
+	</select>
+	
+	<!--当月提现金额-->
+	<select id="sumTheMonthCash" parameterType="Map" resultType="java.math.BigDecimal">
+		SELECT IFNULL(sum(TOTAL),0.00) as sumTheMonthCash FROM rocky_cashrecord
+		WHERE  STATUS=2 and FROM_UNIXTIME(VERIFY_TIME2,'%Y%m')=#{yearMonth} and USER_ID =#{userId};
+	</select>
+	
+	<!--当月提现服务费-->
+	<select id="sumTheMonthCashFee" parameterType="Map" resultType="java.math.BigDecimal">
+		SELECT IFNULL(sum(FEE),0.00) as sumTheMonthCashFee FROM rocky_cashrecord
+		WHERE  STATUS=2 and FROM_UNIXTIME(VERIFY_TIME2,'%Y%m')=#{yearMonth} and USER_ID =#{userId};
+	</select>
+	
+	<!--当月债权转让服务费-->
+	<select id="sumTheMonthTransFee" parameterType="Map" resultType="java.math.BigDecimal">
+		select IFNULL(sum(MANAGE_FEE),0.00) as sumTheMonthTransFee from rocky_b_transfer  
+		where DATE_FORMAT(SUCCESS_TIME,'%Y%m')=#{yearMonth} and `STATUS`=4 and USER_ID =#{userId};
+	</select>
+	
+	<!--当月定期宝退出服务费-->
+	<select id="sumTheMonthFixExitFee" parameterType="Map" resultType="java.math.BigDecimal">
+		select IFNULL(SUM(FEE),0.00) as sumTheMonthFixExitFee from t_fix_exit 
+		where DATE_FORMAT(REPAY_YESTIME,'%Y%m')=#{yearMonth} and status=4 and USER_ID =#{userId};
+	</select>
+
+</mapper>

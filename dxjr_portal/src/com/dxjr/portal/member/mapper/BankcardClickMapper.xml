@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.dxjr.portal.member.mapper.BankcardClickMapper">
+
+<!-- 结果集 -->
+<resultMap type="com.dxjr.portal.member.vo.BankcardClick" id="bankcardClickMap">
+	<result property="errorMsg"			column="error_msg" />
+	<result property="userId"			column="user_id" />
+	<result property="addTime"			column="add_time" />
+	<result property="addIp"			column="add_ip" />
+</resultMap>
+
+<!-- 新增 -->
+<insert id="add" parameterType="com.dxjr.portal.member.vo.BankcardClick">
+insert into t_bankcard_click(error_msg,user_id,add_time,add_ip,type,platform) 
+values(#{errorMsg},#{userId},now(),#{addIp},#{type},#{platform})
+</insert>
+
+</mapper>

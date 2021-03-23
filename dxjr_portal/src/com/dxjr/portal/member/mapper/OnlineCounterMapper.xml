@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.dxjr.portal.member.mapper.OnlineCounterMapper">
+	
+	<!-- 结果集 -->
+	<resultMap type="com.dxjr.portal.member.vo.OnlineCounterVo" id="onlineCounterResultMap">
+		<id property="id" column="id" />
+		<result property="userId" 				column="USER_ID" />
+		<result property="username" 			column="USERNAME" />
+		<result property="addtime" 				column="ADDTIME" />
+		<result property="logintime" 			column="LOGINTIME" />
+		<result property="lastexisttime"	    column="LASTEXISTTIME" />
+		<result property="sessionid"  			column="SESSIONID" />
+		<result property="logouttime" 			column="LOGOUTTIME" />
+		<result property="sessionouttime" 		column="SESSIONOUTTIME" />
+		<result property="lastupdatetime" 		column="LASTUPDATETIME" />
+		<result property="addip" 				column="ADDIP" />
+		<result property="remark" 				column="REMARK" />
+		<result property="system" 				column="SYSTEM" />
+		<result property="province" 			column="PROVINCE" />
+		<result property="city" 				column="CITY" />
+		<result property="area" 				column="AREA" />
+	</resultMap>
+	
+	<!--基本列 -->
+	<sql id="onlineCounterBaseColumn">
+		o.ID, 
+		o.USER_ID, 
+		o.USERNAME, 
+		o.ADDTIME, 
+		o.LOGINTIME, 
+		o.LASTEXISTTIME, 
+		o.SESSIONID, 
+		o.LOGOUTTIME,
+		o.SESSIONOUTTIME,
+		o.LASTUPDATETIME,
+		o.ADDIP,
+		o.REMARK,
+		o.SYSTEM,
+		o.PROVINCE,
+		o.CITY,
+		o.AREA
+	</sql>
+	
+	<!-- 基本查询条件 -->
+	<sql id="onlineCount_Where_Clause">
+		<if test="id != null">
+			and o.id =#{id}
+		</if>
+		<if test="userId != null ">
+			and o.USER_ID = #{userId}
+		</if>
+		<if test="username != null and username !=''">
+			and o.USERNAME = #{username}
+		</if>		
+		<if test="sessionid !=null and sessionid !=''">
+			and o.SESSIONID =#{sessionid}
+		</if>
+		<if test="system != null and system !=''">
+			and o.SYSTEM = #{system}
+		</if>
+		<if test="province != null and province !=''">
+			and o.PROVINCE = #{province}
+		</if>		
+		<if test="city !=null and city !=''">
+			and o.CITY =#{city}
+		</if>
+		<if test="area !=null and area !=''">
+			and o.AREA =#{area}
+		</if>					
+	</sql>
+	
+  	<!-- 根据条件查询集合 -->
+	<select id="queryListByCnd" parameterType="com.dxjr.portal.member.vo.OnlineCounterCnd" resultMap="onlineCounterResultMap" >
+		select 	
+		   <include refid="onlineCounterBaseColumn"/>
+		from
+			rocky_online_counter o
+		where 1=1
+		<include refid="onlineCount_Where_Clause"/>
+  	</select>
+	
+  	<!-- 根据用户id查询上次登录信息 -->
+	<select id="queryLastOnlineCounterByUserId" resultMap="onlineCounterResultMap" >
+		SELECT
+		  <include refid="onlineCounterBaseColumn"/>
+		FROM rocky_online_counter o
+		WHERE o.USER_ID = #{userId}
+		ORDER BY o.LOGINTIME DESC
+		LIMIT 1, 1
+  	</select>
+  	
+	<insert id="insert" parameterType="com.dxjr.base.entity.OnlineCounter">
+		insert into rocky_online_counter (
+		  `USER_ID`,
+		  `USERNAME`,
+		  `ADDTIME`,
+		  `LOGINTIME`,
+		  `LASTEXISTTIME`,
+		  `SESSIONID`,
+		  `LOGOUTTIME`,
+		  `SESSIONOUTTIME`,
+		  `LASTUPDATETIME`,
+		  `ADDIP`,
+		  `REMARK`,
+		  `SYSTEM`,
+		  `PROVINCE`,
+		  `CITY`,
+		  `AREA`,
+		  `platform`
+		) values (
+		  #{userId},#{username},now(),now(),now(),
+		  #{sessionid},null,null,now(),
+		  #{addip},null,#{system},#{province},#{city},#{area},#{platform}
+		)
+	</insert>
+	
+	
+		<!-- 根据条件查询集合 -->
+	<select id="queryListByUserId" parameterType="java.lang.Integer" resultMap="onlineCounterResultMap" >
+		select 	
+		   <include refid="onlineCounterBaseColumn"/>
+		from
+			rocky_online_counter o
+		where   o.USER_ID = #{userId} order by  LOGINTIME  desc  
+  	</select>
+	
+	
+	
+	
+</mapper>  

@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.dxjr.base.mapper.BaseSystemMessageTemplateMapper">
+	
+	<!-- 结果集 -->
+	<resultMap type="com.dxjr.base.entity.SystemMessageTemplate" id="systemMessageTemplateResultMap">
+		<id property="id" column="id" />
+		<result property="title" 		column="TITLE" />
+		<result property="type" 		column="TYPE" />
+		<result property="content" 		column="CONTENT" />
+		<result property="flag" 		column="FLAG" />
+		<result property="remark"	    column="REMARK" />
+	</resultMap>
+	
+	<!--基本列 -->
+	<sql id="systemMessageTemplateBaseColumn">
+		t.TITLE, 
+		t.TYPE, 
+		t.CONTENT, 
+		t.FLAG, 
+		t.REMARK
+	</sql>
+	
+	<!-- 插入记录，返回主键 -->
+	<insert id="insertEntity" parameterType="com.dxjr.base.entity.SystemMessageTemplate">
+		INSERT INTO rocky_system_message_template 
+		(TITLE,	TYPE,	CONTENT,	FLAG,	REMARK)
+		VALUES
+		(#{title},#{type},#{content},#{flag},	#{remark})
+		
+ 		 <selectKey resultType="java.lang.Integer" order="AFTER" keyProperty="id">  
+      	    SELECT LAST_INSERT_ID() AS ID    
+   		 </selectKey>
+	</insert>
+	
+  	<!-- 根据ID查询 -->
+	<select id="queryById" parameterType="java.lang.Integer" resultMap="systemMessageTemplateResultMap" >
+		select 	
+		   <include refid="systemMessageTemplateBaseColumn"/>
+		from
+			rocky_system_message_template t
+		where 1=1
+		and t.id=#{id}
+  	</select>
+  	
+  	  	<!-- 根据type查询 -->
+	<select id="queryByType" parameterType="java.lang.Integer" resultMap="systemMessageTemplateResultMap" >
+		select 	
+		   <include refid="systemMessageTemplateBaseColumn"/>
+		from
+			rocky_system_message_template t
+		where 1=1
+		and t.type=#{type}
+  	</select>
+	
+  <!-- 更新-->
+  <update id="updateEntity" parameterType="com.dxjr.base.entity.SystemMessageTemplate" >
+    update rocky_system_message_template
+    <set >
+      <if test="title != null" >
+        TITLE = #{title},
+      </if>
+      <if test="type != null" >
+        TYPE = #{type},
+      </if>
+      <if test="content != null" >
+        CONTENT = #{content},
+      </if>
+      <if test="FLAG != null" >
+        FLAG = #{FLAG},
+      </if>
+      <if test="remark != null" >
+        REMARK = #{remark},
+      </if>
+    </set>
+    where ID = #{id}
+  </update>
+  	
+</mapper>  

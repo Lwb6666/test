@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.dxjr.portal.account.mapper.AccountOperateRecordMapper">
+		<!-- 返回的结果集 -->
+	<resultMap type="com.dxjr.portal.account.vo.AccountOperateVO" id="accountOperatingRecordResultMap">
+		<id property="id" column="ID" />
+		<result property="userId" 					column="USERID" />
+		<result property="username"					column="USERNAME"/>
+		<result property="total" 					column="TOTAL" />
+		<result property="money"		            column="MONEY"/>
+		<result property="use_money" 				column="USE_MONEY" />
+		<result property="no_use_money" 			column="NO_USE_MONEY" />
+		<result property="type" 					column="TYPE"/>
+		<result property="collection"	    		column="COLLECTION" />
+		<result property="remark"   				column="REMARK"/>
+		<result property="addtime"				    column="ADDTIME"/>
+		<result property="addip"				    column="ADDIP"/>
+		<result property="to_user"  				column="TO_USER"/>
+		<result property="first_borrow_use_money"   column="FIRST_BORROW_USE_MONEY"/>
+		<result property="to_username"              column="TO_USERNAME"/>
+		<result property="borrowId" 				column="BORROW_ID" />
+		<result property="borrowName" 				column="BORROW_NAME" />
+		<result property="drawMoney" 				column="DRAW_MONEY" />
+		<result property="noDrawMoney" 				column="NO_DRAW_MONEY" />
+		<result property="idType" 					column="ID_TYPE"/>
+        <result property="eUseMoney" 					column="E_USE_MONEY"/>
+        <result property="eFreezeMoney" 					column="E_FREEZE_MONEY"/>
+        <result property="eCollection" 					column="E_COLLECTION"/>
+        <result property="isCustody" 					column="IS_CUSTODY"/>
+	</resultMap>
+	
+		<sql id="accountBaseColumn">
+			RAL.ID ,
+		  	RAL.user_id AS USERID,
+  			RM.USERNAME AS USERNAME,
+  			RAL.TOTAL,
+  			RAL.MONEY,
+  			RAL.USE_MONEY,
+  			(SELECT VALUE FROM rocky_configuration RC2
+    WHERE  RAL.TYPE = RC2.name AND RC2.TYPE = 1) AS TYPE,
+  			RAL.NO_USE_MONEY,
+  			RAL.COLLECTION,
+  			RAL.REMARK,
+  			RAL.ADDTIME,
+  			RAL.ADDIP,
+  			RAL.TO_USER,
+            RAL.E_USE_MONEY,
+            RAL.E_FREEZE_MONEY,
+            RAL.E_COLLECTION,
+
+		  <!--  0:借款标ID, 1:直通车id, 2:待还记录id  null:其他资金操作日志,例如：网站奖励成功，资金已入账 --> 
+		  RAL.ID_TYPE, 
+		   (case  WHEN RAL.ID_TYPE = 0 THEN RAL.BORROW_ID 
+		          WHEN RAL.ID_TYPE = 1 THEN RAL.BORROW_ID 
+		          WHEN RAL.ID_TYPE = 2 THEN (SELECT rbt.BORROW_ID  FROM rocky_b_repaymentrecord rbt WHERE rbt.ID = RAL.BORROW_ID   )
+		        ELSE  RAL.BORROW_ID   END 
+		  ) AS  BORROW_ID,
+		  (case  WHEN RAL.ID_TYPE = 0 THEN RAL.borrow_name 
+		          WHEN RAL.ID_TYPE = 1 THEN (SELECT tfb.NAME FROM t_first_borrow tfb WHERE tfb.ID = RAL.BORROW_ID) 
+		          WHEN RAL.ID_TYPE = 2 THEN (SELECT rb.NAME  FROM rocky_b_repaymentrecord rbt  INNER JOIN rocky_borrow rb ON rbt.BORROW_ID = rb.ID  WHERE rbt.ID = RAL.BORROW_ID   )
+		        ELSE  RAL.borrow_name   END 
+		  ) AS  borrow_name,
+
+
+  			RAL.FIRST_BORROW_USE_MONEY,
+  			M.USERNAME AS TO_USERNAME,
+  			RAL.NO_DRAW_MONEY,
+  			RAL.DRAW_MONEY,
+  			RAL.IS_CUSTODY
+	</sql>
+	
+		<!-- 封装查询条件 -->
+	<sql id="account_Where_Clause">
+		<if test="username != null and username != '' ">
+			and RM.USERNAME =#{username} 
+		</if>
+		<if test="type != null and type != ''">
+			and RAL.TYPE = #{type}
+		</if>
+		<if test="startTime != null and startTime != ''">
+			and RAL.ADDTIME <![CDATA[>=]]> #{startTime}
+		</if>
+		<if test="endTime != null and endTime != ''">
+			and RAL.ADDTIME <![CDATA[<=]]> #{endTime}
+		</if>
+        <if test="isCustody != null and isCustody !=''">
+           <if test="isCustody == 0">
+              and (RAL.IS_CUSTODY = #{isCustody} OR RAL.IS_CUSTODY is null)
+           </if>
+           <if test="isCustody == 1">
+               and RAL.IS_CUSTODY = #{isCustody}
+           </if>
+        </if>
+
+	</sql>
+	
+	
+	<select id="countAccOpertRecord" parameterType="java.util.Map" resultType="java.lang.Integer" >
+		select COUNT(RAL.user_id) 
+			FROM rocky_accountlog RAL
+  LEFT JOIN rocky_member RM
+    ON RAL.user_id = RM.id
+  LEFT JOIN rocky_member M
+    ON RAL.TO_USER = M.id
+		where 1=1
+		<include refid="account_Where_Clause"/>
+  	</select>
+  	
+   <select id="queryAccOpertRecordList" parameterType="java.util.Map" resultMap="accountOperatingRecordResultMap" >
+		select 
+		<include refid="accountBaseColumn"/> 
+			FROM rocky_accountlog RAL
+  LEFT JOIN rocky_member RM
+    ON RAL.user_id = RM.id
+  LEFT JOIN rocky_member M
+    ON RAL.TO_USER = M.id
+		where 1=1 
+		<include refid="account_Where_Clause"/>
+		 ORDER BY RAL.ID  DESC 
+  	</select>
+  	
+  	<select id="queryOneMonthAccOpertRecordList" parameterType="java.util.Map" resultMap="accountOperatingRecordResultMap" >
+		select 
+		RAL.user_id AS USERID,
+  			RM.USERNAME AS USERNAME,
+  			RAL.TOTAL,
+  			RAL.MONEY,
+  			RAL.USE_MONEY,
+  			RC2.VALUE AS TYPE,
+  			RAL.NO_USE_MONEY,
+  			RAL.COLLECTION,
+  			RAL.REMARK,
+  			RAL.ADDTIME,
+  			RAL.ADDIP,
+  			RAL.TO_USER,
+  			RAL.BORROW_ID,
+  			RAL.BORROW_NAME,
+  			RAL.FIRST_BORROW_USE_MONEY,
+  			M.USERNAME AS TO_USERNAME,
+  			RAL.NO_DRAW_MONEY,
+  			RAL.DRAW_MONEY,
+			RAL.e_use_money,
+			RAL.e_freeze_money,
+			RAL.e_collection,
+			RAL.IS_CUSTODY
+		FROM rocky_accountlog RAL
+  LEFT JOIN rocky_member RM
+    ON RAL.user_id = RM.id
+  LEFT JOIN (SELECT
+      *
+    FROM rocky_configuration RC
+    WHERE RC.TYPE = 1) AS RC2
+    ON RAL.TYPE = RC2.name
+  LEFT JOIN rocky_member M
+    ON RAL.TO_USER = M.id
+		where 1=1
+		<include refid="account_Where_Clause"/> 
+		 ORDER BY RAL.ID   DESC 
+  	</select>
+  	
+  	
+  	   <select id="searchPaymentDetail" parameterType="java.lang.Integer" resultMap="accountOperatingRecordResultMap" >
+		select 
+		<include refid="accountBaseColumn"/> 
+			FROM rocky_accountlog RAL
+  LEFT JOIN rocky_member RM
+    ON RAL.user_id = RM.id
+  LEFT JOIN rocky_member M
+    ON RAL.TO_USER = M.id
+		where 1=1 
+			AND RAL.ID =#{accountId}
+		 ORDER BY RAL.ID  DESC 
+  	</select>
+	
+</mapper>  

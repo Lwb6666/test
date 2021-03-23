@@ -1,0 +1,696 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dxjr.portal.electronbill.mapper.ElectronBillMapper" >
+  <resultMap id="BaseResultMap" type="com.dxjr.portal.electronbill.entity.ElectronBill" >
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="user_id" property="userId" jdbcType="INTEGER" />
+    <result column="year" property="year" jdbcType="VARCHAR" />
+    <result column="month" property="month" jdbcType="VARCHAR" />
+    <result column="the_month_fix_income" property="theMonthFixIncome" jdbcType="DECIMAL" />
+    <result column="the_month_cur_income" property="theMonthCurIncome" jdbcType="DECIMAL" />
+    <result column="the_month_bid_income" property="theMonthBidIncome" jdbcType="DECIMAL" />
+    <result column="the_month_fix_invest" property="theMonthFixInvest" jdbcType="DECIMAL" />
+    <result column="the_month_cur_invest" property="theMonthCurInvest" jdbcType="DECIMAL" />
+    <result column="the_month_custody_invest" property="theMonthCustodyInvest" jdbcType="DECIMAL" />
+    <result column="the_month_not_custody_invest" property="theMonthNotCustodyInvest" jdbcType="DECIMAL" />
+    <result column="sum_fix_income_one" property="sumFixIncomeOne" jdbcType="DECIMAL" />
+    <result column="sum_fix_income_three" property="sumFixIncomeThree" jdbcType="DECIMAL" />
+    <result column="sum_fix_income_six" property="sumFixIncomeSix" jdbcType="DECIMAL" />
+    <result column="sum_fix_income_twelve" property="sumFixIncomeTwelve" jdbcType="DECIMAL" />
+    <result column="sum_cur_income" property="sumCurIncome" jdbcType="DECIMAL" />
+    <result column="sum_custody_income" property="sumCustodyIncome" jdbcType="DECIMAL" />
+    <result column="sum_not_custody_income_one" property="sumNotCustodyIncomeOne" jdbcType="DECIMAL" />
+    <result column="the_month_fix_income_one" property="theMonthFixIncomeOne" jdbcType="DECIMAL" />
+    <result column="the_month_fix_income_three" property="theMonthFixIncomeThree" jdbcType="DECIMAL" />
+    <result column="the_month_fix_income_six" property="theMonthFixIncomeSix" jdbcType="DECIMAL" />
+    <result column="the_month_fix_income_twelve" property="theMonthFixIncomeTwelve" jdbcType="DECIMAL" />
+    <result column="the_month_custody_income" property="theMonthCustodyIncome" jdbcType="DECIMAL" />
+    <result column="the_month_not_custody_income" property="theMonthNotCustodyIncome" jdbcType="DECIMAL" />
+    <result column="the_month_fix_capital_one" property="theMonthFixCapitalOne" jdbcType="DECIMAL" />
+    <result column="the_month_fix_capital_three" property="theMonthFixCapitalThree" jdbcType="DECIMAL" />
+    <result column="the_month_fix_capital_six" property="theMonthFixCapitalSix" jdbcType="DECIMAL" />
+    <result column="the_month_fix_capital_twelve" property="theMonthFixCapitalTwelve" jdbcType="DECIMAL" />
+    <result column="the_month_custody_capital" property="theMonthCustodyCapital" jdbcType="DECIMAL" />
+    <result column="the_month_not_custody" property="theMonthNotCustody" jdbcType="DECIMAL" />
+    <result column="the_month_cur_capital" property="theMonthCurCapital" jdbcType="DECIMAL" />
+    <result column="the_month_fix_invest_one" property="theMonthFixInvestOne" jdbcType="DECIMAL" />
+    <result column="the_month_fix_invest_three" property="theMonthFixInvestThree" jdbcType="DECIMAL" />
+    <result column="the_month_fix_invest_six" property="theMonthFixInvestSix" jdbcType="DECIMAL" />
+    <result column="the_month_fix_invest_twelve" property="theMonthFixInvestTwelve" jdbcType="DECIMAL" />
+    <result column="the_month_accumulatepoints" property="theMonthAccumulatepoints" jdbcType="INTEGER" />
+    <result column="sum_accumulatepoints" property="sumAccumulatepoints" jdbcType="INTEGER" />
+    <result column="accumulatepoints_isuse" property="accumulatepointsIsuse" jdbcType="INTEGER" />
+    <result column="accumulatepoints" property="accumulatepoints" jdbcType="INTEGER" />
+    <result column="the_month_redaccount" property="theMonthRedaccount" jdbcType="DECIMAL" />
+    <result column="sum_redaccount" property="sumRedaccount" jdbcType="DECIMAL" />
+    <result column="redaccount_isuse" property="redaccountIsuse" jdbcType="DECIMAL" />
+    <result column="redaccount" property="redaccount" jdbcType="DECIMAL" />
+    <result column="the_month_other_income" property="theMonthOtherIncome" jdbcType="DECIMAL" />
+    <result column="sum_other_income" property="sumOtherIncome" jdbcType="DECIMAL" />
+    <result column="the_month_lottchance" property="theMonthLottchance" jdbcType="INTEGER" />
+    <result column="the_month_recharge" property="theMonthRecharge" jdbcType="DECIMAL" />
+    <result column="the_month_cash" property="theMonthCash" jdbcType="DECIMAL" />
+    <result column="the_month_cash_fee" property="theMonthCashFee" jdbcType="DECIMAL" />
+    <result column="the_month_trans_fee" property="theMonthTransFee" jdbcType="DECIMAL" />
+    <result column="the_month_fixexit_fee" property="theMonthFixexitFee" jdbcType="DECIMAL" />
+    <result column="add_by" property="addBy" jdbcType="INTEGER" />
+    <result column="add_time" property="addTime" jdbcType="TIMESTAMP" />
+    <result column="remark" property="remark" jdbcType="VARCHAR" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, user_id, year, month, the_month_fix_income, the_month_cur_income, the_month_bid_income, 
+    the_month_fix_invest, the_month_cur_invest, the_month_custody_invest, the_month_not_custody_invest, 
+    sum_fix_income_one, sum_fix_income_three, sum_fix_income_six, sum_fix_income_twelve, 
+    sum_cur_income, sum_custody_income, sum_not_custody_income_one, the_month_fix_income_one, 
+    the_month_fix_income_three, the_month_fix_income_six, the_month_fix_income_twelve, 
+    the_month_custody_income, the_month_not_custody_income, the_month_fix_capital_one, 
+    the_month_fix_capital_three, the_month_fix_capital_six, the_month_fix_capital_twelve, 
+    the_month_custody_capital, the_month_not_custody, the_month_cur_capital, the_month_fix_invest_one, 
+    the_month_fix_invest_three, the_month_fix_invest_six, the_month_fix_invest_twelve, 
+    the_month_accumulatepoints, sum_accumulatepoints, accumulatepoints_isuse, accumulatepoints, 
+    the_month_redaccount, sum_redaccount, redaccount_isuse, redaccount, the_month_other_income, 
+    sum_other_income, the_month_lottchance, the_month_recharge, the_month_cash, the_month_cash_fee, 
+    the_month_trans_fee, the_month_fixexit_fee, add_by, add_time, remark
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from t_electron_bill
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+  
+  <select id="selectMyBillByYearMonth" resultMap="BaseResultMap" parameterType="Map" >
+    select 
+    <include refid="Base_Column_List" />
+    from t_electron_bill
+    where user_id = #{userId,jdbcType=INTEGER}
+    and year=#{year,jdbcType=VARCHAR}
+    and month=#{month,jdbcType=VARCHAR}
+  </select>
+  
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from t_electron_bill
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.dxjr.portal.electronbill.entity.ElectronBill" >
+    insert into t_electron_bill (id, user_id, year, 
+      month, the_month_fix_income, the_month_cur_income, 
+      the_month_bid_income, the_month_fix_invest, the_month_cur_invest, 
+      the_month_custody_invest, the_month_not_custody_invest, 
+      sum_fix_income_one, sum_fix_income_three, sum_fix_income_six, 
+      sum_fix_income_twelve, sum_cur_income, sum_custody_income, 
+      sum_not_custody_income_one, the_month_fix_income_one, 
+      the_month_fix_income_three, the_month_fix_income_six, 
+      the_month_fix_income_twelve, the_month_custody_income, 
+      the_month_not_custody_income, the_month_fix_capital_one, 
+      the_month_fix_capital_three, the_month_fix_capital_six, 
+      the_month_fix_capital_twelve, the_month_custody_capital, 
+      the_month_not_custody, the_month_cur_capital, 
+      the_month_fix_invest_one, the_month_fix_invest_three, 
+      the_month_fix_invest_six, the_month_fix_invest_twelve, 
+      the_month_accumulatepoints, sum_accumulatepoints, 
+      accumulatepoints_isuse, accumulatepoints, 
+      the_month_redaccount, sum_redaccount, redaccount_isuse, 
+      redaccount, the_month_other_income, sum_other_income, 
+      the_month_lottchance, the_month_recharge, the_month_cash, 
+      the_month_cash_fee, the_month_trans_fee, the_month_fixexit_fee, 
+      add_by, add_time, remark
+      )
+    values (#{id,jdbcType=INTEGER}, #{userId,jdbcType=INTEGER}, #{year,jdbcType=VARCHAR}, 
+      #{month,jdbcType=VARCHAR}, #{theMonthFixIncome,jdbcType=DECIMAL}, #{theMonthCurIncome,jdbcType=DECIMAL}, 
+      #{theMonthBidIncome,jdbcType=DECIMAL}, #{theMonthFixInvest,jdbcType=DECIMAL}, #{theMonthCurInvest,jdbcType=DECIMAL}, 
+      #{theMonthCustodyInvest,jdbcType=DECIMAL}, #{theMonthNotCustodyInvest,jdbcType=DECIMAL}, 
+      #{sumFixIncomeOne,jdbcType=DECIMAL}, #{sumFixIncomeThree,jdbcType=DECIMAL}, #{sumFixIncomeSix,jdbcType=DECIMAL}, 
+      #{sumFixIncomeTwelve,jdbcType=DECIMAL}, #{sumCurIncome,jdbcType=DECIMAL}, #{sumCustodyIncome,jdbcType=DECIMAL}, 
+      #{sumNotCustodyIncomeOne,jdbcType=DECIMAL}, #{theMonthFixIncomeOne,jdbcType=DECIMAL}, 
+      #{theMonthFixIncomeThree,jdbcType=DECIMAL}, #{theMonthFixIncomeSix,jdbcType=DECIMAL}, 
+      #{theMonthFixIncomeTwelve,jdbcType=DECIMAL}, #{theMonthCustodyIncome,jdbcType=DECIMAL}, 
+      #{theMonthNotCustodyIncome,jdbcType=DECIMAL}, #{theMonthFixCapitalOne,jdbcType=DECIMAL}, 
+      #{theMonthFixCapitalThree,jdbcType=DECIMAL}, #{theMonthFixCapitalSix,jdbcType=DECIMAL}, 
+      #{theMonthFixCapitalTwelve,jdbcType=DECIMAL}, #{theMonthCustodyCapital,jdbcType=DECIMAL}, 
+      #{theMonthNotCustody,jdbcType=DECIMAL}, #{theMonthCurCapital,jdbcType=DECIMAL}, 
+      #{theMonthFixInvestOne,jdbcType=DECIMAL}, #{theMonthFixInvestThree,jdbcType=DECIMAL}, 
+      #{theMonthFixInvestSix,jdbcType=DECIMAL}, #{theMonthFixInvestTwelve,jdbcType=DECIMAL}, 
+      #{theMonthAccumulatepoints,jdbcType=INTEGER}, #{sumAccumulatepoints,jdbcType=INTEGER}, 
+      #{accumulatepointsIsuse,jdbcType=INTEGER}, #{accumulatepoints,jdbcType=INTEGER}, 
+      #{theMonthRedaccount,jdbcType=DECIMAL}, #{sumRedaccount,jdbcType=DECIMAL}, #{redaccountIsuse,jdbcType=DECIMAL}, 
+      #{redaccount,jdbcType=DECIMAL}, #{theMonthOtherIncome,jdbcType=DECIMAL}, #{sumOtherIncome,jdbcType=DECIMAL}, 
+      #{theMonthLottchance,jdbcType=INTEGER}, #{theMonthRecharge,jdbcType=DECIMAL}, #{theMonthCash,jdbcType=DECIMAL}, 
+      #{theMonthCashFee,jdbcType=DECIMAL}, #{theMonthTransFee,jdbcType=DECIMAL}, #{theMonthFixexitFee,jdbcType=DECIMAL}, 
+      #{addBy,jdbcType=INTEGER}, #{addTime,jdbcType=TIMESTAMP}, #{remark,jdbcType=VARCHAR}
+      )
+  </insert>
+  <insert id="insertSelective" parameterType="com.dxjr.portal.electronbill.entity.ElectronBill" >
+    insert into t_electron_bill
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="userId != null" >
+        user_id,
+      </if>
+      <if test="year != null" >
+        year,
+      </if>
+      <if test="month != null" >
+        month,
+      </if>
+      <if test="theMonthFixIncome != null" >
+        the_month_fix_income,
+      </if>
+      <if test="theMonthCurIncome != null" >
+        the_month_cur_income,
+      </if>
+      <if test="theMonthBidIncome != null" >
+        the_month_bid_income,
+      </if>
+      <if test="theMonthFixInvest != null" >
+        the_month_fix_invest,
+      </if>
+      <if test="theMonthCurInvest != null" >
+        the_month_cur_invest,
+      </if>
+      <if test="theMonthCustodyInvest != null" >
+        the_month_custody_invest,
+      </if>
+      <if test="theMonthNotCustodyInvest != null" >
+        the_month_not_custody_invest,
+      </if>
+      <if test="sumFixIncomeOne != null" >
+        sum_fix_income_one,
+      </if>
+      <if test="sumFixIncomeThree != null" >
+        sum_fix_income_three,
+      </if>
+      <if test="sumFixIncomeSix != null" >
+        sum_fix_income_six,
+      </if>
+      <if test="sumFixIncomeTwelve != null" >
+        sum_fix_income_twelve,
+      </if>
+      <if test="sumCurIncome != null" >
+        sum_cur_income,
+      </if>
+      <if test="sumCustodyIncome != null" >
+        sum_custody_income,
+      </if>
+      <if test="sumNotCustodyIncomeOne != null" >
+        sum_not_custody_income_one,
+      </if>
+      <if test="theMonthFixIncomeOne != null" >
+        the_month_fix_income_one,
+      </if>
+      <if test="theMonthFixIncomeThree != null" >
+        the_month_fix_income_three,
+      </if>
+      <if test="theMonthFixIncomeSix != null" >
+        the_month_fix_income_six,
+      </if>
+      <if test="theMonthFixIncomeTwelve != null" >
+        the_month_fix_income_twelve,
+      </if>
+      <if test="theMonthCustodyIncome != null" >
+        the_month_custody_income,
+      </if>
+      <if test="theMonthNotCustodyIncome != null" >
+        the_month_not_custody_income,
+      </if>
+      <if test="theMonthFixCapitalOne != null" >
+        the_month_fix_capital_one,
+      </if>
+      <if test="theMonthFixCapitalThree != null" >
+        the_month_fix_capital_three,
+      </if>
+      <if test="theMonthFixCapitalSix != null" >
+        the_month_fix_capital_six,
+      </if>
+      <if test="theMonthFixCapitalTwelve != null" >
+        the_month_fix_capital_twelve,
+      </if>
+      <if test="theMonthCustodyCapital != null" >
+        the_month_custody_capital,
+      </if>
+      <if test="theMonthNotCustody != null" >
+        the_month_not_custody,
+      </if>
+      <if test="theMonthCurCapital != null" >
+        the_month_cur_capital,
+      </if>
+      <if test="theMonthFixInvestOne != null" >
+        the_month_fix_invest_one,
+      </if>
+      <if test="theMonthFixInvestThree != null" >
+        the_month_fix_invest_three,
+      </if>
+      <if test="theMonthFixInvestSix != null" >
+        the_month_fix_invest_six,
+      </if>
+      <if test="theMonthFixInvestTwelve != null" >
+        the_month_fix_invest_twelve,
+      </if>
+      <if test="theMonthAccumulatepoints != null" >
+        the_month_accumulatepoints,
+      </if>
+      <if test="sumAccumulatepoints != null" >
+        sum_accumulatepoints,
+      </if>
+      <if test="accumulatepointsIsuse != null" >
+        accumulatepoints_isuse,
+      </if>
+      <if test="accumulatepoints != null" >
+        accumulatepoints,
+      </if>
+      <if test="theMonthRedaccount != null" >
+        the_month_redaccount,
+      </if>
+      <if test="sumRedaccount != null" >
+        sum_redaccount,
+      </if>
+      <if test="redaccountIsuse != null" >
+        redaccount_isuse,
+      </if>
+      <if test="redaccount != null" >
+        redaccount,
+      </if>
+      <if test="theMonthOtherIncome != null" >
+        the_month_other_income,
+      </if>
+      <if test="sumOtherIncome != null" >
+        sum_other_income,
+      </if>
+      <if test="theMonthLottchance != null" >
+        the_month_lottchance,
+      </if>
+      <if test="theMonthRecharge != null" >
+        the_month_recharge,
+      </if>
+      <if test="theMonthCash != null" >
+        the_month_cash,
+      </if>
+      <if test="theMonthCashFee != null" >
+        the_month_cash_fee,
+      </if>
+      <if test="theMonthTransFee != null" >
+        the_month_trans_fee,
+      </if>
+      <if test="theMonthFixexitFee != null" >
+        the_month_fixexit_fee,
+      </if>
+      <if test="addBy != null" >
+        add_by,
+      </if>
+      <if test="addTime != null" >
+        add_time,
+      </if>
+      <if test="remark != null" >
+        remark,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="userId != null" >
+        #{userId,jdbcType=INTEGER},
+      </if>
+      <if test="year != null" >
+        #{year,jdbcType=VARCHAR},
+      </if>
+      <if test="month != null" >
+        #{month,jdbcType=VARCHAR},
+      </if>
+      <if test="theMonthFixIncome != null" >
+        #{theMonthFixIncome,jdbcType=DECIMAL},
+      </if>
+      <if test="theMonthCurIncome != null" >
+        #{theMonthCurIncome,jdbcType=DECIMAL},
+      </if>
+      <if test="theMonthBidIncome != null" >
+        #{theMonthBidIncome,jdbcType=DECIMAL},
+      </if>
+      <if test="theMonthFixInvest != null" >
+        #{theMonthFixInvest,jdbcType=DECIMAL},
+      </if>
+      <if test="theMonthCurInvest != null" >
+        #{theMonthCurInvest,jdbcType=DECIMAL},
+      </if>
+      <if test="theMonthCustodyInvest != null" >
+        #{theMonthCustodyInvest,jdbcType=DECIMAL},
+      </if>
+      <if test="theMonthNotCustodyInvest != null" >
+        #{theMonthNotCustodyInvest,jdbcType=DECIMAL},
+      </if>
+      <if test="sumFixIncomeOne != null" >
+        #{sumFixIncomeOne,jdbcType=DECIMAL},
+      </if>
+      <if test="sumFixIncomeThree != null" >
+        #{sumFixIncomeThree,jdbcType=DECIMAL},
+      </if>
+      <if test="sumFixIncomeSix != null" >
+        #{sumFixIncomeSix,jdbcType=DECIMAL},
+      </if>
+      <if test="sumFixIncomeTwelve != null" >
+        #{sumFixIncomeTwelve,jdbcType=DECIMAL},
+      </if>
+      <if test="sumCurIncome != null" >
+        #{sumCurIncome,jdbcType=DECIMAL},
+      </if>
+      <if test="sumCustodyIncome != null" >
+        #{sumCustodyIncome,jdbcType=DECIMAL},
+      </if>
+      <if test="sumNotCustodyIncomeOne != null" >
+        #{sumNotCustodyIncomeOne,jdbcType=DECIMAL},
+      </if>
+      <if test="theMonthFixIncomeOne != null" >
+        #{theMonthFixIncomeOne,jdbcType=DECIMAL},
+      </if>
+      <if test="theMonthFixIncomeThree != null" >
+        #{theMonthFixIncomeThree,jdbcType=DECIMAL},
+      </if>
+      <if test="theMonthFixIncomeSix != null" >
+        #{theMonthFixIncomeSix,jdbcType=DECIMAL},
+      </if>
+      <if test="theMonthFixIncomeTwelve != null" >
+        #{theMonthFixIncomeTwelve,jdbcType=DECIMAL},
+      </if>
+      <if test="theMonthCustodyIncome != null" >
+        #{theMonthCustodyIncome,jdbcType=DECIMAL},
+      </if>
+      <if test="theMonthNotCustodyIncome != null" >
+        #{theMonthNotCustodyIncome,jdbcType=DECIMAL},
+      </if>
+      <if test="theMonthFixCapitalOne != null" >
+        #{theMonthFixCapitalOne,jdbcType=DECIMAL},
+      </if>
+      <if test="theMonthFixCapitalThree != null" >
+        #{theMonthFixCapitalThree,jdbcType=DECIMAL},
+      </if>
+      <if test="theMonthFixCapitalSix != null" >
+        #{theMonthFixCapitalSix,jdbcType=DECIMAL},
+      </if>
+      <if test="theMonthFixCapitalTwelve != null" >
+        #{theMonthFixCapitalTwelve,jdbcType=DECIMAL},
+      </if>
+      <if test="theMonthCustodyCapital != null" >
+        #{theMonthCustodyCapital,jdbcType=DECIMAL},
+      </if>
+      <if test="theMonthNotCustody != null" >
+        #{theMonthNotCustody,jdbcType=DECIMAL},
+      </if>
+      <if test="theMonthCurCapital != null" >
+        #{theMonthCurCapital,jdbcType=DECIMAL},
+      </if>
+      <if test="theMonthFixInvestOne != null" >
+        #{theMonthFixInvestOne,jdbcType=DECIMAL},
+      </if>
+      <if test="theMonthFixInvestThree != null" >
+        #{theMonthFixInvestThree,jdbcType=DECIMAL},
+      </if>
+      <if test="theMonthFixInvestSix != null" >
+        #{theMonthFixInvestSix,jdbcType=DECIMAL},
+      </if>
+      <if test="theMonthFixInvestTwelve != null" >
+        #{theMonthFixInvestTwelve,jdbcType=DECIMAL},
+      </if>
+      <if test="theMonthAccumulatepoints != null" >
+        #{theMonthAccumulatepoints,jdbcType=INTEGER},
+      </if>
+      <if test="sumAccumulatepoints != null" >
+        #{sumAccumulatepoints,jdbcType=INTEGER},
+      </if>
+      <if test="accumulatepointsIsuse != null" >
+        #{accumulatepointsIsuse,jdbcType=INTEGER},
+      </if>
+      <if test="accumulatepoints != null" >
+        #{accumulatepoints,jdbcType=INTEGER},
+      </if>
+      <if test="theMonthRedaccount != null" >
+        #{theMonthRedaccount,jdbcType=DECIMAL},
+      </if>
+      <if test="sumRedaccount != null" >
+        #{sumRedaccount,jdbcType=DECIMAL},
+      </if>
+      <if test="redaccountIsuse != null" >
+        #{redaccountIsuse,jdbcType=DECIMAL},
+      </if>
+      <if test="redaccount != null" >
+        #{redaccount,jdbcType=DECIMAL},
+      </if>
+      <if test="theMonthOtherIncome != null" >
+        #{theMonthOtherIncome,jdbcType=DECIMAL},
+      </if>
+      <if test="sumOtherIncome != null" >
+        #{sumOtherIncome,jdbcType=DECIMAL},
+      </if>
+      <if test="theMonthLottchance != null" >
+        #{theMonthLottchance,jdbcType=INTEGER},
+      </if>
+      <if test="theMonthRecharge != null" >
+        #{theMonthRecharge,jdbcType=DECIMAL},
+      </if>
+      <if test="theMonthCash != null" >
+        #{theMonthCash,jdbcType=DECIMAL},
+      </if>
+      <if test="theMonthCashFee != null" >
+        #{theMonthCashFee,jdbcType=DECIMAL},
+      </if>
+      <if test="theMonthTransFee != null" >
+        #{theMonthTransFee,jdbcType=DECIMAL},
+      </if>
+      <if test="theMonthFixexitFee != null" >
+        #{theMonthFixexitFee,jdbcType=DECIMAL},
+      </if>
+      <if test="addBy != null" >
+        #{addBy,jdbcType=INTEGER},
+      </if>
+      <if test="addTime != null" >
+        #{addTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="remark != null" >
+        #{remark,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.dxjr.portal.electronbill.entity.ElectronBill" >
+    update t_electron_bill
+    <set >
+      <if test="userId != null" >
+        user_id = #{userId,jdbcType=INTEGER},
+      </if>
+      <if test="year != null" >
+        year = #{year,jdbcType=VARCHAR},
+      </if>
+      <if test="month != null" >
+        month = #{month,jdbcType=VARCHAR},
+      </if>
+      <if test="theMonthFixIncome != null" >
+        the_month_fix_income = #{theMonthFixIncome,jdbcType=DECIMAL},
+      </if>
+      <if test="theMonthCurIncome != null" >
+        the_month_cur_income = #{theMonthCurIncome,jdbcType=DECIMAL},
+      </if>
+      <if test="theMonthBidIncome != null" >
+        the_month_bid_income = #{theMonthBidIncome,jdbcType=DECIMAL},
+      </if>
+      <if test="theMonthFixInvest != null" >
+        the_month_fix_invest = #{theMonthFixInvest,jdbcType=DECIMAL},
+      </if>
+      <if test="theMonthCurInvest != null" >
+        the_month_cur_invest = #{theMonthCurInvest,jdbcType=DECIMAL},
+      </if>
+      <if test="theMonthCustodyInvest != null" >
+        the_month_custody_invest = #{theMonthCustodyInvest,jdbcType=DECIMAL},
+      </if>
+      <if test="theMonthNotCustodyInvest != null" >
+        the_month_not_custody_invest = #{theMonthNotCustodyInvest,jdbcType=DECIMAL},
+      </if>
+      <if test="sumFixIncomeOne != null" >
+        sum_fix_income_one = #{sumFixIncomeOne,jdbcType=DECIMAL},
+      </if>
+      <if test="sumFixIncomeThree != null" >
+        sum_fix_income_three = #{sumFixIncomeThree,jdbcType=DECIMAL},
+      </if>
+      <if test="sumFixIncomeSix != null" >
+        sum_fix_income_six = #{sumFixIncomeSix,jdbcType=DECIMAL},
+      </if>
+      <if test="sumFixIncomeTwelve != null" >
+        sum_fix_income_twelve = #{sumFixIncomeTwelve,jdbcType=DECIMAL},
+      </if>
+      <if test="sumCurIncome != null" >
+        sum_cur_income = #{sumCurIncome,jdbcType=DECIMAL},
+      </if>
+      <if test="sumCustodyIncome != null" >
+        sum_custody_income = #{sumCustodyIncome,jdbcType=DECIMAL},
+      </if>
+      <if test="sumNotCustodyIncomeOne != null" >
+        sum_not_custody_income_one = #{sumNotCustodyIncomeOne,jdbcType=DECIMAL},
+      </if>
+      <if test="theMonthFixIncomeOne != null" >
+        the_month_fix_income_one = #{theMonthFixIncomeOne,jdbcType=DECIMAL},
+      </if>
+      <if test="theMonthFixIncomeThree != null" >
+        the_month_fix_income_three = #{theMonthFixIncomeThree,jdbcType=DECIMAL},
+      </if>
+      <if test="theMonthFixIncomeSix != null" >
+        the_month_fix_income_six = #{theMonthFixIncomeSix,jdbcType=DECIMAL},
+      </if>
+      <if test="theMonthFixIncomeTwelve != null" >
+        the_month_fix_income_twelve = #{theMonthFixIncomeTwelve,jdbcType=DECIMAL},
+      </if>
+      <if test="theMonthCustodyIncome != null" >
+        the_month_custody_income = #{theMonthCustodyIncome,jdbcType=DECIMAL},
+      </if>
+      <if test="theMonthNotCustodyIncome != null" >
+        the_month_not_custody_income = #{theMonthNotCustodyIncome,jdbcType=DECIMAL},
+      </if>
+      <if test="theMonthFixCapitalOne != null" >
+        the_month_fix_capital_one = #{theMonthFixCapitalOne,jdbcType=DECIMAL},
+      </if>
+      <if test="theMonthFixCapitalThree != null" >
+        the_month_fix_capital_three = #{theMonthFixCapitalThree,jdbcType=DECIMAL},
+      </if>
+      <if test="theMonthFixCapitalSix != null" >
+        the_month_fix_capital_six = #{theMonthFixCapitalSix,jdbcType=DECIMAL},
+      </if>
+      <if test="theMonthFixCapitalTwelve != null" >
+        the_month_fix_capital_twelve = #{theMonthFixCapitalTwelve,jdbcType=DECIMAL},
+      </if>
+      <if test="theMonthCustodyCapital != null" >
+        the_month_custody_capital = #{theMonthCustodyCapital,jdbcType=DECIMAL},
+      </if>
+      <if test="theMonthNotCustody != null" >
+        the_month_not_custody = #{theMonthNotCustody,jdbcType=DECIMAL},
+      </if>
+      <if test="theMonthCurCapital != null" >
+        the_month_cur_capital = #{theMonthCurCapital,jdbcType=DECIMAL},
+      </if>
+      <if test="theMonthFixInvestOne != null" >
+        the_month_fix_invest_one = #{theMonthFixInvestOne,jdbcType=DECIMAL},
+      </if>
+      <if test="theMonthFixInvestThree != null" >
+        the_month_fix_invest_three = #{theMonthFixInvestThree,jdbcType=DECIMAL},
+      </if>
+      <if test="theMonthFixInvestSix != null" >
+        the_month_fix_invest_six = #{theMonthFixInvestSix,jdbcType=DECIMAL},
+      </if>
+      <if test="theMonthFixInvestTwelve != null" >
+        the_month_fix_invest_twelve = #{theMonthFixInvestTwelve,jdbcType=DECIMAL},
+      </if>
+      <if test="theMonthAccumulatepoints != null" >
+        the_month_accumulatepoints = #{theMonthAccumulatepoints,jdbcType=INTEGER},
+      </if>
+      <if test="sumAccumulatepoints != null" >
+        sum_accumulatepoints = #{sumAccumulatepoints,jdbcType=INTEGER},
+      </if>
+      <if test="accumulatepointsIsuse != null" >
+        accumulatepoints_isuse = #{accumulatepointsIsuse,jdbcType=INTEGER},
+      </if>
+      <if test="accumulatepoints != null" >
+        accumulatepoints = #{accumulatepoints,jdbcType=INTEGER},
+      </if>
+      <if test="theMonthRedaccount != null" >
+        the_month_redaccount = #{theMonthRedaccount,jdbcType=DECIMAL},
+      </if>
+      <if test="sumRedaccount != null" >
+        sum_redaccount = #{sumRedaccount,jdbcType=DECIMAL},
+      </if>
+      <if test="redaccountIsuse != null" >
+        redaccount_isuse = #{redaccountIsuse,jdbcType=DECIMAL},
+      </if>
+      <if test="redaccount != null" >
+        redaccount = #{redaccount,jdbcType=DECIMAL},
+      </if>
+      <if test="theMonthOtherIncome != null" >
+        the_month_other_income = #{theMonthOtherIncome,jdbcType=DECIMAL},
+      </if>
+      <if test="sumOtherIncome != null" >
+        sum_other_income = #{sumOtherIncome,jdbcType=DECIMAL},
+      </if>
+      <if test="theMonthLottchance != null" >
+        the_month_lottchance = #{theMonthLottchance,jdbcType=INTEGER},
+      </if>
+      <if test="theMonthRecharge != null" >
+        the_month_recharge = #{theMonthRecharge,jdbcType=DECIMAL},
+      </if>
+      <if test="theMonthCash != null" >
+        the_month_cash = #{theMonthCash,jdbcType=DECIMAL},
+      </if>
+      <if test="theMonthCashFee != null" >
+        the_month_cash_fee = #{theMonthCashFee,jdbcType=DECIMAL},
+      </if>
+      <if test="theMonthTransFee != null" >
+        the_month_trans_fee = #{theMonthTransFee,jdbcType=DECIMAL},
+      </if>
+      <if test="theMonthFixexitFee != null" >
+        the_month_fixexit_fee = #{theMonthFixexitFee,jdbcType=DECIMAL},
+      </if>
+      <if test="addBy != null" >
+        add_by = #{addBy,jdbcType=INTEGER},
+      </if>
+      <if test="addTime != null" >
+        add_time = #{addTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="remark != null" >
+        remark = #{remark,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.dxjr.portal.electronbill.entity.ElectronBill" >
+    update t_electron_bill
+    set user_id = #{userId,jdbcType=INTEGER},
+      year = #{year,jdbcType=VARCHAR},
+      month = #{month,jdbcType=VARCHAR},
+      the_month_fix_income = #{theMonthFixIncome,jdbcType=DECIMAL},
+      the_month_cur_income = #{theMonthCurIncome,jdbcType=DECIMAL},
+      the_month_bid_income = #{theMonthBidIncome,jdbcType=DECIMAL},
+      the_month_fix_invest = #{theMonthFixInvest,jdbcType=DECIMAL},
+      the_month_cur_invest = #{theMonthCurInvest,jdbcType=DECIMAL},
+      the_month_custody_invest = #{theMonthCustodyInvest,jdbcType=DECIMAL},
+      the_month_not_custody_invest = #{theMonthNotCustodyInvest,jdbcType=DECIMAL},
+      sum_fix_income_one = #{sumFixIncomeOne,jdbcType=DECIMAL},
+      sum_fix_income_three = #{sumFixIncomeThree,jdbcType=DECIMAL},
+      sum_fix_income_six = #{sumFixIncomeSix,jdbcType=DECIMAL},
+      sum_fix_income_twelve = #{sumFixIncomeTwelve,jdbcType=DECIMAL},
+      sum_cur_income = #{sumCurIncome,jdbcType=DECIMAL},
+      sum_custody_income = #{sumCustodyIncome,jdbcType=DECIMAL},
+      sum_not_custody_income_one = #{sumNotCustodyIncomeOne,jdbcType=DECIMAL},
+      the_month_fix_income_one = #{theMonthFixIncomeOne,jdbcType=DECIMAL},
+      the_month_fix_income_three = #{theMonthFixIncomeThree,jdbcType=DECIMAL},
+      the_month_fix_income_six = #{theMonthFixIncomeSix,jdbcType=DECIMAL},
+      the_month_fix_income_twelve = #{theMonthFixIncomeTwelve,jdbcType=DECIMAL},
+      the_month_custody_income = #{theMonthCustodyIncome,jdbcType=DECIMAL},
+      the_month_not_custody_income = #{theMonthNotCustodyIncome,jdbcType=DECIMAL},
+      the_month_fix_capital_one = #{theMonthFixCapitalOne,jdbcType=DECIMAL},
+      the_month_fix_capital_three = #{theMonthFixCapitalThree,jdbcType=DECIMAL},
+      the_month_fix_capital_six = #{theMonthFixCapitalSix,jdbcType=DECIMAL},
+      the_month_fix_capital_twelve = #{theMonthFixCapitalTwelve,jdbcType=DECIMAL},
+      the_month_custody_capital = #{theMonthCustodyCapital,jdbcType=DECIMAL},
+      the_month_not_custody = #{theMonthNotCustody,jdbcType=DECIMAL},
+      the_month_cur_capital = #{theMonthCurCapital,jdbcType=DECIMAL},
+      the_month_fix_invest_one = #{theMonthFixInvestOne,jdbcType=DECIMAL},
+      the_month_fix_invest_three = #{theMonthFixInvestThree,jdbcType=DECIMAL},
+      the_month_fix_invest_six = #{theMonthFixInvestSix,jdbcType=DECIMAL},
+      the_month_fix_invest_twelve = #{theMonthFixInvestTwelve,jdbcType=DECIMAL},
+      the_month_accumulatepoints = #{theMonthAccumulatepoints,jdbcType=INTEGER},
+      sum_accumulatepoints = #{sumAccumulatepoints,jdbcType=INTEGER},
+      accumulatepoints_isuse = #{accumulatepointsIsuse,jdbcType=INTEGER},
+      accumulatepoints = #{accumulatepoints,jdbcType=INTEGER},
+      the_month_redaccount = #{theMonthRedaccount,jdbcType=DECIMAL},
+      sum_redaccount = #{sumRedaccount,jdbcType=DECIMAL},
+      redaccount_isuse = #{redaccountIsuse,jdbcType=DECIMAL},
+      redaccount = #{redaccount,jdbcType=DECIMAL},
+      the_month_other_income = #{theMonthOtherIncome,jdbcType=DECIMAL},
+      sum_other_income = #{sumOtherIncome,jdbcType=DECIMAL},
+      the_month_lottchance = #{theMonthLottchance,jdbcType=INTEGER},
+      the_month_recharge = #{theMonthRecharge,jdbcType=DECIMAL},
+      the_month_cash = #{theMonthCash,jdbcType=DECIMAL},
+      the_month_cash_fee = #{theMonthCashFee,jdbcType=DECIMAL},
+      the_month_trans_fee = #{theMonthTransFee,jdbcType=DECIMAL},
+      the_month_fixexit_fee = #{theMonthFixexitFee,jdbcType=DECIMAL},
+      add_by = #{addBy,jdbcType=INTEGER},
+      add_time = #{addTime,jdbcType=TIMESTAMP},
+      remark = #{remark,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+</mapper>

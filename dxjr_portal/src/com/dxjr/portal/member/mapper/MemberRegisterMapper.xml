@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.dxjr.portal.member.mapper.MemberRegisterMapper">
+	
+	<!-- 返回的结果集 -->
+	<resultMap type="com.dxjr.portal.member.vo.MemberRegisterVo" id="registerMemberResultMap">
+		<id property="id" column="id" />
+		<result property="username" 			column="USERNAME" />
+		<result property="logpassword" 			column="LOGPASSWORD" />
+		<result property="paypassword" 			column="PAYPASSWORD" />
+		<result property="headimg" 				column="HEADIMG" />
+		<result property="email"	    		column="EMAIL" />
+		<result property="status"  				column="STATUS" />
+		<result property="borrowtimes" 			column="BORROWTIMES" />
+		<result property="investtimes" 			column="INVESTTIMES" />
+		<result property="logintimes" 			column="LOGINTIMES" />
+		<result property="addtime" 			    column="ADDTIME" />
+		<result property="addip" 				column="ADDIP" />
+		<result property="shareperson" 			column="SHAREPERSON" />
+		<result property="lastlogintime" 		column="LASTLOGINTIME" />
+		<result property="lastloginip" 			column="LASTLOGINIP" />
+		<result property="useridmd5" 			column="USERIDMD5" />
+		<result property="inviterid"            column="INVITERID"/>
+		<result property="awardmoney" 			column="AWARDMONEY" />
+		<result property="accumulatepoints" 	column="ACCUMULATEPOINTS"/>
+		<result property="type" 				column="TYPE" />	
+		<result property="source" 				column="SOURCE" />
+		<result property="gainaccumulatepoints" column="GAINACCUMULATEPOINTS" />
+		<result property="province" 			column="PROVINCE" />			
+		<result property="city" 				column="CITY" />
+		<result property="area" 				column="AREA" />
+		<result property="isEmployeer" 			column="IS_EMPLOYEER" />
+		<result property="isFinancialUser" 		column="IS_FINANCIAL_USER" />	
+		<result property="qq" 					column="QQ" />
+		<result property="wxNo" 				column="WX_NO" />
+		<result property="emailPassword" 		column="EMAIL_PASSWORD" />			
+	</resultMap>
+	
+	<!--基本列 -->
+	<sql id="memberRegistercolumn">
+		m.ID, 
+		m.USERNAME, 
+		m.LOGPASSWORD, 
+		m.PAYPASSWORD, 
+		m.HEADIMG, 
+		m.EMAIL, 
+		m.STATUS, 
+		m.BORROWTIMES, 
+		m.INVESTTIMES, 
+		m.LOGINTIMES, 
+		m.ADDTIME, 
+		m.ADDIP, 
+		m.SHAREPERSON, 
+		m.LASTLOGINTIME, 
+		m.LASTLOGINIP, 
+		m.USERIDMD5, 
+		m.INVITERID, 
+		m.AWARDMONEY, 
+		m.ACCUMULATEPOINTS, 
+		m.TYPE, 
+		m.SOURCE, 
+		m.GAINACCUMULATEPOINTS, 
+		m.PROVINCE, 
+		m.CITY, 
+		m.AREA, 
+		m.IS_EMPLOYEER, 
+		m.IS_FINANCIAL_USER, 
+		m.QQ, 
+		m.WX_NO, 
+		m.EMAIL_PASSWORD
+	</sql>	
+	
+	<!-- 封装查询条件 -->
+	<sql id="register_Member_Where_Clause">
+		<if test="id != null">
+			and m.id =#{id}
+		</if>
+		<if test="username != null and username !=''">
+			and m.username = #{username}
+		</if>
+		<if test="inviterName != null and inviterName !=''">
+			and m.username = #{inviterName}
+		</if>		
+		<if test="email !=null and email !=''">
+			and m.EMAIL =#{email}
+		</if>
+	</sql>
+	
+  	<!-- 根据条件查询会员记录集合 -->
+	<select id="queryMemberList" parameterType="com.dxjr.portal.member.vo.MemberRegisterCnd" resultMap="registerMemberResultMap" >
+		select 	
+		   <include refid="memberRegistercolumn"/>
+		from
+			rocky_member m
+		where 1=1
+		<include refid="register_Member_Where_Clause"/>
+  	</select>
+  	
+  	  	<!-- 根据条件查询会员记录数量-->
+	<select id="queryMemberCount" parameterType="com.dxjr.portal.member.vo.MemberRegisterCnd" resultType="java.lang.Integer" >
+		select count(m.id)
+		from
+			rocky_member m
+		where 1=1
+		<include refid="register_Member_Where_Clause"/>
+  	</select>
+  	
+  	 <!-- 验证重复数据,邮箱通过审核才算生效-->
+	<select id="queryRepeatMemberCount" parameterType="com.dxjr.portal.member.vo.MemberRegisterCnd" resultType="java.lang.Integer" >
+		select count(m.id)
+		from
+	    rocky_member m left JOIN rocky_email_appro rea
+               ON m.ID = rea.USER_ID
+		where 1=1  
+		<if test="id != null">
+			and m.id !=#{id}
+		</if>
+		<if test="username != null and username !=''">
+			and m.username = #{username}
+		</if>
+		<if test="email !=null and email !=''">
+			and m.EMAIL =#{email}
+				AND ((rea.id is not null and rea.CHECKED = 1)) 
+		</if>
+  	</select>
+  	
+    <select id="existsContainSensitiveForUserName" parameterType="java.lang.String" resultType="java.lang.Integer" >
+		select count(1)  from t_sensitive s  where   #{username}  like concat('%',s.word,'%')  and source=1 
+  	</select> 
+    <!-- 验证用户推荐、手机号码、邮箱验证 --> 
+	<select id="inviterNameCount" parameterType="com.dxjr.portal.member.vo.MemberRegisterCnd" resultType="java.lang.Integer" >
+     select count(*) from rocky_member m
+		inner join rocky_mobile_appro rmp
+		on m.id=rmp.USER_ID
+        where m.USERNAME=#{inviterName}   or rmp.MOBILENUM=#{inviterName}
+  	</select>
+  	<select id="queryinviterList" parameterType="com.dxjr.portal.member.vo.MemberRegisterCnd" resultMap="registerMemberResultMap" >
+     select <include refid="memberRegistercolumn"/> from rocky_member m
+		inner join rocky_mobile_appro rmp
+		on m.id=rmp.USER_ID
+        where m.USERNAME=#{inviterName}   or rmp.MOBILENUM=#{inviterName}
+  	</select>	
+ 	
+</mapper>  

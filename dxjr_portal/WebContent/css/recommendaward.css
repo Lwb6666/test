@@ -1,0 +1,77 @@
+
+/* CSS Document */
+@charset "utf-8";
+* {margin:0; padding:0;}
+* html body {overflow:visible;}
+* html iframe, * html frame {overflow:auto;}
+* html frameset {overflow:hidden;}
+body {color:#000; background:#FFF; font-family: Verdana, Arial, sans-serif; font-size: 12px; text-align:center;  }
+body, ul, ol, li, p, h1, h2, h3, h4, h5, h6, form, fieldset, table, td, img, div, tr {margin:0 auto; padding:0;}
+img {border:0 none;}
+.bg{
+	min-width:1400px;
+	width:100%;
+	height:2480px;
+	background:#9CC74E;
+	background: linear-gradient(#9CC74E, #9CC74E);
+
+	}
+.content{
+	width:100%;
+	min-width:1100px;
+	height:100%;
+	background:url(../images/recommendaward/bg.jpg) no-repeat top ;
+	}
+.shadow {display: block; position:absolute; top:0px; left:0px; width:100%; height:2480px;/*IE7*/ background:#000;
+filter:alpha(opacity=70); /*支持 IE 浏览器*/
+-moz-opacity:0.70; /*支持 FireFox 浏览器*/
+opacity:0.70; /*支持 Chrome, Opera, Safari 等浏览器*/ z-index:1;}
+	
+.top-item{ background:url(../images/recommendaward/top.png) no-repeat top;width:100%; min-width:993px; height:382px;}
+.bottom-item{ background:url(../images/recommendaward/bottom.png) no-repeat top;width:100%; width:100%; min-width:993px;height:104px; position: relative; top: -20px; z-index:0;}
+.mid-item{  background:url(../images/recommendaward/mid.png) no-repeat top;width:993px; height:2017px;}
+
+.reward-div{  width: auto;height: 488px; padding-top: 110px; padding-left: 385px; float: left; display: block;}
+.copy-div{ width:600px; height:88px; padding-top:0px; padding-left:228px; float: left; display: block;}
+.tips-div { width:279px; height:92px; background:url(../images/recommendaward/hover-tips-img.png) no-repeat top; display: block; position: relative; top: -60px; float:left; display:none;}
+.share-div { width:auto; height:100px; padding-top:340px; padding-left:455px;float: left; display: block;}
+.qrbox-div {width: 150px;height: 150px;display: block;float: left; padding: 0 0 0 220px;}
+.btn {display:block; float:left; cursor:pointer;}
+.go-btn {display:block; float:left; width:200px; height:50px;margin: 490px 0 0 400px;}
+.reward-btn{ width:213px; height:76px; text-align:center;}
+.link-input{width: 210px; height: 16px;font-size: 14px; padding: 5px 10px 5px 10px; border: 1px solid #e3e3e3;display:block;float:left;}
+
+ul{list-style:none;margin:0px;}
+ul li {float:left;} 
+.share-icon {display:block; float:left; cursor:pointer; width:57px; height:57px;}
+.sina{ background:url(../images/recommendaward/sina.png) no-repeat top;}
+.qq{background:url(../images/recommendaward/qq.png) no-repeat top;}
+.q-zone{background:url(../images/recommendaward/q-zone.png) no-repeat top;}
+.renren{background:url(../images/recommendaward/renren.png) no-repeat top;}
+.weixin{background:url(../images/recommendaward/weixin.png) no-repeat top;}
+.pengyouwang{background:url(../images/recommendaward/pengyouwang.png) no-repeat top;}
+
+
+.rewardrule-div {display: block; position:absolute; top:100px; left:100px; width:810px; min-height:630px;z-index:2;}
+.reward-title-div {display: block; width:780px; height:70px;  background:url(../images/recommendaward/reward-title.png) no-repeat;}
+.reward-content-div {display: block; float:left; width: 100%; background:url(../images/recommendaward/reward-bg-img.png) repeat; border-radius: 10px; padding:15px 0;}
+.reward-content-div img { display:block ; float:left;}
+.rewardrule-more-div {display: block; float: left; background: #EBF4E2;width: 760px;height: 22px;margin: 5px 18px 0px 18px;border: #9F9FA0 dashed 3px;padding: 3px;}
+.rewardrule-more-div p {display:block ; float:left; color:#C40D23; text-align:left; width:360px;}
+.rewardrule-more-btn {display: block; float:right; background:url(../images/recommendaward/reward-more-icon.png);width:18px;height:18px;}
+
+.rewardrule-morecontent-div 
+{
+display: block;
+float: left;
+width:756px;
+height:140px;
+margin: 0px 18px 0px 18px;
+border: #9F9FA0 dashed 3px;
+border-top: 0px;
+padding: 5px;
+color:#333;
+overflow:hidden;
+text-align:left;
+}
+.rewardrule-close-btn {display: block; float: right;width:15px; height:13px; background:url(../images/recommendaward/close-btn.png) no-repeat;}

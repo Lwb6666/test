@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dxjr.portal.lottery.mapper.LotteryChanceRuleInfoMapper" >
+  <resultMap id="BaseResultMap" type="com.dxjr.portal.lottery.vo.LotteryChanceRuleInfoVo" >
+    <id column="ID" property="id" jdbcType="INTEGER" />
+    <result column="CODE" property="code" jdbcType="VARCHAR" />
+    <result column="NAME" property="name" jdbcType="VARCHAR" />
+    <result column="LOTTERY_NUM" property="lotteryNum" jdbcType="INTEGER" />
+    <result column="STATUS" property="status" jdbcType="INTEGER" />
+    <result column="ADD_TIME" property="addTime" jdbcType="TIMESTAMP" />
+    <result column="ADD_USER_ID" property="addUserId" jdbcType="INTEGER" />
+    <result column="ADD_USER_NAME" property="addUserName" jdbcType="VARCHAR" />
+    <result column="ADD_IP" property="addIp" jdbcType="VARCHAR" />
+    <result column="REMARK" property="remark" jdbcType="VARCHAR" />
+    <result column="END_TIME" property="endTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    ID, CODE, NAME, LOTTERY_NUM, STATUS, ADD_TIME, ADD_USER_ID, ADD_USER_NAME, ADD_IP, 
+    REMARK, END_TIME
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from t_lottery_chance_rule_info
+    where ID = #{id,jdbcType=INTEGER}
+  </select>
+  
+  <!-- 根据Code查询符合当前时间的生效记录 -->
+  <select id="selectByCode" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from t_lottery_chance_rule_info
+    WHERE CODE = #{code} AND `STATUS` = 0 AND ADD_TIME  <![CDATA[ <= ]]> NOW()
+	AND NOW() <![CDATA[ <= ]]> END_TIME LIMIT 1
+  </select>
+  
+</mapper>

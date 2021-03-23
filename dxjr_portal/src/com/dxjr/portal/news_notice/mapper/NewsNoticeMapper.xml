@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.dxjr.portal.news_notice.mapper.NewsNoticeMapper">
+	
+	<!-- NewsNoticeVo结果集 -->
+	<resultMap type="com.dxjr.portal.news_notice.vo.NewsNoticeVo" id="newsNoticeVoResultMap">
+		<id property="id" column="id" />
+		<result property="type" 				column="TYPE" />
+		<result property="status" 				column="STATUS" />
+		<result property="hits" 				column="HITS" />
+		<result property="source" 				column="SOURCE" />
+		<result property="title"	    		column="TITLE" />
+		<result property="author"  				column="AUTHOR" />
+		<result property="context" 				column="CONTEXT" />
+		<result property="addtime" 				column="ADDTIME" />
+		<result property="addip" 				column="ADDIP" />
+		<result property="updatetime" 			column="UPDATETIME" />
+		<result property="upip" 				column="UPIP" />
+	</resultMap>
+	
+	<!--新闻公告类基本列 -->
+	<sql id="newsNoticeVoColumn">
+		n.ID, 
+		n.TYPE, 
+		n.STATUS, 
+		n.HITS, 
+		n.SOURCE, 
+		n.TITLE, 
+		n.AUTHOR, 
+		n.CONTEXT, 
+		n.ADDTIME, 
+		n.ADDIP, 
+		n.UPDATETIME, 
+		n.UPIP
+	</sql>
+	
+	<!-- 封装查询条件 -->
+	<sql id="news_notice_Where_Clause">
+		<if test="id != null">
+			and n.id =#{id}
+		</if>
+		<if test="type != null">
+			and n.type = #{type}
+		</if>
+		<if test="status != null">
+			and n.status = #{status}
+		</if>
+		<if test="title != null and title != ''">
+			and n.title like '%' #{title} '%' 
+		</if>
+		
+		<if test="beginTime != null and beginTime != ''">
+			and n.ADDTIME &gt;= #{beginTime} 
+		</if>
+		
+		<if test="endTime != null and endTime != ''">
+			and n.ADDTIME &lt;= #{endTime} 
+		</if>
+		
+		<if test="hits != null">
+			and n.HITS &gt;= #{hits} 
+		</if>
+	</sql>
+  	
+  	<!-- 根据条件查询新闻公告记录集合 -->
+	<select id="queryNewsNoticeList" parameterType="com.dxjr.portal.news_notice.vo.NewsNoticeCnd" resultMap="newsNoticeVoResultMap" >
+		select 	
+		   <include refid="newsNoticeVoColumn"/>
+		from
+			rocky_news_notice n
+		where 1=1
+		<include refid="news_notice_Where_Clause"/>
+		ORDER BY n.UPDATETIME DESC,n.ADDTIME DESC
+  	</select>
+  	
+  	  	<!-- 根据条件查询新闻公告记录数量-->
+	<select id="queryNewsNoticeCount" parameterType="com.dxjr.portal.news_notice.vo.NewsNoticeCnd" resultType="java.lang.Integer" >
+		select count(n.id)
+		from
+			rocky_news_notice n
+		where 1=1
+		<include refid="news_notice_Where_Clause"/>
+  	</select>
+  	
+  	<!-- 根据条件查询新闻公告记录集合（分页） -->
+	<select id="queryNewsNoticeListForPage" parameterType="com.dxjr.portal.news_notice.vo.NewsNoticeCnd" resultMap="newsNoticeVoResultMap" >
+		select 	
+		   <include refid="newsNoticeVoColumn"/>
+		from
+			rocky_news_notice n
+		where 1=1
+		<include refid="news_notice_Where_Clause"/>
+		ORDER BY n.ADDTIME DESC,n.UPDATETIME DESC
+  	</select>
+  	
+  	
+  	<select id="queryNewNewsNoticeList" parameterType="java.util.Map" resultMap="newsNoticeVoResultMap" >
+		select 	
+		   <include refid="newsNoticeVoColumn"/>
+		from rocky_news_notice n
+		where 1=1 and  status =0   and type  =#{type} 
+		ORDER BY n.ADDTIME DESC  limit  #{start}, #{count} 
+  	</select>
+  	
+  	<!-- 幻灯管理查询 -->
+  	<select id="queryListSlideshowByCnd" parameterType="com.dxjr.portal.index.vo.SlideshowCnd" resultType="com.dxjr.portal.index.vo.SlideshowVo" >
+		select 	
+		TITLE title,S_IMAGE sImage,IMAGE_URL imageUrl,DESCRIPTION description
+		from t_cms_slideshow 
+		where S_TYPE  = #{slideshowCnd.sType}  and `STATUS` =0 and  #{slideshowCnd.nowTime}>=START_TIME  and #{slideshowCnd.nowTime}&lt;= END_TIME
+		ORDER BY `ORDER` asc limit  #{slideshowCnd.sStart}, #{slideshowCnd.sEnd} 
+  	</select>
+  	
+  	
+</mapper>  

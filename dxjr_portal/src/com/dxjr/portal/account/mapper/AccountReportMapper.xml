@@ -1,0 +1,522 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.dxjr.portal.account.mapper.AccountReportMapper">
+	<!-- 根据用户id查询用来统计待收罚息的数据集合结果集 -->
+	<resultMap type="com.dxjr.portal.account.vo.UnReceiveInterestVo" id="unReceiveInterestResultMap">
+	    <id property="id" 					column="ID"/>
+		<association property="bcollectionRecordVo" javaType="com.dxjr.portal.collection.vo.BCollectionRecordVo">
+			 <id property="id" 					column="ID"/>
+			 <result property="status"			column="STATUS"/>
+			 <result property="order"			column="ORDER"/>
+			 <result property="tenderId"		column="TENDER_ID"/>
+			 <result property="repayTime"		column="REPAY_TIME"/>
+			 <result property="repayYestime"	column="REPAY_YESTIME"/>
+			 <result property="repayAccount"	column="REPAY_ACCOUNT"/>
+			 <result property="repayYesaccount"	column="REPAY_YESACCOUNT"/>
+			 <result property="interest"		column="INTEREST"/>
+			 <result property="capital"			column="CAPITAL"/>
+			 <result property="lateDays"		column="LATE_DAYS"/>
+			 <result property="lateInterest"	column="LATE_INTEREST"/>
+			 <result property="addtime"			column="ADDTIME"/>
+			 <result property="addip"			column="ADDIP"/>
+			 <result property="advancetime"		column="ADVANCETIME"/>
+			 <result property="firstBorrowId"	column="FIRST_BORROW_ID"/>
+			 <result property="isFirstBorrow"	column="IS_FIRST_BORROW"/>
+			 <result property="vipApp_passed"   column="vipApp_passed"/>
+		</association>
+		<association property="borrowVo" javaType="com.dxjr.portal.borrow.vo.BorrowVo">
+			 <result property="status" 			column="borrowStatus"/>
+			 <result property="borrowtype"		column="borrowType"/>
+			 <result property="style"			column="borrowStyle"/>
+			 <result property="timeLimit"		column="borrowTimeLimit"/>
+		</association>	
+		<association property="brepaymentRecordVo" javaType="com.dxjr.portal.repayment.vo.BRepaymentRecordVo">
+			 <result property="webstatus" 	column="repaymentWebStatus"/>
+			 <result property="status"		column="repaymentStatus"/>
+		</association>			
+	</resultMap>
+	
+  	<!-- 根据用户id查询用来统计待收罚息的数据集合 -->
+	<select id="queryUnReceiveLateInterestTotal" parameterType="java.lang.Integer"  resultType="java.math.BigDecimal">
+		SELECT 
+		    ifnull(SUM(
+		    	IF((temp.LATE_INTEREST=0 OR LATE_INTEREST IS NULL),
+			        (CASE 
+						WHEN temp.BORROWTYPE IN(1,2,5) THEN ROUND(temp.repay_account*0.001*temp.latedays,2)
+						WHEN temp.BORROWTYPE = 3 THEN ROUND(temp.repay_account*0.002*temp.latedays,2)
+						ELSE 0
+			        END),
+			        temp.LATE_INTEREST
+			    )
+		    ),0) AS lateInterestTotal
+		FROM ( 
+			SELECT 
+			    b.BORROWTYPE,c.repay_account,c.LATE_INTEREST,
+			    CASE 
+			    WHEN (r.`STATUS` = 1 AND r.IS_REPAIR_INTEREST = 0)
+			    THEN  (CASE 
+					WHEN r.WEBSTATUS = 1 THEN DATEDIFF(DATE_FORMAT(r.ADVANCETIME,'%Y-%m-%d'), DATE_FORMAT(FROM_UNIXTIME(r.REPAYMENT_TIME),'%Y-%m-%d')) 
+					ELSE DATEDIFF(DATE_FORMAT(FROM_UNIXTIME(r.REPAYMENT_YESTIME),'%Y-%m-%d'), DATE_FORMAT(FROM_UNIXTIME(r.REPAYMENT_TIME),'%Y-%m-%d')) 
+				   END)
+			    WHEN r.status = 0
+			    THEN (CASE 
+					WHEN r.WEBSTATUS = 1 THEN DATEDIFF(DATE_FORMAT(r.ADVANCETIME,'%Y-%m-%d'), DATE_FORMAT(FROM_UNIXTIME(r.REPAYMENT_TIME),'%Y-%m-%d')) 
+					ELSE DATEDIFF(DATE_FORMAT(CURDATE(),'%Y-%m-%d'), DATE_FORMAT(FROM_UNIXTIME(r.REPAYMENT_TIME),'%Y-%m-%d'))
+				    END                     
+				 )
+			    END latedays
+			FROM ROCKY_B_COLLECTIONRECORD c, 
+			     rocky_b_tenderrecord t, 
+			     rocky_borrow b, 
+			     rocky_b_repaymentrecord r 
+			WHERE 1=1    
+			AND c.TENDER_ID=t.ID 
+			AND t.BORROW_ID = b.id 
+			AND r.BORROW_ID = b.id 
+			AND c.ORDER = r.ORDER 
+			AND t.user_id=#{memberId}
+		        AND (
+			     t.IS_VIP=1 OR (t.IS_VIP=0 AND r.WEBSTATUS = 0)
+		       )
+		       AND (
+		          (r.`STATUS` = 1 AND r.IS_REPAIR_INTEREST = 0)
+		          OR r.status = 0
+		       )
+		) temp WHERE latedays > 0
+  	</select>
+  	
+  	<!-- 查询某个用户的投标直通车总额-->
+	<select id="queryFirstTotalByUserId" parameterType="java.lang.Integer" resultType="java.math.BigDecimal" >
+		SELECT sum(ftr.account) 
+		from t_first_tender_real ftr
+		WHERE ftr.USER_ID = #{memberId} and ftr.status in (0,3)
+  	</select>
+  	
+  	 <!-- 查询某个用户的投标直通车可用余额-->
+	<select id="queryFirstUseMoneyByUserId" parameterType="java.lang.Integer" resultType="java.math.BigDecimal" >
+		SELECT sum(ftr.USE_MONEY) 
+		from t_first_tender_real ftr
+		WHERE ftr.STATUS in (0,3) 
+		AND ftr.USER_ID = #{memberId} 
+  	</select>
+  	
+  	<!-- 查询某个用户的投标直通车可用余额-->
+	<select id="queryFirstTransferingUseMoney" parameterType="java.lang.Integer" resultType="java.math.BigDecimal" >
+		SELECT sum(ftr.USE_MONEY) 
+		from t_first_tender_real ftr
+		WHERE ftr.STATUS = 3 
+		AND ftr.USER_ID = #{memberId} 
+  	</select>
+  	
+  	 <!--查询某个用户ID投标直通车冻结总额-->
+	<select id="queryFirstFreezeAccountByMemberId" parameterType="java.lang.Integer" resultType="java.math.BigDecimal" >
+			SELECT SUM(b.ACCOUNT) 
+			FROM t_first_tender_detail b 
+			WHERE 1=1
+			and b.STATUS = 0
+			AND b.USER_ID = #{memberId}
+  	</select>  	
+  	
+  	 <!--查询某个用户ID下投标冻结的总计-->
+	<select id="queryLockAccountTotalByMemberId" parameterType="java.lang.Integer" resultType="java.math.BigDecimal" >
+		SELECT SUM(b.ACCOUNT) 
+		FROM rocky_b_tenderrecord b,
+			 rocky_borrow d 
+		WHERE 1=1
+		and b.STATUS = 0 
+		AND b.USER_ID = #{memberId}
+		AND d.ID = b.BORROW_ID 
+		AND (d.STATUS = 2 or d.STATUS = 3) 
+  	</select>
+  	
+  	<!--查询某个用户所有的债转冻结--> 
+	<select id="queryTransferLockAccountTotalByMemberId" parameterType="java.lang.Integer" resultType="java.math.BigDecimal" >
+		SELECT SUM(ACCOUNT)
+		FROM rocky_b_subscribe where STATUS=1 and USER_ID= #{memberId}
+  	</select>
+  	
+  	<!--查询某个用户的债权转让 和 认购的盈亏总和--> 
+	<select id="queryTransferDiffByMemberId" parameterType="java.lang.Integer" resultType="java.math.BigDecimal" >
+		   SELECT SUM(diff) FROM (
+			 SELECT  sum(ACCOUNT_REAL - CAPITAL) diff  FROM  rocky_b_transfer rbt WHERE
+			  rbt.STATUS=4  AND  rbt.USER_ID=#{memberId} 
+			 <!--  UNION ALL
+			 SELECT SUM(ACCOUNT-REPAYMENT_CAPITAL) diff FROM rocky_b_subscribe rbs WHERE  
+			    rbs.STATUS=3 AND rbs.USER_ID=#{memberId}  --> ) tt  
+  	</select>
+  	
+  	<!--查询某个用户的转让债权金额总和--> 
+	<select id="queryTransferDiffByUserId" parameterType="java.lang.Integer" resultType="java.math.BigDecimal" >
+		   SELECT ROUND(IFNULL(SUM(ROUND(INTEREST*COEF,8)+ROUND(CAPITAL*(COEF-1),8) - INTEREST_DIFF - INTEREST_MANAGE_FEE),0),2)  diff 
+		     FROM rocky_b_transfer 
+		     WHERE STATUS=4 
+		       AND USER_ID = #{memberId};
+  	</select>
+
+  	<!--查询某个用户的认购债权金额总和--> 
+	<select id="querySubscribeDiffByUserId" parameterType="java.lang.Integer" resultType="java.math.BigDecimal" >
+		   SELECT ROUND(IFNULL(SUM(ROUND(BT.CAPITAL*(1-BT.COEF)*ROUND((BS.ACCOUNT/BT.ACCOUNT_REAL),8),8) + ROUND(BT.INTEREST_DIFF*ROUND((BS.ACCOUNT/BT.ACCOUNT_REAL),8),8) + ROUND(BT.INTEREST*ROUND((BS.ACCOUNT/BT.ACCOUNT_REAL),8)*BS.RATIO,8) - ROUND(BT.INTEREST*BT.COEF*ROUND((BS.ACCOUNT/BT.ACCOUNT_REAL),8),8)),0),2)  diff 
+		     FROM rocky_b_transfer BT INNER JOIN rocky_b_subscribe BS ON BT.ID = BS.TRANSFER_ID AND BS.`STATUS` = 3
+			WHERE BT.`STATUS` = 4 AND BS.USER_ID = #{memberId};
+  	</select>
+  	
+  	<!--查询某个用户的转让直通车债权金额总和--> 
+	<select id="queryFirstTransferDiffByUserId" parameterType="java.lang.Integer" resultType="java.math.BigDecimal" >
+		   SELECT IFNULL(SUM(INTEREST - INTEREST_DIFF),0) diff 
+		     FROM t_first_transfer 
+		    WHERE `STATUS` = 4 
+		      AND USER_ID = #{memberId};
+  	</select>
+  	
+  	<!--查询某个用户的认购直通车债权金额总和--> 
+	<select id="queryFirstSubscribeDiffByUserId" parameterType="java.lang.Integer" resultType="java.math.BigDecimal" >
+		   SELECT IFNULL(SUM(INTEREST_DIFF - INTEREST),0) diff
+		   	FROM t_first_transfer FT INNER JOIN t_first_subscribe FS ON FS.FIRST_TRANSFER_ID = FT.ID AND FS.`STATUS` = 3 
+			WHERE FT.`STATUS` = 4 AND FS.USER_ID = #{memberId};
+  	</select>
+  	
+  	 <!--查询某个用户所有的提现冻结--> 
+	<select id="queryLockCashTotalByMemberId" parameterType="java.lang.Integer" resultType="java.math.BigDecimal" >
+		SELECT SUM(C.TOTAL)
+		FROM rocky_cashrecord C 
+		WHERE 1=1
+		and (C.STATUS = 0 OR C.STATUS = 1) 
+		AND C.USER_ID = #{memberId} and c.IS_CUSTODY!=1
+  	</select>
+  	
+  	 <!--查询某个用户ID下已赚利息的总计-->
+	<select id="queryYesInterstTotalByMemberId" parameterType="java.lang.Integer" resultType="java.math.BigDecimal" >
+		 SELECT SUM(c.INTEREST) 
+		 FROM rocky_b_collectionrecord c,
+		 	  rocky_b_tenderrecord t
+		 where 1=1
+		 and (c.status=1 OR c.status=2 or c.status=3)
+		 AND c.TENDER_ID = t.id
+		 AND t.user_id=#{memberId} 
+  	</select> 
+  	 <!--查询某个用户ID下定期宝的本金总计-->
+  		<select id="queryFixTotalByUserId" parameterType="java.lang.Integer" resultType="java.math.BigDecimal" >
+		 SELECT SUM(c.ACCOUNT) 
+		 FROM t_fix_tender_detail c 
+		 where 1=1
+		 and (c.status=0 OR c.status=1 )
+		 AND c.user_id=#{memberId} 
+  	</select> 
+  	 <!--查询某个用户ID下定期宝预期利息的总计-->
+  		<select id="queryFixInterestNoByUserId" parameterType="java.lang.Integer" resultType="java.math.BigDecimal" >
+		 SELECT SUM(c.INTEREST) 
+		 FROM t_fix_collectionrecord c
+		 where 1=1
+		 and  c.status=0  
+		 AND c.user_id=#{memberId} 
+
+  	</select> 
+  	
+  	
+  	  	 <!--查询某个用户ID下已赚利息的总计-->
+	<select id="queryFixInterestYesByUserId" parameterType="java.lang.Integer" resultType="java.math.BigDecimal" >
+		 SELECT SUM(c.INTEREST) 
+		 FROM t_fix_collectionrecord c
+		 where 1=1
+		 and  c.status=1   
+		 AND c.user_id=#{memberId}
+  	</select> 
+  	
+  	
+  	<!-- （普通标+购买债权）- 代收本金  -->
+  	<select id="queryDsbjByMemberId" parameterType="java.lang.Integer" resultType="java.math.BigDecimal" >
+		    select sum(c.capital) from rocky_b_collectionrecord c INNER JOIN rocky_b_tenderrecord r 
+			on c.TENDER_ID = r.id
+			where 1=1 
+			and c.status = 0 
+			and c.USER_ID = #{memberId} 
+			and r.status = 1
+			and (c.FIRST_BORROW_ID is null or c.IS_FIRST_BORROW = 2)
+  	</select> 
+  	
+  	
+  	<!-- 普通投标- 待收罚息-去掉直通车的   -->
+  	<select id="queryUnReceiveLateInterestList" parameterType="java.lang.Integer" resultType="java.math.BigDecimal" >
+		SELECT 
+		ifnull(SUM( 
+		IF((temp.LATE_INTEREST=0 OR LATE_INTEREST IS NULL), 
+		(CASE 
+		WHEN temp.BORROWTYPE IN(1,2,5) THEN ROUND(temp.repay_account*0.001*temp.latedays,2) 
+		WHEN temp.BORROWTYPE = 3 THEN ROUND(temp.repay_account*0.002*temp.latedays,2) 
+		ELSE 0 
+		END), 
+		temp.LATE_INTEREST 
+		) 
+		),0) AS lateInterestTotal 
+		FROM ( 
+		SELECT 
+		b.BORROWTYPE,c.repay_account,c.LATE_INTEREST, 
+		CASE 
+		WHEN (r.`STATUS` = 1 AND r.IS_REPAIR_INTEREST = 0) 
+		THEN (CASE 
+		WHEN r.WEBSTATUS = 1 THEN DATEDIFF(DATE_FORMAT(r.ADVANCETIME,'%Y-%m-%d'), DATE_FORMAT(FROM_UNIXTIME(r.REPAYMENT_TIME),'%Y-%m-%d')) 
+		ELSE DATEDIFF(DATE_FORMAT(FROM_UNIXTIME(r.REPAYMENT_YESTIME),'%Y-%m-%d'), DATE_FORMAT(FROM_UNIXTIME(r.REPAYMENT_TIME),'%Y-%m-%d')) 
+		END) 
+		WHEN r.status = 0 
+		THEN (CASE 
+		WHEN r.WEBSTATUS = 1 THEN DATEDIFF(DATE_FORMAT(r.ADVANCETIME,'%Y-%m-%d'), DATE_FORMAT(FROM_UNIXTIME(r.REPAYMENT_TIME),'%Y-%m-%d')) 
+		ELSE DATEDIFF(DATE_FORMAT(CURDATE(),'%Y-%m-%d'), DATE_FORMAT(FROM_UNIXTIME(r.REPAYMENT_TIME),'%Y-%m-%d')) 
+		END 
+		) 
+		END latedays 
+		FROM ROCKY_B_COLLECTIONRECORD c, 
+		rocky_b_tenderrecord t, 
+		rocky_borrow b, 
+		rocky_b_repaymentrecord r 
+		WHERE 1=1 
+		and c.FIRST_BORROW_ID is null
+		and c.FIRST_TENDER_REAL_ID is null
+		AND c.TENDER_ID=t.ID 
+		AND t.BORROW_ID = b.id 
+		AND r.BORROW_ID = b.id 
+		AND c.ORDER = r.ORDER 
+		AND t.user_id= #{memberId}
+		AND ( 
+		t.IS_VIP=1 OR (t.IS_VIP=0 AND r.WEBSTATUS = 0) 
+		) 
+		AND ( 
+		(r.`STATUS` = 1 AND r.IS_REPAIR_INTEREST = 0) 
+		OR r.status = 0 
+		) 
+		) temp WHERE latedays > 0 
+  	</select> 
+  	
+  	
+  	
+  	 <!--查询某个用户ID下扣除提前还款利息的总计-->
+	<select id="querySubtractEarlyInterestTotalByMemberId" parameterType="java.lang.Integer" resultType="java.math.BigDecimal" >
+		SELECT SUM(money) FROM rocky_accountlog
+		WHERE user_id=#{memberId} 
+		AND TYPE='subtract_early_interest'
+  	</select>
+
+  	 <!--查询某个用户ID下增加提前还款利息的总计-->
+	<select id="queryAddEarlyInterestTotalByMemberId" parameterType="java.lang.Integer" resultType="java.math.BigDecimal" >
+		SELECT SUM(money) FROM rocky_accountlog
+		WHERE user_id=#{memberId} 
+		AND TYPE='add_early_interest'
+  	</select>
+  	
+  	 <!--查询某个用户ID下非VIP阶段网站垫付不用付出的利息的总计-->
+	<select id="queryNoVipNoInterestTotalByMemberId" parameterType="java.lang.Integer" resultType="java.math.BigDecimal" >
+		SELECT SUM(money) FROM rocky_accountlog
+		WHERE user_id=#{memberId}
+		AND TYPE='no_vip_no_interest'
+  	</select>   	
+  	
+  	 <!--查询某个用户ID下待收利息的总计-->
+	<select id="queryUnReceiveInterstTotalByMemberId" parameterType="java.lang.Integer" resultType="java.math.BigDecimal" >
+		SELECT SUM(c.INTEREST) 
+		FROM rocky_b_collectionrecord c,
+			 rocky_b_tenderrecord t 
+	    WHERE c.status=0 
+	    AND c.TENDER_ID = t.id 
+	    AND t.USER_ID = #{memberId}
+  	</select>
+  	
+  	<select id="queryInterestBackTotalByMemberId" parameterType="java.lang.Integer" resultType="java.math.BigDecimal" >
+  		SELECT SUM(money) FROM rocky_accountlog WHERE user_id=#{memberId} AND TYPE='interest_back';
+  	</select>
+  	
+  	 <!--根据用户Id和类型集合获取金额.-->
+	<select id="queryMoneyByType" resultType="java.math.BigDecimal" >
+		select sum(MONEY) 
+		FROM ROCKY_ACCOUNTLOG 
+		where USER_ID = #{memberId} 
+		<foreach collection="types" item="type" separator="or" open="and (" close=")">
+			<if test="type == 'vip_cost'" >
+				(type = #{type} and remark='vip认证通过')
+		    </if>
+			<if test="type != 'vip_cost'" >
+				type = #{type} 
+			</if>			
+		</foreach>
+  	</select>   
+  	
+  	<!--查询某个用户所有的已收罚息总计-->
+	<select id="queryReceiveInterestByMemberId" parameterType="java.lang.Integer" resultType="java.math.BigDecimal" >
+		select sum(money) from rocky_accountlog a 
+		where user_id=#{memberId}
+		and type='later_interest_back' 
+  	</select>
+  	
+  	<!--查询某个用户ID待付利息费和比率集合-->
+	<select id="queryToPayInterstListByMemberId" parameterType="java.lang.Integer" resultType="com.dxjr.portal.account.vo.RatioMoneyVo" >
+		SELECT t.RATIO 				as ratio,
+			   SUM(c.INTEREST) 		as interest 
+		FROM rocky_b_tenderrecord t,
+			 rocky_borrow b,
+			 rocky_b_collectionrecord c
+		WHERE c.STATUS = 0 
+		AND t.USER_ID = #{memberId}
+		AND t.BORROW_ID = b.ID 
+		AND c.TENDER_ID = t.ID 
+		AND (b.BORROWTYPE = 2 or b.BORROWTYPE = 1 or b.BORROWTYPE = 5)
+		AND NOT(c.FIRST_BORROW_ID IS NOT NULL AND c.IS_FIRST_BORROW=1 AND c.REPAY_TIME>=UNIX_TIMESTAMP('2015-03-10'))
+		GROUP BY t.RATIO 
+  	</select>  	
+  	
+  	<!--查询某个用户ID下已付罚息的总计-->
+	<select id="queryPayLateInterestByMemberId" parameterType="java.lang.Integer" resultType="java.math.BigDecimal" >
+			SELECT SUM(b.LATE_INTEREST)
+			FROM rocky_b_repaymentrecord b 
+			WHERE b.STATUS = 1 
+			AND b.USER_ID = #{memberId}
+  	</select> 
+  	
+  	<!--查询某个用户ID下待付罚息的总计-->
+	<select id="queryUnPayLateInterestByMemberId" parameterType="java.lang.Integer" resultType="java.math.BigDecimal" >
+		SELECT SUM(
+				ROUND((INTEREST+CAPITAL)*2/1000, 4)*
+				(IF(TO_DAYS(NOW())-TO_DAYS(FROM_UNIXTIME(b.REPAYMENT_TIME,'%y-%m-%d'))>0,TO_DAYS(NOW())-TO_DAYS(FROM_UNIXTIME(b.REPAYMENT_TIME,'%y-%m-%d')),0 ))
+				) 
+		 FROM rocky_b_repaymentrecord b WHERE b.STATUS = 0 AND b.USER_ID = #{memberId}
+  	</select>  	
+  	
+  	  <!--查询某个用户所有的提现手续费-->
+	<select id="queryCashCostByMemberId" parameterType="java.lang.Integer" resultType="java.math.BigDecimal" >
+		SELECT SUM(C.fee) 
+		FROM rocky_cashrecord C 
+		WHERE (C.STATUS = 2) 
+		AND C.USER_ID = #{memberId} 
+  	</select> 
+  	
+  	  <!--查询某个用户ID下单纯的已付利息的总计(未去除提前还款)-->
+	<select id="queryHavaPayInterestByMemberId" parameterType="java.lang.Integer" resultType="java.math.BigDecimal" >
+		SELECT SUM(b.INTEREST) 
+		FROM rocky_b_repaymentrecord b 
+		WHERE b.STATUS = 1
+		AND b.USER_ID = #{memberId} 
+  	</select>   	
+  	
+  	  <!--查询某个用户ID下待还利息的总计-->
+	<select id="queryWaitPayInterestByMemberId" parameterType="java.lang.Integer" resultType="java.math.BigDecimal" >
+		SELECT SUM(b.INTEREST) 
+		FROM rocky_b_repaymentrecord b 
+		WHERE b.STATUS = 0 
+		AND b.USER_ID = #{memberId}  
+  	</select>
+  	
+  	  <!--查询某个用户ID下待还利息的总计-->
+	<select id="queryRechargeFeeTotalByMemberId" parameterType="java.lang.Integer" resultType="java.math.BigDecimal" >
+		SELECT SUM(R.FEE) 
+		FROM rocky_rechargerecord R 
+		WHERE R.STATUS = '1' 
+		AND R.USER_ID = #{memberId}  
+  	</select>
+  	
+  	<!--查询某个用户ID转让债权金额总计-->
+	<select id="queryFirstTransferDiffByMemberId" parameterType="java.lang.Integer" resultType="java.math.BigDecimal" >
+		SELECT SUM(t.INTEREST-t.INTEREST_DIFF) FROM t_first_transfer t
+		WHERE t.`STATUS` = 4
+		and t.USER_ID = #{memberId}
+  	</select>
+  	
+  	<!--查询某个用户ID认购债权金额总计-->
+	<select id="queryFirstSubscribeDiffByMemberId" parameterType="java.lang.Integer" resultType="java.math.BigDecimal" >
+		SELECT SUM(ft.INTEREST_DIFF-ft.INTEREST) FROM t_first_subscribe fs 
+		INNER JOIN t_first_transfer ft ON fs.FIRST_TRANSFER_ID = ft.ID AND fs.`STATUS` = 3 AND ft.`STATUS` = 4
+		WHERE fs.USER_ID = #{memberId}
+  	</select>
+  	
+  	<!--查询某个用户ID转让债权金额总计-->
+	<select id="querySumManageFeeByMemberId" parameterType="java.lang.Integer" resultType="java.math.BigDecimal" >
+		SELECT SUM(t.MANAGE_FEE) FROM t_first_transfer t
+		WHERE t.`STATUS` = 4
+		and t.USER_ID = #{memberId}
+  	</select>
+  	
+  	
+  	<!--按月份 - 查询某个用户的转让债权金额总和 hj add --> 
+  	<select id="queryTransferDiffByUserIdMonth" parameterType="com.dxjr.portal.account.vo.UnReceiveInterestCnd" resultType="java.math.BigDecimal" >
+		   SELECT ROUND(IFNULL(SUM(ROUND(INTEREST*COEF,8)+ROUND(CAPITAL*(COEF-1),8) - INTEREST_DIFF - INTEREST_MANAGE_FEE),0),2)  diff 
+		     FROM rocky_b_transfer 
+		     WHERE STATUS=4 
+		     AND USER_ID = #{userId}
+		     and SUCCESS_TIME BETWEEN DATE_FORMAT(#{sDate}, '%Y-%m-%d')	 and DATE_FORMAT(#{eDate}, '%Y-%m-%d')
+  	</select>
+  	
+  	
+  	
+  	<!--  按月份 -  查询某个用户的转让直通车债权金额总和--> 
+	<select id="queryFirstTransferDiffByUserIdMonth" parameterType="com.dxjr.portal.account.vo.UnReceiveInterestCnd" resultType="java.math.BigDecimal" >
+		   SELECT IFNULL(SUM(INTEREST - INTEREST_DIFF),0) diff 
+		     FROM t_first_transfer 
+		     WHERE `STATUS` = 4 
+		     AND USER_ID = #{userId}
+		     and SUCCESS_TIME BETWEEN DATE_FORMAT(#{sDate}, '%Y-%m-%d')	 and DATE_FORMAT(#{eDate}, '%Y-%m-%d')
+  	</select>
+  	
+  	
+  	<!--   按月份 - 查询某个用户的认购债权金额总和--> 
+	<select id="querySubscribeDiffByUserIdMonth" parameterType="com.dxjr.portal.account.vo.UnReceiveInterestCnd" resultType="java.math.BigDecimal" >
+		   SELECT ROUND(IFNULL(SUM(ROUND(BT.CAPITAL*(1-BT.COEF)*ROUND((BS.ACCOUNT/BT.ACCOUNT_REAL),8),8) + ROUND(BT.INTEREST_DIFF*ROUND((BS.ACCOUNT/BT.ACCOUNT_REAL),8),8) + ROUND(BT.INTEREST*ROUND((BS.ACCOUNT/BT.ACCOUNT_REAL),8)*BS.RATIO,8) - ROUND(BT.INTEREST*BT.COEF*ROUND((BS.ACCOUNT/BT.ACCOUNT_REAL),8),8)),0),2)  diff 
+		     FROM rocky_b_transfer BT INNER JOIN rocky_b_subscribe BS ON BT.ID = BS.TRANSFER_ID AND BS.`STATUS` = 3
+			WHERE BT.`STATUS` = 4 AND BS.USER_ID = #{userId}
+			and SUCCESS_TIME BETWEEN DATE_FORMAT(#{sDate}, '%Y-%m-%d')	 and DATE_FORMAT(#{eDate}, '%Y-%m-%d')
+  	</select>
+  	
+  	
+  	
+  	<!--按月份 -  查询某个用户的认购直通车债权金额总和--> 
+	<select id="queryFirstSubscribeDiffByUserIdMonth" parameterType="com.dxjr.portal.account.vo.UnReceiveInterestCnd" resultType="java.math.BigDecimal" >
+		   SELECT IFNULL(SUM(INTEREST_DIFF - INTEREST),0) diff
+		   	FROM t_first_transfer FT INNER JOIN t_first_subscribe FS ON FS.FIRST_TRANSFER_ID = FT.ID AND FS.`STATUS` = 3 
+			WHERE FT.`STATUS` = 4 AND FS.USER_ID = #{userId}
+			and SUCCESS_TIME BETWEEN DATE_FORMAT(#{sDate}, '%Y-%m-%d')	 and DATE_FORMAT(#{eDate}, '%Y-%m-%d')
+			
+  	</select>
+	<select id="queryBorrowInfo" parameterType="com.dxjr.portal.account.vo.UnReceiveInterestCnd" resultType="com.dxjr.portal.account.vo.AccountInfo" >
+	  SELECT IFNULL(bc.CAPITAL,0) as BCapitalTotal,IFNULL(bc.INTEREST,0) as BInterstTotal
+		 from 
+			 (SELECT SUM(CAPITAL) as CAPITAL,SUM(INTEREST) as INTEREST,USER_ID FROM rocky_b_collectionrecord 
+			 WHERE `STATUS`=0 and USER_ID&lt;100000000 AND USER_ID=#{userId} ) bc
+			 where 1=1 and bc.USER_ID=#{userId}
+	</select>
+	<select id="queryFixInfo" parameterType="com.dxjr.portal.account.vo.UnReceiveInterestCnd" resultType="com.dxjr.portal.account.vo.AccountInfo" >
+	  SELECT IFNULL(fix.fixCapitalTotal,0) as fixCapitalTotal,IFNULL(coll.fixInvestNoTotal,0) as fixInterstTotal
+		 from 
+    	     (SELECT USER_ID,SUM(c.ACCOUNT) as fixCapitalTotal FROM t_fix_tender_detail c where c.status in(0,1) and USER_ID=#{userId}) fix 
+	  	     LEFT JOIN (SELECT USER_ID,SUM(co.INTEREST) as fixInvestNoTotal FROM t_fix_collectionrecord co where co.status=0  and USER_ID=#{userId}) coll on fix.USER_ID = coll.USER_ID 
+			 where 1=1 and fix.USER_ID=#{userId}
+	</select>
+  	<select id="queryCurInfo" parameterType="com.dxjr.portal.account.vo.UnReceiveInterestCnd" resultType="com.dxjr.portal.account.vo.AccountInfo" >
+	  SELECT IFNULL(ca.TOTAL,0) as curTotal from  t_cur_account ca
+			 where 1=1 and ca.`STATUS`=0 and ca.USER_ID=#{userId}
+	</select>
+	<select id="queryRaAccountInfo" parameterType="com.dxjr.portal.account.vo.UnReceiveInterestCnd" resultType="com.dxjr.portal.account.vo.AccountInfo" >
+	  SELECT IFNULL(a.TOTAL,0) as raTotal,IFNULL(a.collection,0)+IFNULL(a.e_collection,0) as tenderTotal, IFNULL(a.use_money,0)+IFNULL(a.e_use_money,0)+IFNULL(a.FIRST_BORROW_USE_MONEY,0)+IFNULL(a.no_use_money,0)+IFNULL(a.e_freeze_money,0) as useMoneyTotal,
+	     IFNULL(a.no_use_money,0)+IFNULL(a.e_freeze_money,0) as freezeTotal,IFNULL(a.use_money,0)+IFNULL(a.FIRST_BORROW_USE_MONEY,0) as pUseMoneyTotal,
+	     IFNULL(a.no_use_money,0) as pFreezeTotal,IFNULL(a.e_use_money,0) as eUseMoneyTotal,IFNULL(a.e_freeze_money,0) as eFreezeTotal,
+	     IFNULL(a.collection,0)+IFNULL(a.e_collection,0) as raCollectionTotal,
+	     IFNULL(a.DRAW_MONEY,0) as drawMoney,IFNULL(a.NO_DRAW_MONEY,0) as noDrawMoney,
+	     IFNULL(a.use_money,0)+IFNULL(a.e_use_money,0) as ptUseMoney,IFNULL(a.FIRST_BORROW_USE_MONEY,0) as firstUseMoney
+		 from rocky_account a 
+			 where 1=1 and a.USER_ID=#{userId}
+	</select>
+	
+	<!-- 统计认购债权转让支付利息 -->
+	<select id="querySubsribeTransferPayMoney" parameterType="java.lang.Integer" resultType="java.math.BigDecimal" >
+	  SELECT IFNULL(SUM(yes_PAY_INTEREST), 0) FROM (
+		SELECT t1.TENDER_ID, t1.PAY_INTEREST, t1.collection_interest, t2.total_interest,
+		IFNULL(ROUND(t1.PAY_INTEREST*(t1.collection_interest/t2.total_interest), 2),0) as yes_PAY_INTEREST
+		FROM  (
+		SELECT s.TENDER_ID, s.PAY_INTEREST, SUM(c.INTEREST) collection_interest FROM rocky_b_subscribe s, rocky_b_collectionrecord c
+		WHERE s.USER_ID = #{userId} AND s.`STATUS` = 3
+		AND s.TENDER_ID = c.TENDER_ID AND c.`STATUS` = 0
+		GROUP BY s.TENDER_ID
+		) t1,(
+		SELECT s.TENDER_ID, s.PAY_INTEREST, SUM(c.INTEREST) total_interest FROM rocky_b_subscribe s, rocky_b_collectionrecord c
+		WHERE s.USER_ID = #{userId} AND s.`STATUS` = 3
+		AND s.TENDER_ID = c.TENDER_ID AND c.`STATUS` >= 0
+		GROUP BY s.TENDER_ID
+		) t2 WHERE t1.TENDER_ID = t2.TENDER_ID
+	  ) t
+	</select>
+</mapper>  

@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.dxjr.portal.account.mapper.ShareholderRankMapper">
+  	<!-- 返回的基本结果集 -->
+	<resultMap type="com.dxjr.portal.account.vo.ShareholderRankVo" id="shareholderRankBaseResultMap">
+		<id property="id" column="id" />
+		<result property="userId" 					column="user_id" />
+		<result property="dayInterst" 				column="day_interst" />
+		<result property="dayInterstRank" 			column="day_interst_rank" />
+		<result property="dayInterstScore"	    	column="day_interst_score" />
+		<result property="accumulatepoints"  		column="accumulatepoints" />
+		<result property="accumulatepointsRank" 	column="accumulatepoints_rank" />
+		<result property="accumulatepointsScore" 	column="accumulatepoints_score" />
+		<result property="firstTenderTotal" 		column="first_tender_total" />
+		<result property="firstTenderTotalRank" 	column="first_tender_total_rank" />
+		<result property="firstTenderTotalScore" 	column="first_tender_total_score" />
+		<result property="extensionNumber" 			column="extension_number" />
+		<result property="extensionNumberRank" 		column="extension_number_rank" />
+		<result property="extensionNumberScore" 	column="extension_number_score" />
+		<result property="totalScore" 				column="total_score" />
+		<result property="totalRank" 				column="total_rank" />
+		<result property="addtime"            		column="ADDTIME"/>
+		<result property="username"            		column="username"/>
+	</resultMap>
+	
+	<!--基本列 -->
+	<sql id="shareholderRankBaseColumn">
+		s.id,
+		s.day_interst,
+		s.day_interst_rank,
+		s.day_interst_score,
+		s.accumulatepoints,
+		s.accumulatepoints_rank,
+		s.accumulatepoints_score,
+		s.first_tender_total,
+		s.first_tender_total_rank,
+		s.first_tender_total_score,
+		s.extension_number,
+		s.extension_number_rank,
+		s.extension_number_score,
+		s.total_score,
+		s.total_rank
+	</sql>
+  	
+  	 <!-- 查询某人当天的综合排名信息-->
+	<select id="queryShareholderRankByUserId" parameterType="com.dxjr.portal.account.vo.ShareholderRankCnd" resultMap="shareholderRankBaseResultMap" >
+		SELECT <include refid="shareholderRankBaseColumn"/>
+			FROM rocky_shareholder_rank s WHERE s.user_id = #{userId} AND s.addtime = #{addtime}
+  	</select>
+  	
+  	 <!-- 股东加权统计，查询某类型排名200名的记录。-->
+	<select id="queryShareholderRankByType" parameterType="com.dxjr.portal.account.vo.ShareholderRankCnd" resultMap="shareholderRankBaseResultMap" >
+	    SELECT <include refid="shareholderRankBaseColumn"/>,
+	    (SELECT m.USERNAME FROM rocky_member m WHERE m.ID = s.user_id) username
+		FROM rocky_shareholder_rank s INNER JOIN ( SELECT id FROM rocky_shareholder_rank WHERE addtime = #{addtime} 
+		<if test="type == 1" >
+			<!-- 按加权待收排名 -->
+			and day_interst_rank <![CDATA[<=]]> 200 
+		</if>
+		<if test="type == 2" >
+			<!-- 按总积分收排名 -->
+			and accumulatepoints_rank <![CDATA[<=]]> 200 
+	    </if>
+		<if test="type == 3" >
+			<!-- 按直通车认购总额排名 -->
+			and first_tender_total_rank <![CDATA[<=]]> 200 
+	     </if>	
+		 <if test="type == 4" >
+		 	<!-- 按推广人数排 -->
+			and extension_number_rank <![CDATA[<=]]> 200 
+		 </if>
+		 <if test="type == 5" >
+		 	<!-- 按综合排名 -->
+		 	and total_rank <![CDATA[<=]]> 200 
+		 </if>
+		) ss WHERE s.id = ss.id ORDER BY 
+		<if test="type == 1" >
+			<!-- 按加权待收排名 -->
+			s.day_interst_rank asc,
+		</if>
+		<if test="type == 2" >
+			<!-- 按总积分收排名 -->
+			s.accumulatepoints_rank asc,
+	    </if>
+		<if test="type == 3" >
+			<!-- 按直通车认购总额排名 -->
+			s.first_tender_total_rank asc,
+	     </if>	
+		 <if test="type == 4" >
+		 	<!-- 按推广人数排 -->
+			s.extension_number_rank asc,
+		 </if>
+		 <if test="type == 5" >
+		 	<!-- 按综合排名 -->
+		 	s.total_rank asc,
+		 </if>
+		s.user_id asc
+  	</select>  	
+  	
+  	<!-- 初始化股东加权排名表数据 -->
+	<insert id="initShareholderRank" parameterType="java.lang.String">
+		INSERT INTO rocky_shareholder_rank (USER_ID, accumulatepoints, day_interst, first_tender_total, extension_number, addtime)
+		SELECT m.ID USER_ID, m.ACCUMULATEPOINTS,
+		(select sum(COLLECTION)/180 day_interst FROM rocky_account_day_log a where a.USER_ID = m.id AND ADDTIME <![CDATA[<=]]> concat(date_sub(curdate(),interval 1 day),' 23:59:59')) day_interst,
+		(SELECT SUM(ACCOUNT) FROM t_first_tender_real f WHERE f.USER_ID = m.ID AND f.`STATUS` = 0) first_tender_total,
+		(SELECT count(*) extension_number FROM rocky_member rm,rocky_realname_appro ra,rocky_vip_appro va,rocky_mobile_appro ma WHERE rm.INVITERID = m.ID AND rm.ID = ra.USER_ID AND ra.ISPASSED = 1 AND rm.ID = va.USER_ID AND va.PASSED = 1 AND rm.ID = ma.USER_ID AND ma.PASSED = 1 AND (SELECT SUM(MONEY) total_money FROM rocky_rechargerecord rr WHERE rr.USER_ID = rm.ID AND rr.status = 1) >= 1000 AND (SELECT count(c.id) FROM rocky_b_collectionrecord c,rocky_b_tenderrecord t WHERE c.TENDER_ID = t.ID AND t.user_id = rm.ID) > 0) extension_number, #{date}
+		FROM rocky_member m 
+		LEFT JOIN (
+		SELECT a.USER_ID  FROM rocky_account a INNER JOIN (SELECT USER_ID, MAX(TOTAL) TOTAL FROM rocky_accountlog WHERE TOTAL <![CDATA[>]]> 0 GROUP BY USER_ID) aa ON (a.USER_ID = aa.USER_ID AND a.TOTAL/aa.TOTAL <![CDATA[<=]]> 0.1)
+		UNION
+		SELECT m.id USER_ID FROM rocky_member m LEFT JOIN rocky_accountlog a ON m.ID = a.USER_ID WHERE a.USER_ID IS NULL
+		) u on m.ID = u.USER_ID 
+		WHERE u.user_id IS NULL and m.ID NOT in(2,66,408,371,693,5418,4911) 
+	</insert>
+	
+	<!-- 自动更新当天的加权待收排名 -->
+	<update id="updateDayInterstRank" parameterType="java.lang.String">
+		UPDATE rocky_shareholder_rank s INNER JOIN (
+		SELECT n.USER_ID,n.day_interst,m.rownum FROM (
+			SELECT a.*,@rank:=@rank+@sart as rownum,@sart:=a.num sart FROM (
+				SELECT t1.*,count(*) num FROM (
+					SELECT user_id,day_interst FROM rocky_shareholder_rank WHERE addtime = #{date} AND day_interst <![CDATA[>]]> 0
+				) t1 GROUP BY t1.day_interst ORDER BY t1.day_interst desc
+		  ) a,(SELECT @rank:=1) b,(SELECT @sart:=0) c
+		) m,(	
+			SELECT user_id,day_interst FROM rocky_shareholder_rank WHERE addtime = #{date} AND day_interst <![CDATA[>]]> 0
+		) n WHERE n.day_interst = m.day_interst 
+		) d on s.user_id = d.user_id AND s.addtime = #{date}
+		 SET s.day_interst_rank = d.rownum 
+    </update>
+    
+    <!-- 自动更新当天的累计总积分排名 -->
+	<update id="updateAccumulatepointsRank" parameterType="java.lang.String">
+		UPDATE rocky_shareholder_rank s INNER JOIN (
+		SELECT n.USER_ID,n.accumulatepoints,m.rownum FROM (
+			SELECT a.*,@rank:=@rank+@sart as rownum,@sart:=a.num sart FROM (
+				SELECT t1.*,count(*) num FROM (
+					SELECT user_id,accumulatepoints FROM rocky_shareholder_rank WHERE addtime = #{date} AND accumulatepoints <![CDATA[>]]> 0
+				) t1 GROUP BY t1.accumulatepoints ORDER BY t1.accumulatepoints desc
+		  ) a,(SELECT @rank:=1) b,(SELECT @sart:=0) c
+		) m,(	
+			SELECT user_id,accumulatepoints FROM rocky_shareholder_rank WHERE addtime = #{date} AND accumulatepoints <![CDATA[>]]> 0
+		) n WHERE n.accumulatepoints = m.accumulatepoints 
+		) a on s.user_id = a.user_id AND s.addtime = #{date}
+		 SET s.accumulatepoints_rank = a.rownum 
+    </update>
+    
+    <!-- 自动更新当天的优先投标总额排名 -->
+	<update id="updateFirstTenderTotalRank" parameterType="java.lang.String">
+		UPDATE rocky_shareholder_rank s INNER JOIN (
+		SELECT n.USER_ID,n.first_tender_total,m.rownum FROM (
+			SELECT a.*,@rank:=@rank+@sart as rownum,@sart:=a.num sart FROM (
+				SELECT t1.*,count(*) num FROM (
+					SELECT user_id,first_tender_total FROM rocky_shareholder_rank WHERE addtime = #{date} AND first_tender_total <![CDATA[>]]> 0
+				) t1 GROUP BY t1.first_tender_total ORDER BY t1.first_tender_total desc
+		  ) a,(SELECT @rank:=1) b,(SELECT @sart:=0) c
+		) m,(	
+			SELECT user_id,first_tender_total FROM rocky_shareholder_rank WHERE addtime = #{date} AND first_tender_total <![CDATA[>]]> 0
+		) n WHERE n.first_tender_total = m.first_tender_total 
+		) f ON s.user_id = f.user_id AND s.addtime = #{date}
+		 SET s.first_tender_total_rank = f.rownum 
+    </update>
+    
+    <!-- 自动更新当天的推广有效人数排名 -->
+	<update id="updateExtensionNumberRank" parameterType="java.lang.String">
+		UPDATE rocky_shareholder_rank s INNER JOIN (
+		SELECT n.USER_ID,n.extension_number,m.rownum FROM (
+			SELECT a.*,@rank:=@rank+@sart as rownum,@sart:=a.num sart FROM (
+				SELECT t1.*,count(*) num FROM (
+					SELECT user_id,extension_number FROM rocky_shareholder_rank WHERE addtime = #{date} AND extension_number <![CDATA[>]]> 0
+				) t1 GROUP BY t1.extension_number ORDER BY t1.extension_number desc
+		  ) a,(SELECT @rank:=1) b,(SELECT @sart:=0) c
+		) m,(	
+			SELECT user_id,extension_number FROM rocky_shareholder_rank WHERE addtime = #{date} AND extension_number <![CDATA[>]]> 0
+		) n WHERE n.extension_number = m.extension_number 
+		) e ON s.user_id = e.user_id AND s.addtime = #{date}
+		 SET s.extension_number_rank = e.rownum 
+    </update>
+    
+	<!-- 自动更新当天的加权待收排名得分 -->
+	<update id="updateShareholderRankForDayInterstScore" parameterType="java.lang.String">
+		UPDATE rocky_shareholder_rank SET day_interst_score = 100 - (day_interst_rank - 1)*0.5 
+		WHERE day_interst_rank <![CDATA[<=]]> 200 and addtime = #{date}
+    </update>
+    
+    <!-- 自动更新当天的累计总积分排名得分 -->
+	<update id="updateShareholderRankForAccumulatepointsScore" parameterType="java.lang.String">
+		UPDATE rocky_shareholder_rank SET accumulatepoints_score = 100 - (accumulatepoints_rank - 1)*0.5 
+		WHERE accumulatepoints_rank <![CDATA[<=]]> 200 and addtime = #{date}
+    </update>
+    
+    <!-- 自动更新当天的优先投标总额排名得分 -->
+	<update id="updateShareholderRankForFirstTenderTotalScore" parameterType="java.lang.String">
+		UPDATE rocky_shareholder_rank SET first_tender_total_score = 100 - (first_tender_total_rank - 1)*0.5 
+		WHERE first_tender_total_rank <![CDATA[<=]]> 200 and addtime = #{date}
+    </update>
+    
+    <!-- 自动更新当天的推广有效人数排名得分 -->
+	<update id="updateShareholderRankForExtensionNumberScore" parameterType="java.lang.String">
+		UPDATE rocky_shareholder_rank SET extension_number_score = 100 - (extension_number_rank - 1)*0.5 
+		WHERE extension_number_rank <![CDATA[<=]]> 200 and addtime = #{date}
+    </update>
+    
+    <!-- 自动更新当天的推广有效人数排名得分 -->
+	<update id="updateShareholderRankForTotalScore" parameterType="java.lang.String">
+		UPDATE rocky_shareholder_rank SET total_score = day_interst_score * 0.4 + accumulatepoints_score * 0.3 + first_tender_total_score*0.2+ extension_number_score*0.1 
+		where addtime = #{date}
+    </update>
+    
+    <!-- 更新当天综合排名 -->
+	<update id="updateTotalRank" parameterType="java.lang.String">
+		UPDATE rocky_shareholder_rank s INNER JOIN (
+		SELECT n.USER_ID,n.total_score,m.rownum FROM (
+			SELECT a.*,@rank:=@rank+@sart as rownum,@sart:=a.num sart FROM (
+				SELECT t1.*,count(*) num FROM (
+					SELECT user_id,total_score FROM rocky_shareholder_rank WHERE addtime = #{date} AND total_score <![CDATA[>]]> 0
+				) t1 GROUP BY t1.total_score ORDER BY t1.total_score desc
+		  ) a,(SELECT @rank:=1) b,(SELECT @sart:=0) c
+		) m,(	
+			SELECT user_id,total_score FROM rocky_shareholder_rank WHERE addtime = #{date} AND total_score <![CDATA[>]]> 0
+		) n WHERE n.total_score = m.total_score 
+		) t ON s.user_id = t.user_id AND s.addtime = #{date}
+		 SET s.total_rank = t.rownum 
+    </update>
+    
+    <!-- 获取当天最新的插入日期-->
+	<select id="findMaxAddtime" resultType="java.lang.String" >
+		SELECT MAX(addtime) FROM rocky_shareholder_rank
+  	</select>
+  	
+  	<!-- 根据用户Id查询是否在未排名名单中-->
+	<select id="queryNoRanksByUserId" parameterType="java.lang.Integer" resultType="java.util.Map" >
+		SELECT 
+		(SELECT CASE WHEN MAX(TOTAL) IS NULL 
+			THEN (SELECT TOTAL FROM rocky_account WHERE USER_ID =  #{userId}) ELSE MAX(TOTAL) END  
+		FROM rocky_accountlog WHERE USER_ID = #{userId} AND LEFT(FROM_UNIXTIME(ADDTIME),10) <![CDATA[<=]]> DATE_SUB(CURDATE(),INTERVAL 1 DAY)
+		) max_total,
+		(SELECT CASE WHEN (SELECT total FROM rocky_accountlog WHERE USER_ID = #{userId} AND LEFT(FROM_UNIXTIME(ADDTIME),10) <![CDATA[<=]]> DATE_SUB(CURDATE(),INTERVAL 1 DAY) ORDER BY addtime DESC LIMIT 0,1) IS NULL   
+			THEN (SELECT TOTAL FROM rocky_account WHERE USER_ID =  #{userId}) ELSE (SELECT total FROM rocky_accountlog WHERE USER_ID = #{userId} AND LEFT(FROM_UNIXTIME(ADDTIME),10) <![CDATA[<=]]> DATE_SUB(CURDATE(),INTERVAL 1 DAY) ORDER BY addtime DESC LIMIT 0,1) END
+		) day_total
+  	</select>
+</mapper>  

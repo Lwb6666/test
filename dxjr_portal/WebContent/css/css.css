@@ -1,0 +1,12 @@
+/*专题页面*/
+.img1,.img2,.img3,.img4,.img5{width:100%;}
+.zt-contentbg{background:url(../images/zt-00.png) repeat;min-width:1000px; overflow:hidden;}
+.zt-box{ margin:93px 0 auto 0 ; position:relative;}
+.img1{ background:url(../images/images-1/01.png) no-repeat center top; height:552px;}
+.img2{ background:url(../images/images-1/02.png) no-repeat center top; height:786px;}
+.img3{ background:url(../images/images-1/03.png) no-repeat center top; height:721px;}
+.img4{ background:url(../images/images-1/04.png) no-repeat center top; height:988px;}
+.img5{ background:url(../images/images-1/05.png) no-repeat center top; height:1297px;}
+
+
+

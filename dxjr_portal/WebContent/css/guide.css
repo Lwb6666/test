@@ -1,0 +1,20 @@
+@charset "utf-8";
+/* CSS Document */
+
+body{ background:url(../images/xinshou-bg.jpg) repeat !important;}
+.main-box{ background:url(../images/xin-images/bg_01.jpg) center top no-repeat; height:auto;width:auto; overflow:hidden; padding-top:120px;}
+.main{ width:895px; height:auto; overflow:hidden; margin:0 auto; }
+.main-img1{ width:895px; height:382px; background:url(../images/xin-images/imgs_05.png);}
+.main-img2{ width:895px; height:837px; background:url(../images/xin-images/imgs_08.png);}
+.main-img3{ width:895px; height:719px; background:url(../images/xin-images/imgs_11.png);}
+.main-img4{ width:895px; height:573px; background:url(../images/xin-images/imgs_14.png);position:relative;}
+.main-img5{ width:895px; height:399px; background:url(../images/xin-images/imgs_17.png);position:relative;}
+.main-img6{ width:895px; height:888px; background:url(../images/xin-images/imgs_20.png);}
+.main-img7{ width:895px; height:802px; background:url(../images/xin-images/imgs_23.png);}
+.main-img8{ width:895px; height:645px; background:url(../images/xin-images/imgs_26.png);}
+.main-img9{ width:895px; height:174px; background:url(../images/xin-images/imgs_29.png);position:relative;}
+.main-but1{ width:98px; height:38px; position:absolute; bottom:45px; left:175px; cursor:pointer;}
+.main-but2{ width:98px; height:38px; position:absolute; bottom:46px; left:468px; cursor:pointer;}
+.main-but3{ width:98px; height:38px; position:absolute; bottom:46px; right:40px; cursor:pointer;}
+.main-but4{ width:124px; height:38px; position:absolute; bottom:54px; right:43px; cursor:pointer; }
+.main-but5{ width:138px; height:38px; position:absolute; bottom:38px; left:372px; cursor:pointer; }

@@ -1,0 +1,274 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.dxjr.portal.first.mapper.FirstBorrowMapper">
+	
+	<!-- 结果集 -->
+	<resultMap type="com.dxjr.portal.first.vo.FirstBorrowVo" id="firstBorrowResultMap">
+		<id property="id" column="id" />
+		<result property="name" 					column="NAME" />
+		<result property="periods" 					column="PERIODS" />
+		<result property="periodsDesc" 				column="PERIODS_DESC" />
+		<result property="status" 					column="STATUS" />
+		<result property="planAccount"	    		column="PLAN_ACCOUNT" />
+		<result property="realAccount"	    		column="REAL_ACCOUNT" />
+		<result property="lowestAccount"  			column="LOWEST_ACCOUNT" />
+		<result property="mostAccount" 				column="MOST_ACCOUNT" />
+		<result property="lockLimit"				column="LOCK_LIMIT"/>
+		<result property="lockStyle"				column="LOCK_STYLE"/>
+		<result property="lockEndtime" 				column="LOCK_ENDTIME"/>
+		<result property="perceivedRate" 			column="PERCEIVED_RATE" />
+		<result property="addRate" 					column="ADD_RATE" />
+		<result property="serviceRate" 				column="SERVICE_RATE" />
+		<result property="exitRate" 				column="EXIT_RATE" />
+		<result property="successTime"	    		column="SUCCESS_TIME" />
+		<result property="validTime"  				column="VALID_TIME" />
+		<result property="content" 					column="CONTENT" />
+		<result property="sendMessage"				column="SENDMESSAGE"/>
+		<result property="addtime"					column="ADDTIME"/>
+		<result property="addIp" 					column="ADDIP"/>
+		<result property="cancelUser" 				column="CANCEL_USER" />
+		<result property="cancelTime" 				column="CANCEL_TIME" />
+		<result property="cancelRemark"  			column="CANCEL_REMARK" />
+		<result property="uuid" 					column="UUID" />
+		<result property="contractNo"				column="CONTRACT_NO"/>
+		<result property="bidPassword"				column="BID_PASSWORD"/>
+		<result property="remark" 					column="REMARK"/>		
+		<result property="publishTime" 				column="PUBLISH_TIME" />
+		<result property="userId" 					column="USER_ID" />
+		<result property="tenderTimes"	    		column="TENDER_TIMES" />
+		<result property="accountYes"  				column="ACCOUNT_YES" />
+		<result property="passwordSource" 			column="PASSWORD_SOURCE" />
+		<result property="version"					column="VERSION"/>
+		<result property="endTime"					column="END_TIME"/>
+	</resultMap>
+	
+	<!--基本列 -->
+	<sql id="firstBorrowBaseColumn">
+		f.ID, 
+		f.NAME, 
+		f.PERIODS, 
+		f.PERIODS_DESC, 
+		f.STATUS, 
+		f.PLAN_ACCOUNT, 
+		f.REAL_ACCOUNT,
+		f.LOWEST_ACCOUNT, 
+		f.MOST_ACCOUNT,
+		f.LOCK_LIMIT,
+		f.LOCK_STYLE,
+		f.LOCK_ENDTIME,
+		f.PERCEIVED_RATE,
+		f.ADD_RATE,
+		f.SERVICE_RATE,
+		f.EXIT_RATE,
+		f.SUCCESS_TIME,
+		f.VALID_TIME,
+		f.CONTENT,
+		f.SENDMESSAGE,
+		f.ADDTIME,
+		f.ADDIP,
+		f.CANCEL_USER,
+		f.CANCEL_TIME,
+		f.CANCEL_REMARK,
+		f.UUID,
+		f.CONTRACT_NO,
+		f.BID_PASSWORD,
+		f.REMARK,
+		f.PUBLISH_TIME,
+		f.USER_ID,
+		f.TENDER_TIMES,
+		f.ACCOUNT_YES,
+		f.PASSWORD_SOURCE,
+		f.VERSION,
+		f.END_TIME
+	</sql>
+	
+		<!-- 封装查询条件 -->
+	<sql id="firstBorrow_Where_Clause">
+		<if test="id != null">
+			and f.id =#{id}
+		</if>
+		<if test="status != null">
+			and f.STATUS = #{status}
+		</if>
+	</sql>
+	
+	  	<!-- 根据条件查询记录集合 -->
+	<select id="queryFirstBorrowList" parameterType="com.dxjr.portal.first.vo.FirstBorrowCnd" resultMap="firstBorrowResultMap" >
+		SELECT
+	         <include refid="firstBorrowBaseColumn"/>
+		FROM t_first_borrow f
+		where 1=1
+	     <include refid="firstBorrow_Where_Clause"/>
+		<if test="orderSql != null and orderSql != ''">
+			${orderSql}
+		</if>
+		<if test="lockedRecordYn != null and lockedRecordYn == 'yes'">
+			FOR UPDATE
+		</if>		
+  	</select>
+  	
+  	<!-- 根据条件查询记录数量-->
+	<select id="queryFirstBorrowCount" parameterType="com.dxjr.portal.first.vo.FirstBorrowCnd" resultType="java.lang.Integer" >
+		select count(f.id)
+		from
+			t_first_borrow f
+		where 1=1
+		<include refid="firstBorrow_Where_Clause"/>
+  	</select>
+  	
+  	<!-- 投标直通车-加入总人次-->
+	<select id="queryFirstPersonsTotalCount" resultType="java.lang.Integer" >
+		SELECT count(*) FROM t_first_tender_detail
+  	</select>  	
+  	
+  	 <!--投标直通车-累计总金额-->
+	<select id="queryFirstTotalAccount" resultType="java.math.BigDecimal" >
+		SELECT SUM(ACCOUNT) FROM t_first_tender_real where status in (0,3)
+  	</select>  	
+  	
+  	 <!--投标直通车-为用户累计赚取(包含待收利息和已赚利息)-->
+	<select id="queryFirstTotalInterst" resultType="java.math.BigDecimal" >
+		SELECT SUM(INTEREST) FROM rocky_b_collectionrecord WHERE FIRST_BORROW_ID IS NOT null
+  	</select>  	
+  	
+  	 <!--投标直通车-资金利用率-->
+	<select id="queryFirstAccountRate" resultType="java.math.BigDecimal" >
+		SELECT (1-sum(first_no_total)/sum(first_success_total-first_end_total))*100 FROM t_first_statistics
+  	</select>  
+  	
+  	<!-- 投标直通车-为用户自动投标次数-->
+	<select id="queryFirstTenderCount" resultType="java.lang.Integer" >
+		SELECT COUNT(*) FROM rocky_b_tenderrecord t,rocky_borrow b 
+		WHERE b.STATUS IN(4, 42, 5) 
+		AND t.TENDER_TYPE = 2 
+		AND b.ID = t.BORROW_ID 
+		AND b.BORROWTYPE in(1,2,5) 
+  	</select>   		
+  	
+  	<!-- 根据直通车id，在解锁时更新直通车实际总金额 -->
+  	<update id="updateRealAccountByUnlock">
+  		UPDATE t_first_borrow
+		SET REAL_ACCOUNT  = REAL_ACCOUNT - #{unlockaccount}
+		WHERE ID = #{id}
+  	</update>
+  	
+  	<!-- 根据直通车id，在解锁时更新直通车实际总金额 -->
+  	<update id="updateFirstBorrowStatusByUnlock">
+  		UPDATE t_first_borrow
+		SET STATUS  = IF(REAL_ACCOUNT > 0,STATUS,-5)
+		WHERE ID = #{id}
+  	</update>
+  	
+  	<!-- 查询符合投标的直通车期数记录 -->
+  	<select id="queryFirstBorrowForTenderBorrow"  resultMap="firstBorrowResultMap" >
+  		SELECT <include refid="firstBorrowBaseColumn"/>
+  		FROM t_first_borrow f,t_first_tender_real tr 
+  		WHERE f.`STATUS` = 5 AND f.ID = tr.FIRST_BORROW_ID 
+  		GROUP BY tr.FIRST_BORROW_ID HAVING SUM(tr.USE_MONEY) > 0 
+  		ORDER BY f.ID ASC	
+  	</select>
+  	
+  	<!--Added by Chen Lu on 2014-8-7  -->
+  	<!--投标直通车-累计总余额-->
+	<select id="queryFirstUseMoney" resultType="java.math.BigDecimal" >
+		SELECT SUM(USE_MONEY) FROM t_first_tender_real  WHERE STATUS  = 0;
+  	</select>
+  	
+  	<!--Added by Chen Lu on 2014-8-8  -->
+  	<!--获取最新直通车信息-->
+	<select id="getLatest" resultMap="firstBorrowResultMap" >
+		select 
+			<include refid="firstBorrowBaseColumn"/> 
+		from 
+			t_first_borrow f
+		where 
+			f.status in (3,5)
+		order by 
+			id DESC
+		limit 1;		
+  	</select>
+  	
+  	<!-- 调用直通车投标存储过程 -->
+	<select id="firstTender" parameterType="java.util.Map"
+		statementType="CALLABLE">  
+		<![CDATA[  
+		    {call first_tender(#{borrowid,mode=IN,jdbcType=INTEGER}, #{msg,mode=OUT,jdbcType=VARCHAR})}  
+		]]>
+	</select>
+	
+	<!-- 根据id查询有效直通车 -->
+	<select id="queryAvailableFirstBorrowById" parameterType="java.lang.Integer" resultMap="firstBorrowResultMap" >
+		SELECT
+	         <include refid="firstBorrowBaseColumn"/>
+		FROM t_first_borrow f
+		where 1=1
+		and f.id =#{id}
+		and f.STATUS in (3,5,-5,-3)
+  	</select>
+  	
+  	
+  	<!-- 获取首页及直通车专区页面显示的直通车记录 -->
+	<select id="queryFirstBorrowByFirstBorrowCnd" parameterType="com.dxjr.portal.first.vo.FirstBorrowCnd" resultMap="firstBorrowResultMap" >
+		SELECT <include refid="firstBorrowBaseColumn"/> FROM (
+			SELECT * from (SELECT <include refid="firstBorrowBaseColumn"/> FROM t_first_borrow f where `STATUS` = 3 AND f.publish_time <![CDATA[ <= ]]> DATE_FORMAT(#{now},'%Y-%m-%d %H:%i:%s') ORDER BY CAST(periods AS signed) desc) f1
+			UNION ALL
+			SELECT * FROM (SELECT <include refid="firstBorrowBaseColumn"/>  FROM t_first_borrow f where f.`STATUS` = 5 AND f.PLAN_ACCOUNT > f.REAL_ACCOUNT ORDER BY cast(f.periods as signed) asc) f2
+			UNION ALL
+			SELECT * from (SELECT <include refid="firstBorrowBaseColumn"/> FROM t_first_borrow f where `STATUS` = 3 AND f.publish_time > DATE_FORMAT(#{now},'%Y-%m-%d %H:%i:%s') ORDER BY CAST(periods AS signed) desc) f3
+			UNION ALL
+			SELECT * FROM (SELECT <include refid="firstBorrowBaseColumn"/>  FROM t_first_borrow f where f.`STATUS` = 5 AND f.PLAN_ACCOUNT = f.REAL_ACCOUNT ORDER BY cast(f.periods as signed) desc) f4
+		) f where 1 = 1
+		<if test="type != null and type == 1">
+			AND f.`STATUS` = 3 AND f.publish_time > DATE_FORMAT(#{now},'%Y-%m-%d %H:%i:%s')
+		</if>
+		<if test="type != null and type == 2">
+			AND ((f.`STATUS` = 3 AND f.publish_time <![CDATA[ <= ]]> DATE_FORMAT(#{now},'%Y-%m-%d %H:%i:%s')) or (f.`STATUS` = 5 AND f.PLAN_ACCOUNT > f.REAL_ACCOUNT))
+		</if>
+		<if test="type != null and type == 3">
+			AND f.`STATUS` = 5 AND f.PLAN_ACCOUNT = f.REAL_ACCOUNT
+		</if>
+		<if test="type != null and type == 3 and (orderSql == null or orderSql == '')">
+			ORDER BY cast(f.periods as signed) desc
+		</if>
+		<if test="orderSql != null and orderSql != ''">
+			${orderSql}
+		</if>
+  	</select>
+  	
+  	<!-- 获取首页及直通车专区页面显示的直通车记录数量 -->
+	<select id="queryFirstBorrowCountByFirstBorrowCnd" parameterType="com.dxjr.portal.first.vo.FirstBorrowCnd"  resultType="java.lang.Integer">
+		SELECT count(f.id) FROM t_first_borrow f where 1 = 1
+		<if test="type != null and type == 1">
+			AND f.`STATUS` = 3 AND f.publish_time > DATE_FORMAT(#{now},'%Y-%m-%d %H:%m:%s')
+		</if>
+		<if test="type != null and type == 2">
+			AND ((f.`STATUS` = 3 AND f.publish_time <![CDATA[ <= ]]> DATE_FORMAT(#{now},'%Y-%m-%d %H:%i:%s')) or (f.`STATUS` = 5 AND f.PLAN_ACCOUNT > f.REAL_ACCOUNT))
+		</if>
+		<if test="type != null and type == 3">
+			AND f.`STATUS` = 5 AND f.PLAN_ACCOUNT = f.REAL_ACCOUNT
+		</if>
+  	</select>
+  	
+  	<!--获取首页显示的直通车-->
+	<select id="getFirstBorrowForIndex" parameterType="java.util.Date" resultMap="firstBorrowResultMap" >
+		SELECT <include refid="firstBorrowBaseColumn"/> FROM (
+				SELECT * FROM (
+					SELECT * FROM t_first_borrow WHERE `STATUS` = 3 AND PUBLISH_TIME  <![CDATA[ <= ]]> #{now} AND END_TIME  <![CDATA[ >= ]]> NOW() ORDER BY ID DESC LIMIT 1
+				) t1
+				UNION
+				SELECT * FROM (
+					SELECT * FROM t_first_borrow WHERE `STATUS` = 3 AND PUBLISH_TIME  <![CDATA[ > ]]> #{now} ORDER BY ID ASC LIMIT 1
+				) t2
+				UNION
+				SELECT * FROM (
+					SELECT * FROM t_first_borrow WHERE `STATUS` in(3,5) ORDER BY ID DESC LIMIT 1
+				) t3 LIMIT 1
+		) f		
+  	</select>
+  	
+  	<!--获取首页显示直通车的下一期预发直通车-->
+	<select id="getAdvanceFirstBorrowForIndex" parameterType="java.lang.Integer" resultMap="firstBorrowResultMap" >
+		SELECT <include refid="firstBorrowBaseColumn"/> FROM t_first_borrow f WHERE ID > #{firstBorrowId} AND `STATUS` = 3 ORDER BY ID ASC LIMIT 1
+  	</select>
+</mapper>  

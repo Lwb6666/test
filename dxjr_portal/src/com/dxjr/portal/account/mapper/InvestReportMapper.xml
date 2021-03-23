@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.dxjr.portal.account.mapper.InvestReportMapper">
+
+	<!-- 查询某个用户ID下投标金额的总计(只统计满标后的投标金额)-->
+	<select id="queryTenderTotalByMemberId" parameterType="java.lang.Integer" resultType="java.math.BigDecimal" >
+		SELECT SUM( IF(t.PARENT_ID IS NULL, t.ACCOUNT, (SELECT s.ACCOUNT FROM rocky_b_subscribe s WHERE s.TENDER_ID = t.ID)))
+		FROM ROCKY_B_TENDERRECORD t,
+			 rocky_borrow b 
+	    WHERE t.USER_ID = #{memberId}  
+	    and b.ID = t.BORROW_ID 
+	    and b.STATUS >= 4  
+  	</select>
+  	
+  	<!-- 根据用户id查询待收排名-->
+	<select id="queryUncollectedRankingByUserId" parameterType="java.lang.Integer" resultType="java.lang.Integer" >
+		SELECT rn FROM (
+		  SELECT (@rownum := @rownum + 1) as rn, c.USER_ID
+		  FROM rocky_account c, (select @rownum := 0) x
+		  WHERE c.USER_ID not in (371, 693)
+		  ORDER BY c.COLLECTION DESC, c.user_id ASC
+		) t where t.USER_ID = #{memberId}
+  	</select>
+  	
+	<!-- 查询某个用户ID充值的金额总计-->
+	<select id="queryRechargeTotalByMemberId" parameterType="java.lang.Integer" resultType="java.math.BigDecimal" >
+		SELECT SUM(R.MONEY) 
+		FROM rocky_rechargerecord R 
+		WHERE R.STATUS = '1' 
+		AND R.USER_ID = #{memberId}
+  	</select>  	
+  	
+	<!-- 查询某个用户所有的提现总额-->
+	<select id="queryCashTotalByMemberId" parameterType="java.lang.Integer" resultType="java.math.BigDecimal" >
+		SELECT SUM(C.TOTAL)
+		FROM rocky_cashrecord C 
+		WHERE C.STATUS = '2' 
+		AND C.USER_ID = #{memberId} 
+  	</select> 
+  	
+  	<!-- 投标次数 -->
+  	<select id="queryInvestCount" resultType="java.lang.Integer" >
+		SELECT count(*)
+		FROM ROCKY_B_TENDERRECORD t
+		 INNER JOIN rocky_borrow rb
+  			ON rb.ID = t.BORROW_ID 
+	    WHERE t.USER_ID = #{memberId}
+	    <foreach collection="borrowStatus" item="bst" separator="or" open="and (" close=")">
+	    	rb.STATUS = #{bst}
+		</foreach>
+	    <foreach collection="status" item="st" separator="or" open="and (" close=")">
+	    	t.STATUS = #{st}
+		</foreach>
+  	</select>   	
+</mapper>  

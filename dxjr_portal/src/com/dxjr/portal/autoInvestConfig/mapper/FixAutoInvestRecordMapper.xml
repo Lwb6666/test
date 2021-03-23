@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dxjr.portal.autoInvestConfig.mapper.FixAutoInvestRecordMapper" >
+  
+  <insert id="insert" parameterType="com.dxjr.portal.autoInvestConfig.entity.FixAutoInvestRecord" keyProperty="id"  useGeneratedKeys="true">
+    insert into t_fix_auto_invest_record(user_id,`status`,auto_tender_type,tender_money,fix_limit,is_use_cur,uptime,platform,remark
+	,addtime,addip,rownum,auto_invest_id,auto_tender_money,fix_id,fix_no,fix_type,record_type,use_money,cur_money,limit_money,pre_uptime)
+	select user_id,`status`,auto_tender_type,tender_money,fix_limit,is_use_cur,uptime,#{platform},#{remark}
+	,now(),#{addip},#{rownum},#{autoInvestId},#{autoTenderMoney},#{fixId },#{fixNo},#{fixType},#{recordType},#{useMoney},#{curMoney},#{limitMoney},#{preUptime} 
+	from t_fix_auto_invest a 
+	where a.id=#{autoInvestId}
+  </insert>
+  <select id="queryFixAutoInvestRecordListForPage" parameterType="java.lang.Integer" resultType="com.dxjr.portal.autoInvestConfig.entity.FixAutoInvestRecord" >
+		 
+		 SELECT r.id,r.ROWNUM ,r.AUTO_TENDER_TYPE as autoTenderType,
+               r.tender_money as tenderMoney,  
+               r.auto_tender_money as autoTenderMoney,r.LIMIT_MONEY as limitMoney,
+               r.addtime,r.fix_no as fixNo,r.fix_id as fixId,r.FIX_TYPE as fixType
+		FROM
+			t_fix_auto_invest_record r
+		LEFT JOIN t_fix_borrow b ON r.fix_id = b.id
+		WHERE r.record_type = 6
+		AND b. STATUS = 5
+		AND r.user_id = #{userId}
+		and r.AUTO_TENDER_MONEY>0
+		ORDER BY r.addtime DESC
+ 
+  </select>
+  <select id="queryFixAutoInvestRecordCount" parameterType="java.lang.Integer" resultType="java.lang.Integer" >
+		 select  count(*)
+              FROM
+			t_fix_auto_invest_record r
+		LEFT JOIN t_fix_borrow b ON r.fix_id = b.id
+		WHERE r.record_type = 6
+		AND b. STATUS = 5
+		and r.AUTO_TENDER_MONEY>0
+		AND r.user_id = #{userId}
+		 
+  </select>
+   
+</mapper>

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.dxjr.portal.fix.mapper.FixOperationLogMapper">	
+	<!-- 添加定期宝操作日志 -->
+	<insert id="insertFixOperationLog" parameterType="com.dxjr.base.entity.FixOperationLog">
+		INSERT INTO
+		t_fix_operation_log (
+		USER_ID,
+		USER_TYPE,
+		FIX_BORROW_ID,
+		<if test="fixTenderRealId != null ">
+		FIX_TENDER_REAL_ID,
+		</if>
+		OPER_TYPE,
+		ADDTIME,
+		ADDIP,
+		<if test="remark != null ">
+		REMARK,
+		</if>
+		PLATFORM
+		) VALUES (
+		#{userId},
+		#{userType},
+		#{fixBorrowId},
+		<if test="fixTenderRealId != null ">
+		#{fixTenderRealId},
+		</if>
+		#{operType},
+		now(),
+		#{addip},
+		<if test="remark != null ">
+		#{remark},
+		</if>
+		#{platform}
+		)
+	</insert>
+</mapper>  

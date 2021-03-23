@@ -1,0 +1,394 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dxjr.portal.lottery.mapper.LotteryUseRecordMapper">
+	<resultMap id="BaseResultMap"
+		type="com.dxjr.portal.lottery.vo.LotteryUseRecordVo">
+		<id column="ID" property="id" jdbcType="INTEGER" />
+		<result column="USER_ID" property="userId" jdbcType="INTEGER" />
+		<result column="LOTTERY_ID" property="lotteryId" jdbcType="INTEGER" />
+		<result column="LOTTERY_GOODS_ID" property="lotteryGoodsId"
+			jdbcType="INTEGER" />
+		<result column="STATUS" property="status" jdbcType="INTEGER" />
+		<result column="ADD_TIME" property="addTime" jdbcType="TIMESTAMP" />
+		<result column="AWARD_TYPE" property="awardType" jdbcType="INTEGER" />
+		<result column="LOTTERY_GOODS_NAME" property="lotteryGoodsName"
+			jdbcType="VARCHAR" />
+		<result column="AWARD_NUM" property="awardNum" jdbcType="INTEGER" />
+		<result column="AWARD_MONEY" property="awardMoney" jdbcType="DECIMAL" />
+		<result column="OVERDUE_TIME" property="overdueTime" jdbcType="TIMESTAMP" />
+		<result column="DRAW_TIME" property="drawTime" jdbcType="TIMESTAMP" />
+		<result column="REMARK" property="remark" jdbcType="INTEGER" />
+		<result column="PLATFORM" property="platform" jdbcType="TIMESTAMP" />
+		<result column="USE_NUM" property="useNum" jdbcType="INTEGER" />
+		<result column="AWARD_MONEY_s" property="awardMoneySum"
+			jdbcType="DECIMAL" />
+		<result column="STATUS_z" property="status_z" jdbcType="INTEGER" />
+		<result column="STATUS_c" property="status_c" jdbcType="INTEGER" />
+		<result column="NAME" property="name" jdbcType="VARCHAR" />
+		<result column="contact" property="contact" jdbcType="VARCHAR" />
+		<result column="mobile" property="mobile" jdbcType="VARCHAR" />
+		<result column="address" property="address" jdbcType="VARCHAR" />
+		<result column="postcode" property="postcode" jdbcType="VARCHAR" />
+		<result column="express_company" property="express_company"
+			jdbcType="VARCHAR" />
+		<result column="express_code" property="express_code" jdbcType="VARCHAR" />
+	</resultMap>
+	<resultMap id="RewardResultMap" type="com.dxjr.portal.lottery.vo.Myreward">
+	</resultMap>
+	<sql id="Base_Column_List">
+		ID, USER_ID, LOTTERY_ID, LOTTERY_GOODS_ID, STATUS,
+		ADD_TIME, AWARD_TYPE,
+		LOTTERY_GOODS_NAME,
+		AWARD_NUM, AWARD_MONEY,
+		OVERDUE_TIME, DRAW_TIME, REMARK, PLATFORM
+	</sql>
+
+	<!-- 封装查询条件 -->
+	<sql id="lotteryUseRecord_Where_Clause">
+		<if test="id != null">
+			and tr.id =#{id}
+		</if>
+		<if test="status != null">
+			and tr.STATUS = #{status}
+		</if>
+		<if test="firstBorrowId != null ">
+			and tr.FIRST_BORROW_ID = #{firstBorrowId}
+		</if>
+		<if test="userId != null ">
+			and tr.USER_ID = #{userId}
+		</if>
+	</sql>
+
+	<select id="selectByPrimaryKey" resultMap="BaseResultMap"
+		parameterType="java.lang.Integer">
+		select
+		<include refid="Base_Column_List" />
+		from t_lottery_use_record
+		where ID = #{id,jdbcType=INTEGER}
+	</select>
+
+
+
+
+	<!-- xj s -->
+
+	<!-- 根据id查询现金,实物使用记录 锁住 -->
+	<select id="queryXJById" resultMap="BaseResultMap">
+		select * from t_lottery_use_record
+		where 1=1
+		and id =#{id}
+		FOR UPDATE
+	</select>
+
+	<!-- 现金count -->
+	<select id="queryLottcount_xj" parameterType="com.dxjr.portal.lottery.vo.LotteryUseRecordCnd"
+		resultType="java.lang.Integer">
+		select count(1) from t_lottery_use_record
+		where 1=1
+		and
+		user_id=#{userId}
+		and award_type=1
+	</select>
+
+
+	<!-- 现金 list -->
+	<select id="queryLottList_xj" parameterType="com.dxjr.portal.lottery.vo.LotteryUseRecordCnd"
+		resultMap="BaseResultMap">
+		select *,
+		case
+		when status=0 then '可使用'
+		else '已使用'
+		end
+		as
+		STATUS_z,
+		case
+		when status=0 then '使用'
+		else '不可操作'
+		end
+		as STATUS_c
+		from
+		t_lottery_use_record
+		where 1=1
+		and user_id=#{userId}
+		and award_type=1
+		order by ADD_TIME desc
+	</select>
+
+
+
+	<sql id="Use_record_Column_List">
+		lur.ID, lur.USER_ID, lur.LOTTERY_ID, lur.LOTTERY_GOODS_ID, lur.STATUS,
+		lur.ADD_TIME, lur.AWARD_TYPE, lur.LOTTERY_GOODS_NAME,
+		lur.AWARD_NUM, lur.AWARD_MONEY, lur.OVERDUE_TIME, lur.DRAW_TIME, lur.REMARK,
+		lur.PLATFORM
+	</sql>
+
+	<!-- 更新 可用余额 -->
+	<update id="up_xj_money" parameterType="com.dxjr.portal.lottery.vo.LotteryUseRecordCnd">
+		update t_lottery_use_record set status= 1, draw_time= #{drawTime}
+		where 1=1 and id = #{id}
+	</update>
+
+	<!-- 根据时间查询大于该时间的获奖记录 -->
+	<select id="selectNewUseRecordByDate" resultMap="BaseResultMap"
+		parameterType="java.util.Date">
+		select
+		<include refid="Use_record_Column_List" />
+		,m.USERNAME as username
+		FROM t_lottery_use_record lur, rocky_member m
+		WHERE lur.USER_ID = m.ID
+		AND lur.AWARD_TYPE in(1,2,4,5,6)
+		AND lur.ADD_TIME >= #{date} order by lur.id desc  limit 20
+	</select>
+
+	<!-- sw lottCount 我的奖励 ，抽奖机会 -->
+	<select id="lottCount_sw" parameterType="com.dxjr.portal.lottery.vo.LotteryUseRecordCnd"
+		resultMap="BaseResultMap">
+		select
+		sum(t2.use_num) as use_num
+		from t_lottery_use_record t1
+		INNER JOIN t_lottery_chance_info t2
+		on t1.lottery_id = t2.id
+		where 1=1
+		and t1.user_id = #{userId}
+
+
+	</select>
+
+
+	<!-- 实物count -->
+	<select id="queryLottcount_sw" parameterType="com.dxjr.portal.lottery.vo.LotteryUseRecordCnd"
+		resultType="java.lang.Integer">
+		select count(1) from t_lottery_use_record
+		where 1=1
+		and user_id=#{userId}
+		and AWARD_TYPE=2
+	</select>
+
+
+	<!-- 实物list -->
+	<select id="queryLottList_sw" parameterType="com.dxjr.portal.lottery.vo.LotteryUseRecordCnd"
+		resultMap="BaseResultMap">
+		select *,
+		case
+		when status=0 then '未发放 '
+		when status=2 then '受理中'
+		when status=3 then '派发中'
+		when status=4 then '已过期'
+		else '已领取'
+		end
+		as STATUS_z,
+		case
+		when status=0 then '领取'
+		when status=3 then '确认收货'
+		else '不可操作'
+		end
+		as STATUS_c
+		from t_lottery_use_record where 1=1
+		and user_id=#{userId}
+		and
+		AWARD_TYPE=2
+		order by ADD_TIME desc
+	</select>
+
+
+	<!-- 领取后状态更新 status0-2 s -->
+	<update id="up_lingqu_status" parameterType="com.dxjr.portal.lottery.vo.LotteryUseRecordCnd">
+		update t_lottery_use_record set status = 2
+		where 1=1
+		and user_id=${userId}
+		and AWARD_TYPE=2
+		and id =${id}
+
+
+	</update>
+
+	<!-- 领取后状态更新 status0-2 e -->
+	
+	
+	<!-- 确认收货后，更新status ,remark  -->
+	<update id="upStatusRemarkByQrsh" parameterType="com.dxjr.portal.lottery.vo.LotteryUseRecordCnd">
+		update t_lottery_use_record set status = 1,remark=#{remark}
+		where 1=1
+		and user_id=${userId}
+		and AWARD_TYPE=2
+		and id =${lott_id}
+	</update>
+
+
+	<!-- 实物 领取查看详情 -->
+	<select id="sw_lingqu_detail" parameterType="com.dxjr.portal.lottery.vo.LotteryUseRecordCnd"
+		resultMap="BaseResultMap">
+		select
+		t1.LOTTERY_GOODS_NAME,
+		t1.ADD_TIME,
+		t1.OVERDUE_TIME,
+		case
+		when status=0 then '未发放 '
+		when status=2 then '受理中'
+		when status=3 then '派发中'
+		when status=4 then '已过期'
+		else '已领取'
+		end
+		as STATUS_z,
+		t1.REMARK,
+		t2.contact,
+		t2.mobile,
+		t2.address,
+		t2.postcode,
+		t2.express_company,
+		t2.express_code
+		from t_lottery_use_record t1 INNER
+		JOIN t_lottery_goods_send_info t2
+		on t1.id = t2.LOTTERY_USE_RECORD_ID
+		where 1=1
+		and t1.id = #{id}
+		and t2.LOTTERY_USE_RECORD_ID = #{id}
+		and
+		t1.user_id=${userId}
+		and t2.user_id =${userId}
+	</select>
+
+
+
+
+
+	<!-- sw e -->
+
+	<!-- jljl s -->
+	<select id="queryLottcount_jljl" parameterType="com.dxjr.portal.lottery.vo.LotteryUseRecordCnd"
+		resultType="java.lang.Integer">
+			select count(1) from
+			(
+				select t1.*,
+				case
+				when t1.status=0 then '未发放'
+				when t1.status=1 then '已领取'
+				when t1.status=2 then '受理中'
+				when t1.status=3 then '派发中'
+				else '已过期'
+				end
+				as STATUS_z,
+				t3.NAME from t_lottery_use_record t1 INNER JOIN t_lottery_chance_info t2
+				on t1.LOTTERY_ID = t2.id INNER JOIN t_lottery_chance_rule_info t3 on
+				t2.LOTTERY_CHANCE_RULE_INFO_ID = t3.id
+				where 1=1
+				and (t1.AWARD_TYPE=1 or t1.AWARD_TYPE=2 or t1.AWARD_TYPE=4 or t1.AWARD_TYPE=5)
+				and t1.user_id=${userId}
+				order by t1.ADD_TIME desc
+			) as tb1
+
+
+
+	</select>
+
+
+
+	<select id="queryLottList_jljl" parameterType="com.dxjr.portal.lottery.vo.LotteryUseRecordCnd"
+		resultMap="BaseResultMap">
+		select t1.*,
+		case
+		when t1.status=0 then '未发放'
+		when t1.status=1 then '已领取'
+		when t1.status=2 then '受理中'
+		when t1.status=3 then '派发中'
+		else '已过期'
+		end
+		as STATUS_z,
+		t3.NAME from t_lottery_use_record t1 INNER JOIN
+		t_lottery_chance_info t2
+		on t1.LOTTERY_ID = t2.id INNER JOIN
+		t_lottery_chance_rule_info t3 on t2.LOTTERY_CHANCE_RULE_INFO_ID =
+		t3.id
+		where 1=1
+		and (t1.AWARD_TYPE=1 or t1.AWARD_TYPE=2 or t1.AWARD_TYPE=4  or t1.AWARD_TYPE=5 or t1.AWARD_TYPE=6)
+		and t1.user_id = ${userId}
+		order by
+		t1.ADD_TIME desc
+
+
+
+	</select>
+	<!-- jljl e -->
+
+	<!-- 查询10条最新的大奖记录（IPhone6、1888元） -->
+	<select id="selectNewUseRecordForMaxGoods" resultMap="BaseResultMap">
+		select
+		<include refid="Use_record_Column_List" />
+		,m.USERNAME as username
+		FROM t_lottery_use_record lur, rocky_member m
+		WHERE lur.USER_ID = m.ID
+		AND lur.LOTTERY_GOODS_NAME in('Iphone6手机','1888元现金','微软Surface Pro 3','携程旅游充值卡') order by lur.id desc limit 10
+	</select>
+	
+	
+	
+<select id="queryLottList_Reward" parameterType="com.dxjr.portal.lottery.vo.LotteryUseRecordCnd"
+	resultMap="RewardResultMap">
+	  select t1.ADD_TIME as rewardTime,IFNULL(t1.AWARD_MONEY,0) as rewardMoney,t1.ID as id,
+        t1.LOTTERY_GOODS_NAME as rewardType,
+		case
+		when t1.status=0 then '未发放'
+		when t1.status=1 then '已领取'
+		when t1.status=2 then '受理中'
+		when t1.status=3 then '派发中'
+		else '已过期'
+		end
+		as rewardStatus,
+        case
+		when t1.AWARD_TYPE=1 then IF(t1.status=0,'使用','不可操作')
+		when t1.AWARD_TYPE=2 then IF(t1.status=0,'领取',IF(t1.status=3,'确认收货','不可操作'))
+		when t1.AWARD_TYPE=4 then '不可操作'
+		when t1.AWARD_TYPE=5 then '不可操作'
+		when t1.AWARD_TYPE=6 then '不可操作'
+		end
+		as rewardopert,
+		t3.NAME as rewardSource from t_lottery_use_record t1 INNER JOIN
+		t_lottery_chance_info t2
+		on t1.LOTTERY_ID = t2.id INNER JOIN
+		t_lottery_chance_rule_info t3 on t2.LOTTERY_CHANCE_RULE_INFO_ID =
+		t3.id
+		where 1=1
+		and (t1.AWARD_TYPE=1 or t1.AWARD_TYPE=2 or t1.AWARD_TYPE=4  or t1.AWARD_TYPE=5 or t1.AWARD_TYPE=6)
+		and t1.user_id = ${userId}
+		<if test="awardType!=null and awardType!='' ">
+		and t1.AWARD_TYPE=#{awardType}
+		</if>
+		order by
+		t1.ADD_TIME desc
+ </select>
+ <select id="queryLottCount_Reward" parameterType="com.dxjr.portal.lottery.vo.LotteryUseRecordCnd"
+	resultType="java.lang.Integer">
+	 select count(1) from (select t1.ADD_TIME as rewardTime,
+        t1.LOTTERY_GOODS_NAME as rewardType,
+		case
+		when t1.status=0 then '未发放'
+		when t1.status=1 then '已领取'
+		when t1.status=2 then '受理中'
+		when t1.status=3 then '派发中'
+		else '已过期'
+		end
+		as rewardStatus,
+        case
+		when t1.AWARD_TYPE=1 then IF(t1.status=0,'使用','不可操作')
+		when t1.AWARD_TYPE=2 then IF(t1.status=0,'领取',IF(t1.status=3,'确认收货','不可操作'))
+		when t1.AWARD_TYPE=4 then '不可操作'
+		when t1.AWARD_TYPE=5 then '不可操作'
+		when t1.AWARD_TYPE=6 then '不可操作'
+		end
+		as rewardopert,
+		t3.NAME as rewardSource from t_lottery_use_record t1 INNER JOIN
+		t_lottery_chance_info t2
+		on t1.LOTTERY_ID = t2.id INNER JOIN
+		t_lottery_chance_rule_info t3 on t2.LOTTERY_CHANCE_RULE_INFO_ID =
+		t3.id
+		where 1=1
+		and (t1.AWARD_TYPE=1 or t1.AWARD_TYPE=2 or t1.AWARD_TYPE=4  or t1.AWARD_TYPE=5 or t1.AWARD_TYPE=6)
+		and t1.user_id = ${userId}
+		<if test="awardType!=null and awardType!='' ">
+		and t1.AWARD_TYPE=#{awardType}
+		</if>
+		order by
+		t1.ADD_TIME desc) t2
+ </select>
+</mapper>

@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.dxjr.portal.tzjinterface.mapper.MemberBindingMapper">
+	
+	<!-- 返回的结果集 -->
+	<resultMap type="com.dxjr.portal.tzjinterface.vo.MemberBindingVo" id="MemberBindingResultMap">
+		<id property="id"               column="ID" />
+		<result property="service" 		column="service" />
+		<result property="requestFrom" 	column="request_from" />
+		<result property="dr" 		    column="DR" />
+		<result property="ts"	        column="ts" />
+		<result property="oid"	        column="oid" />	
+		<result property="userName"	    column="user_name" />	
+		<result property="userNamep"	column="user_namep" />	
+		<result property="regTime"	    column="reg_time" />
+		<result property="addTime"	    column="add_time" />	
+		<result property="loggingType"	column="logging_type" />	
+		<result property="isSuccess"	column="IS_SUCCESS" />	
+		<result property="message"	    column="message" />		
+		<result property="sign"	        column="sign" />	
+		<result property="userId"	    column="user_id" />
+		<result property="email"	    column="EMAIL" />
+		<result property="telephone"	column="TELEPHONE" />
+		<result property="realName"	    column="REAL_NAME" />
+		<result property="cardNo"	    column="CARD_NO" />	
+	</resultMap>
+	
+			<!--基本列 -->
+			<sql id="MemberBindingBaseColumn">
+                                tmb.id, 
+                                tmb.service, 
+                                tmb.request_from, 
+                                tmb.oid,
+                                tmb.user_name,
+                                tmb.user_namep, 
+                                tmb.reg_time, 
+                                tmb.ADD_TIME, 
+                                tmb.TS, 
+                                tmb.DR, 
+                                tmb.logging_type,
+                                tmb.IS_SUCCESS, 
+                                tmb.MESSAGE, 
+                                tmb.sign, 
+                                tmb.user_id,
+                                tmb.EMAIL,
+                                tmb.TELEPHONE,
+                                tmb.REAL_NAME,
+                                tmb.CARD_NO
+			</sql>
+	
+	<!-- 封装查询条件 -->
+	<sql id="MemberBinding_Where_Clause">
+		<if test="id != null">
+			and tmb.id =#{id}
+		</if>
+		<if test="userName != null and userName != ''">
+			and tmb.user_name =#{userName}
+		</if>
+		<if test="isSuccess != null">
+			and tmb.IS_SUCCESS =#{isSuccess}
+		</if>
+		<if test="userNamep != null and userNamep != ''">
+			and tmb.user_namep =#{userNamep}
+		</if>
+		<if test="userId != null and userId != ''">
+			and tmb.user_id =#{userId}
+		</if>
+		limit 1
+	</sql>
+	
+  	<!-- 根据条件查询记录集合 -->
+	<select id="queryMemberBindingInfo" parameterType="com.dxjr.portal.tzjinterface.vo.MemberBindingVo" resultMap="MemberBindingResultMap" >
+		select 	
+		   <include refid="MemberBindingBaseColumn"/>
+		
+		 FROM tzj_member_binding tmb WHERE tmb.DR = 1 
+		<include refid="MemberBinding_Where_Clause"/>
+  	</select>
+  	
+  		<!-- 插入记录，返回主键 -->
+	<insert id="insertMemberBindingInfo" parameterType="com.dxjr.portal.tzjinterface.vo.MemberBindingVo">
+			         INSERT INTO tzj_member_binding 
+                              ( 
+                                service, 
+                                request_from,                                
+                                user_name,
+                                user_namep, 
+                                reg_time, 
+                                ADD_TIME, 
+                                TS, 
+                                DR, 
+                                logging_type,
+                                IS_SUCCESS, 
+                                MESSAGE, 
+                                sign, 
+                                user_id,
+                                EMAIL,
+                                TELEPHONE,
+                                REAL_NAME,
+                                CARD_NO
+                              )
+                              VALUES 
+                              (
+                              #{service}, 
+                              #{requestFrom},                              
+                              #{userName}, 
+                              #{userNamep}, 
+                              #{regTime},
+                              UNIX_TIMESTAMP(SYSDATE()), 
+                              #{ts}, 
+                              #{dr}, 
+                              #{loggingType}, 
+                              #{isSuccess}, 
+                              #{message}, 
+                              #{sign},
+                              #{userId},
+                              #{email},
+                              #{telephone},
+                              #{realName},
+                              #{cardNo}
+                              );
+ 		 <selectKey resultType="java.lang.Integer" order="AFTER" keyProperty="id">  
+      	    SELECT LAST_INSERT_ID() AS ID    
+   		 </selectKey>
+	</insert>
+	<!-- 删除指定的访问日志，逻辑删除 -->
+	<update id="deleteMemberBindingInfo" parameterType="com.dxjr.portal.tzjinterface.vo.MemberBindingVo">
+			UPDATE tzj_member_binding tmb 
+			SET tmb.DR = 0 ,tmb.TS = UNIX_TIMESTAMP(SYSDATE()) 
+			WHERE  tmb.DR = 1 
+			and tmb.ID = #{id};
+	</update>
+	
+		<!-- 更新指定的访问日志-->
+	<update id="updateMemberBindingInfo" parameterType="com.dxjr.portal.tzjinterface.vo.MemberBindingVo">
+			UPDATE tzj_member_binding tmb 			
+			   <set >
+			  	  <if test="userName != null " >
+			        tmb.user_name = #{userName},
+			      </if>
+			      <if test="userNamep != null " >
+			        tmb.user_namep = #{userNamep},
+			      </if>			      
+			      <if test="isSuccess != null " >
+			        tmb.IS_SUCCESS = #{isSuccess},
+			      </if>
+			      <if test="message != null and message != ''" >
+			        tmb.MESSAGE = #{message},
+			      </if>
+			      <if test="loggingType != null and loggingType != ''" >
+			        tmb.logging_type = #{loggingType},
+			      </if>
+			      <if test="email != null and email != ''" >
+			        tmb.EMAIL = #{email},
+			      </if>
+			      <if test="telephone != null and telephone != ''" >
+			        tmb.TELEPHONE = #{telephone},
+			      </if>
+			      <if test="realName != null and realName != ''" >
+			        tmb.REAL_NAME = #{realName},
+			      </if>
+			      <if test="cardNo != null and cardNo != ''" >
+			        tmb.CARD_NO = #{cardNo},
+			      </if>			      
+			    </set>
+			WHERE  tmb.DR = 1 
+			and tmb.user_id = #{userId};
+	</update>
+	
+	<select id="queryMemberBindingInfoById" parameterType="java.lang.Integer" resultType="com.dxjr.portal.tzjinterface.vo.TzjRegisterVo" >
+		select 'gcjr' as `from`,user_name as username,user_namep as usernamep,reg_time as registerAt,logging_type as type,ts as `timestamp`,sign
+		from tzj_member_binding where ID=#{id};
+  	</select>
+	
+	<!-- 获取用户绑定关系 -->
+  	<select id="queryUserBindingInfoByCnd" parameterType="com.dxjr.portal.tzjinterface.vo.TzjTenderRecordCnd" resultType="com.dxjr.portal.tzjinterface.vo.TzjUserBindingVo" >
+		select user_name as username,user_namep as usernamep,reg_time as regTime,logging_type as type
+		from tzj_member_binding where 1=1
+		<if test=" type == '0'.toString() " >
+	       and add_time <![CDATA[>=]]> #{startTime} and add_time <![CDATA[<=]]> #{endTime}
+	    </if>
+	    <if test=" type == '1'.toString() and usernameStr!=null and usernameStr!='' " >
+	       and user_name in (${usernameStr})
+	    </if>
+  	</select> 
+  	
+  	<!-- 根据条件查询记录集合 -->
+	<select id="queryMemberNameByTzjName" parameterType="java.lang.String" resultType="java.lang.String" >
+		select user_namep from tzj_member_binding where user_name=#{username} limit 1
+  	</select>
+  	
+  	<!-- 根据条件查询记录集合 -->
+	<select id="queryCountByUserId" parameterType="java.lang.Integer" resultType="java.lang.Integer" >
+		select count(*) from tzj_member_binding where user_id=#{userId}
+  	</select>
+  	
+  	<!-- 根据条件查询记录集合 -->
+	<select id="queryMemberBindingByNameOrMobile" parameterType="com.dxjr.portal.tzjinterface.vo.MemberBindingVo" resultMap="MemberBindingResultMap" >
+		select 	<include refid="MemberBindingBaseColumn"/>
+		 FROM tzj_member_binding tmb WHERE tmb.DR = 1 and IS_SUCCESS=1
+		 and (tmb.user_name = #{userName} or TELEPHONE = #{telephone})
+  	</select>
+  	
+  	<!-- 查询投之家绑定用户结果集 -->
+	<resultMap id="userInfoResult" type="com.dxjr.portal.tzjinterface.entity.UserInfo">
+	    <result property="username" column="username" />
+	    <result property="usernamep" column="usernamep" />
+	    <result property="registerAt" column="registerAt" />
+	    <result property="bindAt" column="bindAt" />
+	    <result property="bindType" column="bindType" />
+		<association property="assets" javaType="com.dxjr.portal.tzjinterface.entity.Assets">			
+			<result property="awaitAmount" column="awaitAmount" />
+			<result property="balanceAmount" column="balanceAmount" />
+			<result property="totalAmount" column="totalAmount" />			
+		</association>			 
+	</resultMap>
+	
+	<!-- 根据查询条件获取用户信息 -->
+  	<select id="queryUserInfoByCnd" parameterType="com.dxjr.portal.tzjinterface.vo.TzjQueryCnd" resultMap="userInfoResult">
+		select t.*,(t.totalAmount-t.balanceAmount) as awaitAmount from (
+			select user_name as username,user_namep as usernamep,FROM_UNIXTIME(reg_time,'%Y-%m-%d %H:%i:%S') as registerAt,
+			FROM_UNIXTIME(add_time,'%Y-%m-%d %H:%i:%S') as bindAt,logging_type as bindType,a.use_money as balanceAmount,
+			(a.DRAW_MONEY+a.NO_DRAW_MONEY+a.NO_USE_MONEY+a.COLLECTION+a.FIRST_BORROW_USE_MONEY+IFNULL(cur.TOTAL,0)+IFNULL(fix.fixCapitalTotal,0)+IFNULL(coll.fixInvestNoTotal,0)) as totalAmount
+			from tzj_member_binding tmb 
+			LEFT JOIN rocky_account a on tmb.user_id=a.USER_ID
+			LEFT JOIN t_cur_account cur on tmb.user_id = cur.USER_ID 
+			LEFT JOIN (SELECT USER_ID,SUM(c.ACCOUNT) as fixCapitalTotal FROM t_fix_tender_detail c 		 
+					 where c.status in(0,1) GROUP by USER_ID) fix on tmb.user_id = fix.USER_ID 
+			LEFT JOIN (SELECT USER_ID,SUM(co.INTEREST) as fixInvestNoTotal FROM t_fix_collectionrecord co 		 
+					 where co.status=0  GROUP by USER_ID) coll on tmb.user_id = coll.USER_ID
+			where dr=1 and IS_SUCCESS=1 
+			<if test="arrayValStr != null and arrayValStr != ''" >
+	        	and user_name in(${arrayValStr})
+	      	</if>
+			<if test="startTime != null" >
+	        	and FROM_UNIXTIME(add_time)>=#{startTime}
+	      	</if>
+	      	<if test="endTime != null" >
+	        	and FROM_UNIXTIME(add_time)<![CDATA[<=]]>#{endTime}
+	      	</if>			
+		) t order by t.bindAt ASC
+	</select>
+</mapper>  

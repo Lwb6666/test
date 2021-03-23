@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dxjr.portal.borrow.mapper.BusinessMapper">
+
+	<resultMap id="businessVoResultMap" type="com.dxjr.portal.borrow.vo.BusinessVo">
+		<id column="ID" 						property="id"/>		
+		<result column="USER_ID" 				property="userId" />
+		<result column="USERNAME" 				property="username" />
+		<result column="STATUS" 				property="status" />
+		<result column="ADDTIME"				property="addtime" />
+		<result column="ADDIP" 				    property="addip" />
+		<result column="ADDUSER" 				property="adduser" />
+	</resultMap>
+	
+	<!-- 字段 -->
+	<sql id="businessVoColumn">
+		b.ID,		
+		b.USER_ID,
+		b.USERNAME,
+		b.STATUS,
+		b.ADDTIME,
+		b.ADDIP,
+		b.ADDUSER
+	</sql>	
+	
+	<!-- 查询条件 -->
+	<sql id="sql_where">
+		<where>			 
+			<if test="username != null and username != ''">
+				AND USERNAME like concat('%', #{username},'%') 
+			</if>					
+			<if test="status != null and status != ''">
+				AND STATUS=#{status}
+			</if>			
+		</where>
+	</sql>
+	
+	<!-- 根据查询条件获取业务员列表 -->
+	<select id="searchBusinessListByCnd" parameterType="com.dxjr.portal.borrow.vo.BusinessCnd" resultMap="businessVoResultMap">		
+		SELECT <include refid="businessVoColumn"/> FROM t_business b 
+		<include refid="sql_where" /> order by b.ID DESC
+	</select>	
+	
+</mapper>

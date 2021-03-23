@@ -1,0 +1,288 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dxjr.portal.curAccount.mapper.CurInMapper" >
+  <resultMap id="BaseResultMap" type="com.dxjr.portal.curAccount.entity.CurIn" >
+    <id column="ID" property="id" jdbcType="INTEGER" />
+    <result column="USER_ID" property="userId" jdbcType="INTEGER" />
+    <result column="OUT_ID" property="outId" jdbcType="INTEGER" />
+    <result column="ACCOUNT" property="account" jdbcType="DECIMAL" />
+    <result column="DRAW_MONEY" property="drawMoney" jdbcType="DECIMAL" />
+    <result column="NO_DRAW_MONEY" property="noDrawMoney" jdbcType="DECIMAL" />
+    <result column="CUR_NOWORKDAY_ID" property="curNoworkdayId" jdbcType="INTEGER" />
+    <result column="CAL_INTEREST_DAY" property="calInterestDay" jdbcType="DATE" />
+    <result column="ACTUAL_MONEY" property="actualMoney" jdbcType="DECIMAL" />
+    <result column="ACTUAL_DRAW_MONEY" property="actualDrawMoney" jdbcType="DECIMAL" />
+    <result column="ACTUAL_NO_DRAW_MONEY" property="actualNoDrawMoney" jdbcType="DECIMAL" />
+    <result column="TENDER_TYPE" property="tenderType" jdbcType="INTEGER" />
+    <result column="ADDUSER" property="adduser" jdbcType="INTEGER" />
+    <result column="ADDTIME" property="addtime" jdbcType="TIMESTAMP" />
+    <result column="ADDIP" property="addip" jdbcType="VARCHAR" />
+    <result column="STATUS" property="status" jdbcType="INTEGER" />
+    <result column="PLATFORM" property="platform" jdbcType="INTEGER" />
+    <result column="REMARK" property="remark" jdbcType="VARCHAR" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    ID, USER_ID, OUT_ID, ACCOUNT, DRAW_MONEY, NO_DRAW_MONEY, CUR_NOWORKDAY_ID, CAL_INTEREST_DAY, 
+    ACTUAL_MONEY, ACTUAL_DRAW_MONEY, ACTUAL_NO_DRAW_MONEY, TENDER_TYPE, ADDUSER, ADDTIME, ADDIP, STATUS, PLATFORM, REMARK
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from t_cur_in
+    where ID = #{id,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from t_cur_in
+    where ID = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.dxjr.portal.curAccount.entity.CurIn" >
+    insert into t_cur_in (ID, USER_ID, OUT_ID, 
+      ACCOUNT, DRAW_MONEY, NO_DRAW_MONEY, 
+      CUR_NOWORKDAY_ID, CAL_INTEREST_DAY, ACTUAL_MONEY, ACTUAL_DRAW_MONEY, ACTUAL_NO_DRAW_MONEY,
+      TENDER_TYPE, ADDUSER, ADDTIME, 
+      ADDIP, STATUS, PLATFORM, 
+      REMARK)
+    values (#{id,jdbcType=INTEGER}, #{userId,jdbcType=INTEGER}, #{outId,jdbcType=INTEGER}, 
+      #{account,jdbcType=DECIMAL}, #{drawMoney,jdbcType=DECIMAL}, #{noDrawMoney,jdbcType=DECIMAL}, 
+      #{curNoworkdayId,jdbcType=INTEGER}, #{calInterestDay,jdbcType=DATE}, #{actualMoney,jdbcType=DECIMAL}, 
+      #{actualDrawMoney,jdbcType=DECIMAL}, #{actualNoDrawMoney,jdbcType=DECIMAL},
+      #{tenderType,jdbcType=INTEGER}, #{adduser,jdbcType=INTEGER}, CURRENT_TIMESTAMP, 
+      #{addip,jdbcType=VARCHAR}, #{status,jdbcType=INTEGER}, #{platform,jdbcType=INTEGER}, 
+      #{remark,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="com.dxjr.portal.curAccount.entity.CurIn" >
+    insert into t_cur_in
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        ID,
+      </if>
+      <if test="userId != null" >
+        USER_ID,
+      </if>
+      <if test="outId != null" >
+        OUT_ID,
+      </if>
+      <if test="account != null" >
+        ACCOUNT,
+      </if>
+      <if test="drawMoney != null" >
+        DRAW_MONEY,
+      </if>
+      <if test="noDrawMoney != null" >
+        NO_DRAW_MONEY,
+      </if>
+      <if test="curNoworkdayId != null" >
+        CUR_NOWORKDAY_ID,
+      </if>
+      <if test="calInterestDay != null" >
+        CAL_INTEREST_DAY,
+      </if>
+      <if test="actualMoney != null" >
+        ACTUAL_MONEY,
+      </if>
+      <if test="actualDrawMoney != null" >
+        ACTUAL_DRAW_MONEY,
+      </if>
+      <if test="actualNoDrawMoney != null" >
+        ACTUAL_NO_DRAW_MONEY,
+      </if>
+      <if test="tenderType != null" >
+        TENDER_TYPE,
+      </if>
+      <if test="adduser != null" >
+        ADDUSER,
+      </if>
+      <if test="addtime != null" >
+        ADDTIME,
+      </if>
+      <if test="addip != null" >
+        ADDIP,
+      </if>
+      <if test="status != null" >
+        STATUS,
+      </if>
+      <if test="platform != null" >
+        PLATFORM,
+      </if>
+      <if test="remark != null" >
+        REMARK,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="userId != null" >
+        #{userId,jdbcType=INTEGER},
+      </if>
+      <if test="outId != null" >
+        #{outId,jdbcType=INTEGER},
+      </if>
+      <if test="account != null" >
+        #{account,jdbcType=DECIMAL},
+      </if>
+      <if test="drawMoney != null" >
+        #{drawMoney,jdbcType=DECIMAL},
+      </if>
+      <if test="noDrawMoney != null" >
+        #{noDrawMoney,jdbcType=DECIMAL},
+      </if>
+      <if test="curNoworkdayId != null" >
+        #{curNoworkdayId,jdbcType=INTEGER},
+      </if>
+      <if test="calInterestDay != null" >
+        #{calInterestDay,jdbcType=DATE},
+      </if>
+      <if test="actualMoney != null" >
+        #{actualMoney,jdbcType=DECIMAL},
+      </if>
+      <if test="actualDrawMoney != null" >
+        #{actualDrawMoney,jdbcType=DECIMAL},
+      </if>
+      <if test="actualNoDrawMoney != null" >
+        #{actualNoDrawMoney,jdbcType=DECIMAL},
+      </if>
+      <if test="tenderType != null" >
+        #{tenderType,jdbcType=INTEGER},
+      </if>
+      <if test="adduser != null" >
+        #{adduser,jdbcType=INTEGER},
+      </if>
+      <if test="addtime != null" >
+        #{addtime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="addip != null" >
+        #{addip,jdbcType=VARCHAR},
+      </if>
+      <if test="status != null" >
+        #{status,jdbcType=INTEGER},
+      </if>
+      <if test="platform != null" >
+        #{platform,jdbcType=INTEGER},
+      </if>
+      <if test="remark != null" >
+        #{remark,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.dxjr.portal.curAccount.entity.CurIn" >
+    update t_cur_in
+    <set >
+      <if test="userId != null" >
+        USER_ID = #{userId,jdbcType=INTEGER},
+      </if>
+      <if test="outId != null" >
+        OUT_ID = #{outId,jdbcType=INTEGER},
+      </if>
+      <if test="account != null" >
+        ACCOUNT = #{account,jdbcType=DECIMAL},
+      </if>
+      <if test="drawMoney != null" >
+        DRAW_MONEY = #{drawMoney,jdbcType=DECIMAL},
+      </if>
+      <if test="noDrawMoney != null" >
+        NO_DRAW_MONEY = #{noDrawMoney,jdbcType=DECIMAL},
+      </if>
+      <if test="curNoworkdayId != null" >
+        CUR_NOWORKDAY_ID = #{curNoworkdayId,jdbcType=INTEGER},
+      </if>
+      <if test="calInterestDay != null" >
+        CAL_INTEREST_DAY = #{calInterestDay,jdbcType=DATE},
+      </if>
+      <if test="actualMoney != null" >
+        ACTUAL_MONEY = #{actualMoney,jdbcType=DECIMAL},
+      </if>
+      <if test="actualDrawMoney != null" >
+        ACTUAL_DRAW_MONEY = #{actualDrawMoney,jdbcType=DECIMAL},
+      </if>
+       <if test="actualNoDrawMoney != null" >
+        ACTUAL_NO_DRAW_MONEY = #{actualNoDrawMoney,jdbcType=DECIMAL},
+      </if>
+      <if test="tenderType != null" >
+        TENDER_TYPE = #{tenderType,jdbcType=INTEGER},
+      </if>
+      <if test="adduser != null" >
+        ADDUSER = #{adduser,jdbcType=INTEGER},
+      </if>
+      <if test="addtime != null" >
+        ADDTIME = #{addtime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="addip != null" >
+        ADDIP = #{addip,jdbcType=VARCHAR},
+      </if>
+      <if test="status != null" >
+        STATUS = #{status,jdbcType=INTEGER},
+      </if>
+      <if test="platform != null" >
+        PLATFORM = #{platform,jdbcType=INTEGER},
+      </if>
+      <if test="remark != null" >
+        REMARK = #{remark,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where ID = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.dxjr.portal.curAccount.entity.CurIn" >
+    update t_cur_in
+    set USER_ID = #{userId,jdbcType=INTEGER},
+      OUT_ID = #{outId,jdbcType=INTEGER},
+      ACCOUNT = #{account,jdbcType=DECIMAL},
+      DRAW_MONEY = #{drawMoney,jdbcType=DECIMAL},
+      NO_DRAW_MONEY = #{noDrawMoney,jdbcType=DECIMAL},
+      CUR_NOWORKDAY_ID = #{curNoworkdayId,jdbcType=INTEGER},
+      CAL_INTEREST_DAY = #{calInterestDay,jdbcType=DATE},
+      ACTUAL_MONEY = #{actualMoney,jdbcType=DECIMAL},
+      ACTUAL_DRAW_MONEY = #{actualDrawMoney,jdbcType=DECIMAL},
+      ACTUAL_NO_DRAW_MONEY = #{actualNoDrawMoney,jdbcType=DECIMAL},
+      TENDER_TYPE = #{tenderType,jdbcType=INTEGER},
+      ADDUSER = #{adduser,jdbcType=INTEGER},
+      ADDTIME = #{addtime,jdbcType=TIMESTAMP},
+      ADDIP = #{addip,jdbcType=VARCHAR},
+      STATUS = #{status,jdbcType=INTEGER},
+      PLATFORM = #{platform,jdbcType=INTEGER},
+      REMARK = #{remark,jdbcType=VARCHAR}
+    where ID = #{id,jdbcType=INTEGER}
+  </update>
+  
+  <!-- 根据userId和date查询某天内的转入受限总额 -->
+  <select id="queryNoDrawMoneyTotalByUserIdAndDate" resultType="java.math.BigDecimal" >
+  	 SELECT 
+  	 IFNULL(SUM(ACTUAL_NO_DRAW_MONEY), 0)
+  	 FROM t_cur_in 
+	 WHERE USER_ID = #{userId} AND DATE_FORMAT(ADDTIME,'%Y-%m-%d') = DATE_FORMAT(#{date}, '%Y-%m-%d')
+  </select>
+  
+  <!-- 根据userId和date查询未开始产生收益的转入记录，并锁定 -->
+  <select id="queryCurInListByUserIdAndDateForUpdate" resultMap="BaseResultMap" >
+  	 SELECT
+  	 <include refid="Base_Column_List" />
+  	 FROM t_cur_in 
+	 WHERE STATUS = 0 AND USER_ID = #{userId} AND CAL_INTEREST_DAY > DATE_FORMAT(#{date}, '%Y-%m-%d') and ACTUAL_MONEY > 0
+	 order by CAL_INTEREST_DAY asc, id asc
+	 for update
+  </select>
+  
+  <!-- 根据userId和date查询未开始产生收益的转入记录中有效可扣除金额(用于转出到可用余额) -->
+  <select id="queryEffectiveMoneyByUserIdAndDateForUseMoney" resultType="java.math.BigDecimal" >
+  	 SELECT
+  	 	IFNULL(SUM(CASE WHEN DATE_FORMAT(ADDTIME,'%Y-%m-%d') = DATE_FORMAT(#{date}, '%Y-%m-%d') THEN ACTUAL_DRAW_MONEY ELSE ACTUAL_MONEY END), 0)
+	 FROM t_cur_in 
+	 WHERE STATUS = 0 AND USER_ID = #{userId} AND CAL_INTEREST_DAY > DATE_FORMAT(#{date}, '%Y-%m-%d') 
+  </select>
+  
+  <!-- 根据userId和date查询未开始产生收益的转入记录中有效可扣除金额(用于投资转出（包含投标、开通直通车、认购债转、 认购直通车转让、认购定期宝等）) -->
+  <select id="queryEffectiveMoneyByUserIdAndDateForInvest" resultType="java.math.BigDecimal" >
+  	 SELECT
+	 IFNULL(SUM(ACTUAL_MONEY), 0)
+	 FROM t_cur_in 
+	 WHERE STATUS = 0 AND USER_ID = #{userId} AND CAL_INTEREST_DAY > DATE_FORMAT(#{date}, '%Y-%m-%d')
+  </select>
+  
+  <!-- 调用活期宝转入存储过程 -->
+	<select id="saveCurrentIn" statementType="CALLABLE" parameterType="java.util.Map">  
+		<![CDATA[  
+		    {call current_insert(#{userId,mode=IN,jdbcType=INTEGER},#{account,mode=IN,jdbcType=DECIMAL}, #{tenderType,mode=IN,jdbcType=INTEGER}, #{curLogType,mode=IN,jdbcType=INTEGER},#{accountLogType,mode=IN,jdbcType=INTEGER},#{outId,mode=IN,jdbcType=INTEGER},#{addip,mode=IN,jdbcType=VARCHAR}, #{platform,mode=IN,jdbcType=INTEGER}, #{msg,mode=OUT,jdbcType=VARCHAR})}  
+		]]>
+	</select>
+  
+</mapper>

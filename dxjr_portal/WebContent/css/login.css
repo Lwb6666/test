@@ -1,0 +1,82 @@
+#gc-login{color:#444;min-height:500px;_height:500px; margin-top:20px;}
+body{background:#f9f9f9}
+.login_container{padding:50px 0;}
+.left-bg{float:left; width:667px; height:430px; background:url(../images/loginbg.jpg);-webkit-box-shadow:0 0px 10px 0 #dbdbdb;-moz-box-shadow:0 0px 10px 0 #dbdbdb;-o-box-shadow:0 0px 5px 0 #dbdbdb;-ms-box-shadow:0 0px 10px 0 #dbdbdb;box-shadow:0 0px 10px 0 #dbdbdb;}
+.left-tzjbg{float:left; width:667px; height:430px; background:url(../images/tzjlogbg.jpg)}
+.left-ttxbg{float:left; width:667px; height:430px; background:url(../images/ttxlogobg.jpg)}
+.left-wdtybg{float:left; width:667px; height:430px; background:url(../images/wdtylogbg.png)}
+.right_container{ width:900px; margin:0 auto;overflow:hidden;}
+.right_content{ width:700px; margin:0 auto;overflow:hidden;}
+.right_bg{float:left; width:330px; height:428px;background:#fff;border:1px solid #dbdbdb;-webkit-box-shadow:0 0px 10px 0 #dbdbdb;-moz-box-shadow:0 0px 10px 0 #dbdbdb;-o-box-shadow:0 0px 5px 0 #dbdbdb;-ms-box-shadow:0 0px 10px 0 #dbdbdb;box-shadow:0 0px 10px 0 #dbdbdb;}
+.loginbox_form{float:left; width:315px; height:55px;margin-top:50px; padding-left:15px;}
+.loginbox_width{ width:400px}
+.form_span{ color:#444; float:left;width:250px; height:44px;font-size:14px;line-height:45px;border:1px solid #dbdbdb; background:url(../images/yonghu.png) 8px 12px no-repeat; padding-left:35px;}
+.form_email{ float:left;width:250px; height:44px;font-size:14px;line-height:45px;border:1px solid #dbdbdb; background:url(../images/email.png) 8px 12px no-repeat; padding-left:35px;}
+.login_box{float:left;width:280px; height:44px;margin:5px 0 5px 10px; }
+.login_box1{float:left;width:280px; height:44px;margin:5px 10px; }
+.form_width{width:390px;}
+.login_box em{ float:left;ine-height:25px; margin-top:10px; margin-left:5px}
+.login_box span{ width:90px; float:left; text-align:right; line-height:40px; overflow:hidden}
+.login_top{ margin-top:20px}
+.formbox{  color:#444;float:left;width:250px; height:44px;font-size:14px;line-height:45px;border:1px solid #dbdbdb; background:url(../images/lock.png) 8px 12px no-repeat; padding-left:35px;}
+.formID{ float:left;width:250px; height:44px;font-size:14px;line-height:45px;border:1px solid #dbdbdb; background:url(../images/id.png) 8px 12px no-repeat; padding-left:35px;}
+.form_Verify{float:left;width:150px; height:44px; border:1px solid #dbdbdb;}
+.remenber{ float:left;font-size:14px;  line-height:25px; margin-top:10px}
+input[type=checkbox]{ margin:0 5px}
+.right_password{ float:right;  color:#00a7e5;line-height:45px;}
+.right_password a{float:right; width:60px; color:#00a7e5; font-size:14px;line-height:45px;}
+.right_password a:hover{color:#005a98;}
+.login_btn{ text-align:center;margin:10px auto; background:#00a7e5; color:#fff; padding:0 40px; height:40px; border:0; font-size:15px; display:block;}
+.login_btn:hover{background:#005a98; }
+.login_msg{ line-height:40px; font-size:14px; color:#555555; text-align:center;}
+.login_msg a{color:#00a7e5;}
+.login_msg a:hover{color:#005a98;}
+
+.login_tit{height:50px; border:solid 1px #dbdbdb; margin-top:20px; font-size:18px; color:#343434; padding-left:20px; line-height:50px; font-weight:450;}
+.login_main{ min-height:400px;_height:400px; border:solid 0 #dbdbdb; border-width:0 1px 1px 1px; padding:60px; margin-bottom:30px; position:relative;}
+.login-r-bg{ width:250px; height:448px; background:url(../images/zhuce-bg_03.jpg); position:absolute; right:90px; top:230px;}
+.login_mainbox{width:500px; margin:auto;}
+.login_mainbox dd{height:40px; font-size:14px; line-height:40px; color:#555555;}
+
+.login_mainbox dd span{width:100px; text-align:right; float:left;}
+.login_mainbox dt{height:40px; font-size:16px; line-height:40px; color:#555555;}
+.login_mainbox input[type=text]{ margin-left:12px; border:solid 1px #dad9d9;width:180px;height:27px;color:#505050;padding:2px;}
+.login_mainbox input[type=password]{ margin-left:12px; border:solid 1px #dad9d9;width:180px;height:27px;color:#505050;padding:2px;}
+.text_r{ text-align:right;}
+.loginbg{ background:#fff;}
+.loginboxm{ border-top:1px solid #dbdbdb; margin-top:20px}
+/*register*/
+.reg-steps{ height:57px; overflow:hidden; width:96%; margin:0 auto 30px auto;}
+.reg-info{text-align:right; padding-right:10px }
+.reg-info a{text-align:right; color:#00a7e5; padding-right:10px}
+.reg-info a:hover{color:#005a98;}
+.reg-steps ol{ height:57px; width:100%; }
+.reg-steps li{ position:relative; float:left; display:inline; width:33.33%; height:57px; line-height:57px; background:#f0f4f7 url(../images/steps.png) no-repeat right 0}
+.reg-steps .step-3{ z-index:1; background:#f0f4f7}
+.reg-steps .txt{ float:left; display:inline; position:relative; padding-left:120px;}
+.reg-steps .dot1{ position:absolute; left:80px; top:15px; text-indent:0; font-size:14px; line-height:24px; text-align:center;  font-size:18px; font-style:normal; }
+.reg-step-1 .step-1, .reg-step-2 .step-2,.reg-step-3 .step-3{ color:#fff; background:#00a7e5 url(../images/steps.png) no-repeat right 0;}
+.reg-step-2 .step-1, .reg-step-3 .step-1, .reg-step-3 .step-2{  color:#fff; background:#00a7e5 url(../images/steps.png) no-repeat right -135px}
+.reg-step-3 .step-3{color:#fff; background:#00a7e5}
+.reg-step-1 .step-1 .dot1{ color:#005a98}
+.dot1{ background:url(../images/cicle.png) no-repeat;width:24px;height:24px;font-style:normal}
+.cz_icons {display:inline-block;text-indent:-9999px;color:#005a98; width:25px; height:25px;}
+.reacquire{ float:left; width:280px;height:45px;margin-top:50px; padding-left:5px; padding-top:10px}
+.reacquire span{ color:#555; line-height:45px;}
+.enter{ float:left; width:280px; padding-left:100px}
+.enterwidth{ width:150px; height:40px}
+.enterwidth:hover{ width:150px; height:40px}
+
+/*后台登录系统01*/
+
+.landed{ font-size:78px; color:#FFF; margin-left:190px; margin-bottom:40px; margin-top:30px; }
+.footbg{ background:#555; color:#ccc; width:100%; position:absolute; bottom:0;}
+.footer-copyright {font-size:14px;line-height:40px;position: relative;text-align:center; width:1000px; margin:auto;}
+.loginbox_tip{ float:left;text-align:center; color:#e4393c;width:150px; height:20px;margin-top:-3px; padding-left:90px;}
+
+.boxzh{margin-top:20px; border-top:1px #ccc solid;}
+.boxzh2{margin:0; border:none; margin:-50px 0 50px 0; border-bottom:#ccc solid 1px; position:relative;}
+.boxzh2 span a{color:#00a7e5; font-size:14px;}
+     .zh1,.yxzh1{position:absolute; background:#fff; top:23px; z-index:99; padding:0 10px; left:43%;}
+     .zh2{float:right; font-size:16px; padding-right:15px;padding-top:10px; }
+  .zh2 a{color:#00a7e5;font-size:14px;}

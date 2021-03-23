@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.dxjr.portal.fix.mapper.FixExitMapper">
+
+	<resultMap id="fixTenderRealMap" type="com.dxjr.base.entity.FixExit">
+		<result property="id" column="ID" />
+		<result property="userId" column="USER_ID" />
+		<result property="fixBorrowId" column="FIX_BORROW_ID" />
+		<result property="status" column="STATUS" />
+		<result property="account" column="ACCOUNT" />
+		<result property="useMoney" column="USE_MONEY" />
+		<result property="fixTenderRealId" column="FIX_TENDER_REAL_ID" />
+		<result property="fixInterest" column="FIX_INTEREST" />
+		<result property="fixDays" column="FIX_DAYS" />
+		<result property="serviceRate" column="SERVICE_RATE" />
+		<result property="fee" column="FEE" />
+		<result property="addTime" column="ADDTIME" />
+		<result property="fixSuccessTime" column="FIX_SUCCESS_TIME" />
+		<result property="calcTime" column="CALC_TIME" />
+		<result property="calcDays" column="CALC_DAYS" />
+		<result property="interestReal" column="INTEREST_REAL" />
+		<result property="adduser" column="ADDUSER" />
+		<result property="addip" column="ADDIP" />
+		<result property="updatetime" column="UPDATETIME" />
+		<result property="updateuser" column="UPDATEUSER" />
+		<result property="remark" column="REMARK" />
+		<result property="platform" column="PLATFORM" />
+		<result property="fixApr" column="FIX_APR" />
+	</resultMap>
+
+	<!-- 查询当日申请总额并锁表 -->
+	<select id="countTodayApplyExitTotalForUpdate" resultType="java.math.BigDecimal">
+		SELECT IFNULL(SUM(ACCOUNT),0) FROM t_fix_exit WHERE date(ADDTIME) = CURDATE() AND STATUS >= 0 
+		and USER_ID and USER_ID NOT in(SELECT `VALUE` FROM rocky_configuration WHERE TYPE = 20010) FOR UPDATE
+	</select>
+
+	<!--插入退出记录-->
+	<insert id="insertFixExit" parameterType="com.dxjr.base.entity.FixExit">
+		INSERT INTO t_fix_exit (
+		USER_ID,
+		FIX_BORROW_ID,
+		STATUS,
+		ACCOUNT,
+		USE_MONEY,
+		FIX_TENDER_REAL_ID,
+		FIX_INTEREST,
+		FIX_DAYS,
+		SERVICE_RATE,
+		FEE,
+		ADDTIME,
+		FIX_SUCCESS_TIME,
+		CALC_TIME,
+		CALC_DAYS,
+		INTEREST_REAL,
+		ADDUSER,
+		ADDIP,
+		UPDATETIME,
+		UPDATEUSER,
+		REMARK,
+		PLATFORM,
+		FIX_APR
+		) VALUES (
+		#{userId},
+		#{fixBorrowId},
+		#{status},
+		#{account},
+		#{useMoney},
+		#{fixTenderRealId},
+		#{fixInterest},
+		#{fixDays},
+		#{serviceRate},
+		#{fee},
+		now(),
+		#{fixSuccessTime},
+		now(),
+		#{calcDays},
+		#{interestReal},
+		#{adduser},
+		#{addip},
+		now(),
+		#{updateuser},
+		#{remark},
+		#{platform},
+		#{fixApr}
+		)
+		<selectKey resultType="java.lang.Integer" order="AFTER"
+				   keyProperty="id">
+			SELECT LAST_INSERT_ID() AS ID
+		</selectKey>
+	</insert>
+
+</mapper>

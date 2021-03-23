@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE generatorConfiguration PUBLIC "-//mybatis.org//DTD MyBatis Generator Configuration 1.0//EN" "http://mybatis.org/dtd/mybatis-generator-config_1_0.dtd" >
+<generatorConfiguration>
+	<!-- 引入配置文件 -->  
+    <properties resource="init.properties"/>  
+    <classPathEntry
+        location="${classPath}" />
+    <context id="context1">
+        <!-- 注释 -->  
+        <commentGenerator >  
+            <property name="suppressAllComments" value="true"/><!-- 是否取消注释 -->  
+            <property name="suppressDate" value="true" /> <!-- 是否生成注释代时间戳-->  
+        </commentGenerator> 
+        <jdbcConnection driverClass="com.mysql.jdbc.Driver"
+            connectionURL="jdbc:mysql://192.168.1.218:33668/dxjr_new?useUnicode=true&amp;characterEncoding=utf8"
+            userId="gcdep" password="lDx4xtLD72bKoOINKbGU" />
+        <javaModelGenerator targetPackage="com.dxjr.hj.model"
+            targetProject="dxjr_portal" />
+        <sqlMapGenerator targetPackage="com.dxjr.hj.sqlmap" targetProject="dxjr_portal" />
+        <!--    数据库　表名　生成名 -->
+        <javaClientGenerator targetPackage="com.dxjr.hj.sqlmap"
+            targetProject="dxjr_portal" type="XMLMAPPER" />
+        <table schema="dxjr_new" tableName="tmpTable"
+            domainObjectName="tmpTable" enableCountByExample="false"  
+            enableDeleteByExample="false" enableSelectByExample="false"  
+            enableUpdateByExample="false">
+        </table>
+    </context>
+</generatorConfiguration>

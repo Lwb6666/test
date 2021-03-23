@@ -1,0 +1,415 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dxjr.portal.chart.mapper.FinanceChartMapper" >
+
+  <resultMap id="repaymentChartVoResultMap" type="com.dxjr.portal.chart.vo.RepaymentChartVo" >
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="borrow_id" property="borrowId" jdbcType="INTEGER" />
+    <result column="user_id" property="userId" jdbcType="INTEGER" />
+    <result column="borrow_name" property="borrowName" jdbcType="VARCHAR" />
+    <result column="status" property="status" jdbcType="INTEGER" />
+    <result column="webstatus" property="webstatus" jdbcType="INTEGER" />
+    <result column="borrow_status" property="borrowStatus" jdbcType="INTEGER" />
+    <result column="repayment_time" property="repaymentTime" jdbcType="VARCHAR" />
+    <result column="repayment_yestime" property="repaymentYestime" jdbcType="VARCHAR" />
+    <result column="repayment_account" property="repaymentAccount" jdbcType="DECIMAL" />
+    <result column="repayment_yesaccount" property="repaymentYesaccount" jdbcType="DECIMAL" />
+    <result column="late_days" property="lateDays" jdbcType="INTEGER" />
+    <result column="late_interest" property="lateInterest" jdbcType="DECIMAL" />
+    <result column="interest" property="interest" jdbcType="DECIMAL" />
+    <result column="capital" property="capital" jdbcType="DECIMAL"/>
+    <result column="username" property="userName" jdbcType="VARCHAR"/>
+    <result column="advancetime" property="advancetime" jdbcType="DATE" />
+    <result column="first_account" property="firstAccount" jdbcType="DECIMAL" />
+    <result column="order" property="order" jdbcType="INTEGER" />
+    <result column="style" property="style" jdbcType="INTEGER" />
+    <result column="timeLimit" property="timeLimit" jdbcType="INTEGER" />
+    <result column="borrowtype" property="borrowType" jdbcType="INTEGER" />
+  </resultMap>
+  <resultMap id="DateMoneyResultMap" type="com.dxjr.portal.chart.vo.DateMoneyVo" >
+  </resultMap>
+  	<!--基本列 -->
+	<sql id="repaymentChartVoColumn">
+		r.id, 
+		r.user_id, 
+		r.borrow_id,
+		r.status, 
+		r.`ORDER`,
+		r.webstatus, 
+		r.repayment_time, 
+		r.repayment_yestime, 
+		r.repayment_account,
+		r.repayment_yesaccount,
+		CASE WHEN r.status = 0 AND TIMESTAMPDIFF(DAY,DATE_FORMAT(FROM_UNIXTIME(r.REPAYMENT_TIME),'%Y-%m-%d'),CURDATE()) > 0 THEN
+			TIMESTAMPDIFF(DAY,DATE_FORMAT(FROM_UNIXTIME(r.REPAYMENT_TIME),'%Y-%m-%d'),CURDATE())
+		ELSE
+			r.LATE_DAYS
+		END LATE_DAYS,
+		CASE WHEN r.status = 0 AND TIMESTAMPDIFF(DAY,DATE_FORMAT(FROM_UNIXTIME(r.REPAYMENT_TIME),'%Y-%m-%d'),CURDATE()) > 0 THEN
+			round(r.REPAYMENT_ACCOUNT*0.002*TIMESTAMPDIFF(DAY,DATE_FORMAT(FROM_UNIXTIME(r.REPAYMENT_TIME),'%Y-%m-%d'),CURDATE()),2)
+		ELSE
+			r.LATE_INTEREST
+		END LATE_INTEREST,
+		r.interest,
+		r.capital,
+		r.advancetime
+	</sql>
+	
+	<!-- 查询某段时间内的抵押标还款记录. -->
+	<select id="findRepaymentChartForWeekPages" parameterType="com.dxjr.portal.chart.vo.RepaymentChartCnd" resultMap="repaymentChartVoResultMap" >
+		select b.`NAME` borrow_name, b.`STATUS` borrow_status, b.style style, b.TIME_LIMIT timeLimit,b.BORROWTYPE borrowType, m.username,
+		<include refid="repaymentChartVoColumn"/>,
+		(SELECT SUM(c.CAPITAL) FROM rocky_b_collectionrecord c WHERE c.IS_FIRST_BORROW = 1 AND c.BORROW_ID = b.id AND c.`ORDER` = r.`ORDER`) first_account
+		from rocky_b_repaymentrecord r,rocky_borrow b ,rocky_member m 
+		where r.BORROW_ID = b.id and b.BORROWTYPE in(1,2,5) and b.`STATUS` in(4,42,5) and b.USER_ID = m.id
+		<if test="beignTime != null and beignTime != ''">
+			and r.REPAYMENT_TIME &gt;= #{beignTime}
+		</if>
+		<if test="endTime != null and endTime != ''">
+			and r.REPAYMENT_TIME &lt;= #{endTime}
+		</if>
+		ORDER BY r.status asc, r.REPAYMENT_TIME asc
+  	</select>
+  	
+  	<!-- 查询某段时间内的抵押标还款记录数量  -->
+  	<select id="findRepaymentChartForWeekCount" parameterType="com.dxjr.portal.chart.vo.RepaymentChartCnd" resultType="java.lang.Integer" >
+  		SELECT count(r.id)
+		FROM rocky_b_repaymentrecord r,rocky_borrow b
+		WHERE r.BORROW_ID = b.id and b.BORROWTYPE in(1,2,5) and b.`STATUS` in(4,42,5) 
+  		<if test="beignTime != null and beignTime != ''">
+			and r.REPAYMENT_TIME &gt;= #{beignTime}
+		</if>
+		<if test="endTime != null and endTime != ''">
+			and r.REPAYMENT_TIME &lt;= #{endTime}
+		</if>
+  	</select>
+  
+  	<!-- 统计某段时间内的抵押标未还总金额、已还总金额、应还总金额 -->
+  	<select id="queryRepaymentChartForWeek" parameterType="com.dxjr.portal.chart.vo.RepaymentChartCnd" resultType="java.util.HashMap" >
+		SELECT
+		  SUM(CASE WHEN `STATUS` = 0 THEN REPAYMENT_ACCOUNT END) AS noRepaymentAccount,
+		  SUM(CASE WHEN `STATUS` = 1 THEN REPAYMENT_ACCOUNT END) AS yesRepaymentAccount,
+		  SUM(REPAYMENT_ACCOUNT) AS repaymentAccount
+		FROM (
+		  SELECT br.`STATUS`, br.REPAYMENT_ACCOUNT
+		  FROM rocky_b_repaymentrecord br, rocky_borrow b
+		  WHERE br.BORROW_ID = b.id
+		    AND b.BORROWTYPE IN (1, 2, 5)
+			<if test="beignTime != null and beignTime != ''">
+			AND br.REPAYMENT_TIME >= #{beignTime}
+			</if>
+			<if test="endTime != null and endTime != ''">
+			AND br.REPAYMENT_TIME &lt;= #{endTime}
+			</if>
+		) t
+  	</select>
+  	
+  	<!-- 查询逾期的抵押标还款记录. -->
+	<select id="findRepaymentChartForOverduePages" parameterType="com.dxjr.portal.chart.vo.RepaymentChartCnd" resultMap="repaymentChartVoResultMap" >
+		select b.`NAME` borrow_name, b.`STATUS` borrow_status, b.style style, b.TIME_LIMIT timeLimit, b.BORROWTYPE borrowType, m.username, 
+		<include refid="repaymentChartVoColumn"/>,
+		(SELECT SUM(c.CAPITAL) FROM rocky_b_collectionrecord c WHERE c.IS_FIRST_BORROW = 1 AND c.BORROW_ID = b.id AND c.`ORDER` = r.`ORDER`) first_account
+		from rocky_b_repaymentrecord r,rocky_borrow b, rocky_member m 
+		where r.BORROW_ID = b.id and b.BORROWTYPE in(1, 2, 5) and b.USER_ID = m.id 
+		and ((UNIX_TIMESTAMP(CONCAT(SUBSTR(NOW() FROM 1 FOR 10),' 00:00:00')) > UNIX_TIMESTAMP(CONCAT(SUBSTR(FROM_UNIXTIME(r.repayment_time) FROM 1 FOR 10),' 00:00:00')) and r.`STATUS` = 0) 
+		or (r.`STATUS` = 1 AND (UNIX_TIMESTAMP(CONCAT(SUBSTR(FROM_UNIXTIME(r.repayment_yestime) FROM 1 FOR 10),' 00:00:00')) > UNIX_TIMESTAMP(CONCAT(SUBSTR(FROM_UNIXTIME(r.repayment_time) FROM 1 FOR 10),' 00:00:00'))))) 
+		ORDER BY r.status asc, r.webstatus asc, r.REPAYMENT_TIME asc
+  	</select>
+  	
+  	<!-- 查询逾期的抵押标还款记录数量  -->
+  	<select id="findRepaymentChartForOverdueCount" parameterType="com.dxjr.portal.chart.vo.RepaymentChartCnd" resultType="java.lang.Integer" >
+  		select count(r.id)
+		from rocky_b_repaymentrecord r,rocky_borrow b
+		where r.BORROW_ID = b.id and b.BORROWTYPE in(1, 2, 5)
+		and ((UNIX_TIMESTAMP(CONCAT(SUBSTR(NOW() FROM 1 FOR 10),' 00:00:00')) > UNIX_TIMESTAMP(CONCAT(SUBSTR(FROM_UNIXTIME(r.repayment_time) FROM 1 FOR 10),' 00:00:00')) and r.`STATUS` = 0) 
+		or (r.`STATUS` = 1 AND (UNIX_TIMESTAMP(CONCAT(SUBSTR(FROM_UNIXTIME(r.repayment_yestime) FROM 1 FOR 10),' 00:00:00')) > UNIX_TIMESTAMP(CONCAT(SUBSTR(FROM_UNIXTIME(r.repayment_time) FROM 1 FOR 10),' 00:00:00'))))) 
+  	</select>
+  	
+  	<!-- 查询结清的抵押标还款记录. -->
+	<select id="findRepaymentChartForFinishPages" parameterType="com.dxjr.portal.chart.vo.RepaymentChartCnd" resultMap="repaymentChartVoResultMap" >
+		SELECT m.USERNAME,b.`NAME` borrow_name, b.`STATUS` borrow_status, b.STYLE style, b.TIME_LIMIT timeLimit, b.BORROWTYPE borrowType,<include refid="repaymentChartVoColumn"/>,
+			(SELECT SUM(c.CAPITAL) FROM rocky_b_collectionrecord c WHERE c.IS_FIRST_BORROW = 1 AND c.BORROW_ID = b.id AND c.`ORDER` = r.`ORDER`) first_account
+			FROM (
+				SELECT t.max_id,t.USER_ID FROM ( 
+					SELECT r.id max_id,t.USER_ID,t.STATUS1,t.STATUS0,t.REPAYMENT_YESTIME  FROM (
+						SELECT MAX(r.`STATUS`) AS STATUS1, MIN(r.`STATUS`) AS STATUS0,MAX(r.REPAYMENT_YESTIME) AS REPAYMENT_YESTIME,r.USER_ID FROM rocky_borrow b, rocky_b_repaymentrecord r WHERE r.`STATUS` IN (0, 1) AND r.BORROW_ID = b.ID AND b.BORROWTYPE IN(1,2,5) GROUP BY b.USER_ID
+					) t LEFT JOIN rocky_b_repaymentrecord r on(t.USER_ID = r.USER_ID and t.REPAYMENT_YESTIME = r.REPAYMENT_YESTIME)
+				) t WHERE t.STATUS1 = 1 AND STATUS0 = 1 AND FROM_UNIXTIME(t.REPAYMENT_YESTIME,'%Y-%m-%d')  <![CDATA[ < ]]> DATE_SUB(CURDATE(),INTERVAL 3 DAY)
+			) tt,rocky_member m,rocky_borrow b,rocky_b_repaymentrecord r
+			WHERE tt.USER_ID = m.ID AND tt.max_id = r.id AND r.BORROW_ID = b.ID
+		ORDER BY r.repayment_yestime desc
+  	</select>
+  	
+  	<!-- 查询结清的抵押标还款记录数量  -->
+  	<select id="findRepaymentChartForFinishCount" parameterType="com.dxjr.portal.chart.vo.RepaymentChartCnd" resultType="java.lang.Integer" >
+  		SELECT count(t.max_id) FROM ( 
+			SELECT max(r.id) max_id,b.USER_ID, MAX(r.`STATUS`) AS STATUS1, MIN(r.`STATUS`) AS STATUS0, MAX(r.REPAYMENT_YESTIME) AS REPAYMENT_YESTIME 
+			FROM rocky_borrow b, rocky_b_repaymentrecord r 
+			WHERE r.`STATUS` IN (0, 1) AND r.BORROW_ID = b.ID AND b.BORROWTYPE IN(1,2,5) GROUP BY b.USER_ID 
+		) t WHERE t.STATUS1 = 1 AND STATUS0 = 1 AND FROM_UNIXTIME(t.REPAYMENT_YESTIME,'%Y-%m-%d') <![CDATA[ < ]]> DATE_SUB(CURDATE(),INTERVAL 3 DAY)
+  	</select>
+  	
+	<!-- 查询每日累计待收本息总计，统计前30天，从昨天算起 -->
+	<select id="queryDayTotalCollectionData" resultType="java.lang.Double" >
+		<![CDATA[
+		SELECT ROUND(SUM(d.COLLECTION)/10000,2) AS account
+		FROM rocky_account_day_log d
+	    WHERE d.addtime >= DATE_SUB(CURDATE(),INTERVAL 29 DAY)
+		AND d.addtime <  CURDATE()  	 
+		GROUP BY DATE_FORMAT(d.addtime,'%Y-%m-%d')
+		]]>
+  	</select>  	
+  	
+	<!-- 查询今日借款总计 -->
+	<select id="queryNowTotalBorrowMoneyData" resultType="java.math.BigDecimal" >
+		<![CDATA[
+		SELECT ROUND(SUM(account)/10000,0) AS account
+		FROM rocky_borrow b
+		WHERE b.STATUS IN (4, 5, 42) 
+		AND b.SUCCESS_TIME <= UNIX_TIMESTAMP(NOW())
+		]]>
+  	</select>   	
+  	
+	<!-- 查询今日投资者人数 -->
+	<select id="queryNowDayTotalPersonsData" resultType="java.lang.Integer" >
+		<![CDATA[
+		  select count(DISTINCT t.userId)  from (
+		    select rbt.user_id as userId
+		     FROM rocky_borrow b,rocky_b_tenderrecord rbt
+				 WHERE 1=1  and rbt.user_ID<100000000
+				 AND b.ID=rbt.BORROW_ID
+				 AND b.STATUS IN (4, 5, 42) 
+				 AND b.SUCCESS_TIME <= UNIX_TIMESTAMP(NOW())
+		   UNION ALL
+		   select tftd.user_id as userId
+		     FROM t_fix_borrow fb,t_fix_tender_detail tftd
+				 WHERE 1=1
+				 AND fb.ID=tftd.FIX_BORROW_ID
+				 AND fb.SUCCESS_TIME <= NOW()
+		   ) t     
+		]]>
+  	</select> 
+  	
+  	<!-- 查询今天累计待收本息总计 -->
+	<select id="queryNowCollectionData" resultType="java.math.BigDecimal" >
+		SELECT ROUND(SUM(r.REPAYMENT_ACCOUNT), 2) AS account
+		FROM rocky_b_repaymentrecord r, rocky_borrow b
+		WHERE r.STATUS =0 and r.WEBSTATUS=0
+		  AND r.BORROW_ID = b.ID
+		  AND b.BORROWTYPE != 4
+  	</select>  	
+  	
+  	<!-- 查询成交的借款标 -->
+	<select id="querySuccessBorrowData" resultType="com.dxjr.portal.chart.vo.BorrowDataInfoVo" >
+		 SELECT t.BORROWTYPE AS borrowtype,ROUND(SUM(ACCOUNT),2) AS account
+		 FROM rocky_borrow t
+		 WHERE (t.STATUS = 4 or t.STATUS = 5 or t.STATUS = 42)
+		 GROUP BY t.BORROWTYPE
+  	</select>   
+  	
+  	<!-- 查询待收借款标 -->
+	<select id="queryWaitReceiveData" resultType="com.dxjr.portal.chart.vo.BorrowDataInfoVo" >
+		SELECT b.BORROWTYPE AS borrowtype, ROUND(SUM(r.REPAYMENT_ACCOUNT), 2) AS account
+		FROM rocky_b_repaymentrecord r, rocky_borrow b
+		WHERE r.STATUS = 0 and r.WEBSTATUS=0
+		  AND r.BORROW_ID = b.ID
+		  AND b.BORROWTYPE != 4
+		GROUP BY b.BORROWTYPE
+  	</select>  	
+  	
+  	<!--正常还款总额：只计算抵押标的还款情况-->
+	<select id="queryNormalRepaymentMoney" resultType="java.math.BigDecimal" >
+	   <![CDATA[
+		 SELECT ROUND(SUM(r.REPAYMENT_YESACCOUNT),2) FROM 
+		 rocky_b_repaymentrecord r,rocky_borrow b
+		 WHERE 1=1
+		 AND r.STATUS = 1
+		 AND r.BORROW_ID = b.ID
+		 AND b.BORROWTYPE IN(1,2,5) 
+		 AND FROM_UNIXTIME(r.REPAYMENT_YESTIME,'%Y-%m-%d')<=FROM_UNIXTIME(r.REPAYMENT_TIME,'%Y-%m-%d')
+	  ]]>
+  	</select>    
+  	
+  	<!--逾期总额：有过逾期记录的抵押标总额-->
+	<select id="queryOverdueMoney" resultType="java.math.BigDecimal" >
+		SELECT 
+		  ROUND(SUM(r.REPAYMENT_ACCOUNT),2)
+		FROM rocky_b_repaymentrecord r,
+		  rocky_borrow b
+		WHERE 1 = 1
+   		 AND r.BORROW_ID = b.ID
+         AND b.BORROWTYPE IN(1,2,5)
+         AND IF(r.status = 1,(FROM_UNIXTIME(r.REPAYMENT_YESTIME,'%Y-%m-%d') > FROM_UNIXTIME(r.REPAYMENT_TIME,'%Y-%m-%d')),(DATE_FORMAT(SYSDATE(),'%Y-%m-%d') > FROM_UNIXTIME(r.REPAYMENT_TIME,'%Y-%m-%d')))
+  	</select>   	
+  	
+  	<!--逾期已处理总额 指逾期后，借款者还请本息和罚息的金额额-->
+	<select id="queryOverdueYesProcessedMoney" resultType="java.math.BigDecimal" >
+		SELECT ROUND(SUM(r.REPAYMENT_ACCOUNT),2) FROM 
+		 rocky_b_repaymentrecord r,rocky_borrow b
+		 WHERE 1=1
+		 AND r.BORROW_ID = b.ID
+		 AND b.BORROWTYPE IN(1,2,5)
+		 AND r.STATUS = 1
+		 AND FROM_UNIXTIME(r.REPAYMENT_YESTIME,'%Y-%m-%d')>FROM_UNIXTIME(r.REPAYMENT_TIME,'%Y-%m-%d')
+  	</select>   	
+  	
+  	<!--:逾期未处理总额：指逾期后，网站垫付本息，但还没有进行资产处理的金额-->
+	<select id="queryOverdueNoProcessMoney" resultType="java.math.BigDecimal" >
+		SELECT
+		  ROUND(SUM(r.REPAYMENT_ACCOUNT),2)
+		FROM rocky_b_repaymentrecord r,
+		  rocky_borrow b
+		WHERE 1 = 1
+		AND r.BORROW_ID = b.ID
+		AND b.BORROWTYPE IN(1,2,5)
+		AND r.STATUS = 0
+		AND IF(r.REPAYMENT_YESTIME,FROM_UNIXTIME(r.REPAYMENT_YESTIME,'%Y-%m-%d'),DATE_FORMAT(SYSDATE(),'%Y-%m-%d')) > FROM_UNIXTIME(r.REPAYMENT_TIME,'%Y-%m-%d')
+  	</select>  
+  	
+  	<!--:投资者总收益：只计算抵押标的收益总额-->
+	<select id="queryInvesterNetMoney" resultType="java.math.BigDecimal" >
+		SELECT SUM(c.INTEREST)
+		 FROM rocky_b_collectionrecord c,rocky_b_tenderrecord t,rocky_borrow b
+		 WHERE 1=1
+		 AND c.TENDER_ID = t.ID
+		 AND t.BORROW_ID = b.ID
+		 AND b.BORROWTYPE IN(1,2,5) 
+  	</select>   				
+  	
+	<!-- 累计借款者人数：在网站发布过抵押标的人数总和（多次发标计算一个借款者） -->
+	<select id="queryTotalBorrowPersons" resultType="java.lang.Integer" >
+		SELECT COUNT(DISTINCT(user_id))
+		 FROM rocky_borrow b
+		 WHERE 1=1
+		 AND (b.STATUS = 4 OR b.STATUS = 5 OR b.STATUS = 42)
+		 AND b.BORROWTYPE IN(1,2,5) 
+  	</select> 
+  	
+	<!-- 结清借款者人数：在网站发布过抵押标并结清还款，没有待还的人数总和 -->
+	<select id="querySettleBorrowPersons" resultType="java.lang.Integer" >
+	 <![CDATA[
+		SELECT COUNT(*) FROM ( 
+			SELECT b.USER_ID, MAX(r.`STATUS`) AS STATUS1, MIN(r.`STATUS`) AS STATUS0, Max(r.REPAYMENT_YESTIME) AS REPAYMENT_YESTIME 
+			FROM rocky_borrow b, rocky_b_repaymentrecord r 
+			WHERE r.`STATUS` IN (0, 1) 
+			AND r.BORROW_ID = b.ID 
+			AND b.BORROWTYPE IN(1,2,5) 
+			GROUP BY b.USER_ID 
+		) t 
+		WHERE t.STATUS1 = 1 AND STATUS0 = 1 
+		AND FROM_UNIXTIME(t.REPAYMENT_YESTIME,'%Y-%m-%d') < DATE_SUB(CURDATE(),INTERVAL 3 DAY)
+	]]>
+  	</select>   
+  	
+  	<!-- 结清借款者人数：在网站发布过抵押标并结清还款，没有待还的人数总和 -->
+	<select id="queryFinanceCharts" resultType="com.dxjr.base.entity.FinanceChart" >
+		SELECT 	ID							AS id, 
+				CALC_DATE					AS calcDate, 
+				BORROW_MONEY				AS borrowMoney, 
+				WAIT_RECEIVE_MONEY			AS waitReceiveMoney, 
+				INVEST_PERSONS				AS investPersons
+		FROM  t_finance_chart 
+  	</select> 
+  	<select id="queryDateMoney"  resultMap="DateMoneyResultMap">
+  	 <![CDATA[
+  	select 
+		(SELECT IFNULL(SUM(ACCOUNT),0) FROM ROCKY_BORROW WHERE `STATUS` IN (4, 5, 42)  AND BORROWTYPE IN(1,2,3,4)) as  transactionAmount,
+		(select COUNT(1) from rocky_borrow where  STATUS in(4,5,42) AND BORROWTYPE IN(1,2,3,4))  as transactionNumber,
+		(SELECT COUNT(DISTINCT(user_id)) FROM rocky_borrow b WHERE 1=1 AND (b.STATUS = 4 OR b.STATUS = 5 OR b.STATUS = 42) AND b.BORROWTYPE IN(1,2,3,4) ) as borrowersNumber,
+		(select count(DISTINCT t.userId)  from (
+		   select t.user_id as userId from rocky_b_tenderrecord t,rocky_borrow b where b.id=t.BORROW_ID and b.status in(4,5,42) AND b.BORROWTYPE IN(1,2,3,4) and t.user_id<100000000
+		   UNION ALL
+		   select tftd.user_id as userId from t_fix_tender_detail tftd where tftd.`STATUS` in(1,3)
+		   UNION ALL
+		   select ftd.user_id as userId from t_first_tender_detail ftd  where ftd.STATUS in(1) 
+		) t) as investorsNumber,
+		(select round(t1.TOTALMONEY/t2.borrowCount,2) from (SELECT ROUND(SUM(ACCOUNT), 2) AS TOTALMONEY
+		  FROM ROCKY_BORROW
+		  WHERE `STATUS` IN (4, 5, 42)  AND BORROWTYPE IN(1,2,3,4)) t1, 
+		(select IFNULL(sum(t.accountCount),0) as borrowCount from (
+		     select count(1) as accountCount from rocky_b_tenderrecord t,rocky_borrow b where b.id=t.BORROW_ID and b.status in(4,5,42) AND b.BORROWTYPE IN(1,2,3,4) and t.status in(1,2)  and t.FIRST_TENDER_REAL_ID is null and t.USER_ID<100000000
+		      UNION ALL
+		    select  count(1) as accountCount  from t_fix_tender_detail tftd where tftd.`STATUS` in(1,3)
+		      UNION ALL
+		    select  count(1) as accountCount from t_first_tender_detail ftd where ftd.STATUS in(1) 
+		    UNION ALL
+		    select  count(1) as accountCount from t_first_subscribe tfs where tfs.STATUS in(3) 
+		     ) t ) t2) as investmentAverageAmount,
+		(select IFNULL(round(sum(CAPITAL),2),0) from rocky_b_repaymentrecord where  STATUS=0) as loanBalance,
+		 (select IFNULL(round(t1.totalAcount*100/t2.totalMoney,2),0) from (select sum(t4.repayTotal) as  totalAcount from rocky_member rm INNER JOIN ( 
+          select * from ( 
+			select rbr.user_id,SUM(rbr.REPAYMENT_ACCOUNT) as repayTotal from rocky_b_repaymentrecord rbr 
+			INNER JOIN rocky_borrow rb on rbr.BORROW_ID=rb.id 
+			where rbr.STATUS=0 and rb.BORROWTYPE in(1,2) 
+			group by rbr.user_id) t order by repayTotal DESC limit 1 
+			) t4 on rm.id=t4.USER_ID 
+			INNER JOIN rocky_realname_appro rra on rm.id=rra.user_id) t1,
+		(select sum(t4.repayTotal) as totalMoney from rocky_member rm INNER JOIN ( 
+		select * from (select rbr.user_id,SUM(rbr.REPAYMENT_ACCOUNT) as repayTotal from rocky_b_repaymentrecord rbr 
+		INNER JOIN rocky_borrow rb on rbr.BORROW_ID=rb.id 
+		where rbr.STATUS=0 and rb.BORROWTYPE in(1,2) 
+		group by rbr.user_id) t 
+		) t4 on rm.id=t4.USER_ID 
+        INNER JOIN rocky_realname_appro rra on rm.id=rra.user_id ) t2) as largestAccounted,
+		(select IFNULL(round(t1.totalAcount*100/t2.totalMoney,2),0) from (select sum(t4.repayTotal) as  totalAcount from rocky_member rm INNER JOIN ( 
+          select * from ( 
+			select rbr.user_id,SUM(rbr.REPAYMENT_ACCOUNT) as repayTotal from rocky_b_repaymentrecord rbr 
+			INNER JOIN rocky_borrow rb on rbr.BORROW_ID=rb.id 
+			where rbr.STATUS=0 and rb.BORROWTYPE in(1,2) 
+			group by rbr.user_id) t order by repayTotal DESC limit 10 
+			) t4 on rm.id=t4.USER_ID 
+			INNER JOIN rocky_realname_appro rra on rm.id=rra.user_id) t1,
+		(select sum(t4.repayTotal) as totalMoney from rocky_member rm INNER JOIN ( 
+		select * from (select rbr.user_id,SUM(rbr.REPAYMENT_ACCOUNT) as repayTotal from rocky_b_repaymentrecord rbr 
+		INNER JOIN rocky_borrow rb on rbr.BORROW_ID=rb.id 
+		where rbr.STATUS=0 and rb.BORROWTYPE in(1,2) 
+		group by rbr.user_id) t 
+		) t4 on rm.id=t4.USER_ID 
+        INNER JOIN rocky_realname_appro rra on rm.id=rra.user_id ) t2) as tenlargestAccounted,
+		(select round((t1.sucessTime/t2.borrowCount),0) from 
+		(SELECT SUM(SUCCESS_TIME-PUBLISH_TIME) as sucessTime FROM `rocky_borrow` where 
+		`STATUS` IN (4, 5, 42)  AND BORROWTYPE IN(1,2,3,4) ) t1,
+		(select COUNT(1) as borrowCount from rocky_borrow where  STATUS in(4,5,42) AND BORROWTYPE IN(1,2,3,4) ) t2) as meanFullTime,
+		(select round(t1.lateCount*100/t2.borrowCount,2) from 
+		(SELECT 
+		    COUNT(DISTINCT r.BORROW_ID) as lateCount
+		  FROM rocky_b_repaymentrecord r,
+		    rocky_borrow b
+		  WHERE 1 = 1
+		      AND r.BORROW_ID = b.ID
+		         AND b.`STATUS` IN (4, 5, 42) AND b.BORROWTYPE IN(1,2,3,4)
+		AND IF(r.status = 1,(FROM_UNIXTIME(r.REPAYMENT_YESTIME,'%Y-%m-%d') > FROM_UNIXTIME(r.REPAYMENT_TIME,'%Y-%m-%d')),(DATE_FORMAT(SYSDATE(),'%Y-%m-%d') > FROM_UNIXTIME(r.REPAYMENT_TIME,'%Y-%m-%d')))) t1,
+		(select COUNT(1) as borrowCount from rocky_borrow where  STATUS in(4,5,42) AND BORROWTYPE IN(1,2,3,4) ) t2) as cumulativeRate,
+		(select round(t1.lateCount*100/t2.borrowCount,2) from 
+		(SELECT 
+		    COUNT(DISTINCT r.BORROW_ID) as lateCount
+		  FROM rocky_b_repaymentrecord r,
+		    rocky_borrow b
+		  WHERE 1 = 1
+		      AND r.BORROW_ID = b.ID
+		          AND b.`STATUS` IN (4, 5, 42) AND b.BORROWTYPE IN(1,2,3,4)
+		AND IF(r.status = 1,(FROM_UNIXTIME(r.REPAYMENT_YESTIME,'%Y-%m-%d') > FROM_UNIXTIME(r.REPAYMENT_TIME,'%Y-%m-%d')),(DATE_FORMAT(SYSDATE(),'%Y-%m-%d') > FROM_UNIXTIME(r.REPAYMENT_TIME,'%Y-%m-%d')))
+		AND IF(r.status = 1,r.REPAYMENT_YESTIME> DATE_SUB(NOW(),INTERVAL 90 DAY) and r.REPAYMENT_YESTIME<UNIX_TIMESTAMP(NOW()),r.REPAYMENT_TIME> DATE_SUB(NOW(),INTERVAL 90 DAY) and r.REPAYMENT_TIME<UNIX_TIMESTAMP(NOW()))
+        ) t1,
+		(select COUNT(1) as borrowCount from rocky_borrow where  STATUS in(4,5,42) AND BORROWTYPE IN(1,2,3,4) ) t2) as platformProjectThreeRate,
+		(SELECT 
+		    IFNULL(ROUND(SUM(r.REPAYMENT_ACCOUNT),2),0)
+		  FROM rocky_b_repaymentrecord r,
+		    rocky_borrow b
+		  WHERE 1 = 1
+		      AND r.BORROW_ID = b.ID
+		         AND b.`STATUS` IN (4, 5, 42) AND b.BORROWTYPE IN(1,2,3,4)
+		AND IF(r.status = 1,(FROM_UNIXTIME(r.REPAYMENT_YESTIME,'%Y-%m-%d') > FROM_UNIXTIME(r.REPAYMENT_TIME,'%Y-%m-%d')),(DATE_FORMAT(SYSDATE(),'%Y-%m-%d') > FROM_UNIXTIME(r.REPAYMENT_TIME,'%Y-%m-%d')))) as borrowingAmount,
+		(SELECT
+		    IFNULL(ROUND(SUM(r.REPAYMENT_ACCOUNT),2),0)
+		  FROM rocky_b_repaymentrecord r,
+		    rocky_borrow b
+		  WHERE 1 = 1
+		  AND r.BORROW_ID = b.ID
+		  AND b.`STATUS` IN (4, 5, 42) AND b.BORROWTYPE IN(1,2,3,4)
+		  AND r.STATUS = 0
+  		  AND IF(r.REPAYMENT_YESTIME,FROM_UNIXTIME(r.REPAYMENT_YESTIME,'%Y-%m-%d'),DATE_FORMAT(SYSDATE(),'%Y-%m-%d')) > FROM_UNIXTIME(r.REPAYMENT_TIME,'%Y-%m-%d')) as compensatoryAmount
+from dual;
+]]>
+</select> 
+</mapper>

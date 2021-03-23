@@ -1,0 +1,492 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.dxjr.portal.first.mapper.FirstTransferBorrowMapper">
+	<!-- 直通车最终认购resultMap -->
+   	<resultMap type="com.dxjr.portal.first.vo.FirstTransferBorrowVo" id="firstTenderRealBaseResultMap">
+		<id property="id" column="id" />
+		<result property="userId" 				column="USER_ID" />
+		<result property="firstTransferId" 		column="FIRST_TRANSFER_ID" />
+		<result property="firstBorrowId" 		column="FIRST_BORROW_ID" />
+		<result property="firstTenderRealId" 	column="FIRST_TENDER_REAL_ID" />
+		<result property="borrowId"	    		column="BORROW_ID" />
+		<result property="collectionId"  		column="COLLECTION_ID" />
+		<result property="tenderId"  			column="TENDER_ID" />
+		<result property="borrowName"  			column="BORROW_NAME" />
+		<result property="borrowStyle"  		column="BORROW_STYLE" />
+		<result property="borrowApr"  			column="BORROW_APR" />
+		<result property="borrowTimeLimit" 		column="BORROW_TIME_LIMIT" />
+		<result property="borrowtype" 			column="BORROWTYPE" />
+		<result property="startOrder" 			column="START_ORDER" />
+		<result property="borrowOrder" 			column="BORROW_ORDER" />
+		<result property="borrowRemainLimit" 	column="BORROW_REMAIN_LIMIT" />
+		<result property="borrowActualLimit" 	column="BORROW_ACTUAL_LIMIT" />
+		<result property="beforeRepayTime" 		column="BEFORE_REPAY_TIME" />
+		<result property="nextRepayTime" 		column="NEXT_REPAY_TIME" />
+		<result property="firstTransferAddTime"	column="FIRST_TRANSFER_ADD_TIME" />
+		<result property="occupyDays"  			column="OCCUPY_DAYS" />
+		<result property="unoccupyDays"  		column="UN_OCCUPY_DAYS" />
+		<result property="orderDays"  			column="ORDER_DAYS" />
+		<result property="orderInterest"  		column="ORDER_INTEREST" />
+		<result property="perDayInterest"  		column="PER_DAY_INTEREST" />
+		<result property="occupyInterest" 		column="OCCUPY_INTEREST" />
+		<result property="interestDiff" 		column="INTEREST_DIFF" />
+		<result property="account" 			    column="ACCOUNT" />
+		<result property="borrowCollectionCapital" 			column="BORROW_COLLECTION_CAPITAL" />	
+		<result property="borrowCollectionInterest" 		column="BORROW_COLLECTION_INTEREST" />
+		<result property="borrowCollectionAccount" 			column="BORROW_COLLECTION_ACCOUNT" />
+		<result property="remark" 				column="REMARK" />	
+		<result property="publishTimeStr" 				column="PUBLISH_TIME" />			
+	</resultMap>
+
+	<!--基本列 -->
+	<sql id="firstTransferBorrowColumn">
+	    tb.ID,			tb.USER_ID,  		tb.FIRST_TRANSFER_ID,	tb.FIRST_BORROW_ID,  	tb.FIRST_TENDER_REAL_ID, 
+	    tb.BORROW_ID,   tb.COLLECTION_ID,   tb.TENDER_ID,		    tb.BORROW_NAME,         tb.BORROW_STYLE, 
+	    tb.BORROW_APR,  tb.BORROW_TIME_LIMIT,tb.BORROWTYPE,			tb.START_ORDER,			tb.BORROW_ORDER, 
+	    tb.BORROW_REMAIN_LIMIT,tb.BORROW_ACTUAL_LIMIT,tb.BEFORE_REPAY_TIME,tb.NEXT_REPAY_TIME,tb.FIRST_TRANSFER_ADD_TIME, 
+	    tb.OCCUPY_DAYS, tb.UN_OCCUPY_DAYS,  tb.ORDER_DAYS,          tb.ORDER_INTEREST,      tb.PER_DAY_INTEREST, 
+	    tb.OCCUPY_INTEREST,tb.INTEREST_DIFF, tb.ACCOUNT,            tb.BORROW_COLLECTION_CAPITAL,tb.BORROW_COLLECTION_INTEREST, 
+	    tb.BORROW_COLLECTION_ACCOUNT, tb.REMARK
+	</sql>
+
+  	<!-- 根据转让id和最终认购数据保存直通车所投借款标转让资金明细数据 -->
+  	<insert id="saveFirstTransferBorrowList" parameterType="com.dxjr.portal.first.vo.FirstTransferBorrowCnd">
+		INSERT INTO t_first_transfer_borrow ( 
+	      USER_ID, 			FIRST_TRANSFER_ID, 	FIRST_BORROW_ID, 	FIRST_TENDER_REAL_ID, 	BORROW_ID, 
+	      COLLECTION_ID, 		TENDER_ID,       	BORROW_NAME,     	BORROW_STYLE,    	BORROW_APR, 
+	      BORROW_TIME_LIMIT, 	BORROWTYPE,     	START_ORDER,     	BORROW_ORDER,    	BORROW_REMAIN_LIMIT, 
+	      BORROW_ACTUAL_LIMIT, 	BEFORE_REPAY_TIME, 	NEXT_REPAY_TIME, 	FIRST_TRANSFER_ADD_TIME, OCCUPY_DAYS, 
+	      UN_OCCUPY_DAYS, 		ORDER_DAYS, 		ORDER_INTEREST, 	PER_DAY_INTEREST, 	OCCUPY_INTEREST, 
+	      INTEREST_DIFF,  		ACCOUNT,		    BORROW_COLLECTION_CAPITAL, 	BORROW_COLLECTION_INTEREST, 	
+	      BORROW_COLLECTION_ACCOUNT
+    	)
+    	SELECT 
+           #{userId},		#{firstTransferId},	re.FIRST_BORROW_ID,	re.FIRST_TENDER_REAL_ID,re.borrow_id,
+           re.id,			re.TENDER_ID,			b.NAME,             b.STYLE,			b.APR,
+           b.TIME_LIMIT,	b.BORROWTYPE,           re.order,			b.order,
+          	 CASE 
+                 WHEN b.STYLE in(1,2) THEN b.TIME_LIMIT-re.order+1
+                 ELSE b.TIME_LIMIT
+             END AS borrowRemainLimit,
+             CASE 
+                 WHEN b.STYLE in(1,2) THEN b.TIME_LIMIT-re.order+ROUND(re.occupyDays/re.orderDays,2)
+                 WHEN b.STYLE =4 THEN re.unOccupyDays
+                 WHEN b.STYLE =3 THEN ROUND(re.unOccupyDays/30,2)
+             END AS borrowActualLimit,
+             re.collectionBeginTime,   re.collectionEndtime,      now(),  re.occupyDays,
+             re.unOccupyDays, re.orderDays,		  re.orderInterest,	 
+             ROUND(re.orderInterest/orderDays,2) AS perDayInterest,
+			 ROUND(ROUND(re.orderInterest/orderDays,8)*re.occupyDays,2)                                        AS occupyInterest,
+			 ROUND(ROUND(ROUND(re.orderInterest/orderDays,8)*re.occupyDays,8)*b.APR/100/360*re.unOccupyDays,2)     AS interestDiff,
+			 rbc.sumCapital+ROUND(ROUND(re.orderInterest/orderDays,8)*re.occupyDays,2)-ROUND(ROUND(ROUND(re.orderInterest/orderDays,8)*re.occupyDays,8)*b.APR/100/360*re.unOccupyDays,2) AS account, 
+             rbc.sumCapital,  rbc.sumInterest,	rbc.sumRepayAccount
+		FROM(     
+				SELECT t.id,
+				       FROM_UNIXTIME(IFNULL(bc.REPAY_TIME,t.ADDTIME),'%Y-%m-%d %H:%i:%s')             AS collectionBeginTime,
+					   FROM_UNIXTIME(t.REPAY_TIME,'%Y-%m-%d %H:%i:%s')                                AS collectionEndtime,
+					   NOW()	                                        							  AS firstTransferAddTime,
+					   CASE WHEN DATEDIFF(DATE_FORMAT(NOW(),'%Y-%m-%d'),FROM_UNIXTIME(IFNULL(bc.REPAY_TIME,t.ADDTIME),'%Y-%m-%d')) &lt; 0 THEN 0 
+						 ELSE  DATEDIFF(DATE_FORMAT(NOW(),'%Y-%m-%d'),FROM_UNIXTIME(IFNULL(bc.REPAY_TIME,t.ADDTIME),'%Y-%m-%d')) END AS occupyDays,
+					   DATEDIFF(FROM_UNIXTIME(t.REPAY_TIME,'%Y-%m-%d'),DATE_FORMAT(NOW(),'%Y-%m-%d')) AS unOccupyDays,
+					   DATEDIFF(FROM_UNIXTIME(t.REPAY_TIME,'%Y-%m-%d'),FROM_UNIXTIME(IFNULL(bc.REPAY_TIME,t.ADDTIME),'%Y-%m-%d')) AS orderDays,
+					   t.INTEREST 	                                                              AS orderInterest,
+					   t.borrow_id,
+					   t.FIRST_TENDER_REAL_ID,
+                	   t.FIRST_BORROW_ID,
+                 	   t.TENDER_ID,
+                 	   t.order
+			    FROM (
+						  SELECT c.*
+						  FROM rocky_b_collectionrecord c ,
+						  (
+								SELECT @rn := IF(@borrowId = c.BORROW_ID and @tenderId = c.TENDER_ID and @firstTenderRealId = c.FIRST_TENDER_REAL_ID, @rn+1, 1) AS rownum,
+							     	 @borrowId := c.BORROW_ID,@tenderId := c.TENDER_ID,@firstTenderRealId := c.FIRST_TENDER_REAL_ID,c.id
+								FROM rocky_b_collectionrecord c,
+								     (SELECT @rn := 1, @borrowId := 0, @tenderId := 0,@firstTenderRealId := 0) X
+								WHERE c.status=0
+								AND c.USER_ID=#{userId}
+								AND c.FIRST_TENDER_REAL_ID IS NOT NULL
+								AND c.IS_FIRST_BORROW =1
+								AND c.FIRST_TENDER_REAL_ID = #{firstTenderRealId}
+								ORDER BY c.FIRST_TENDER_REAL_ID,c.BORROW_ID,c.TENDER_ID,c.order
+						  ) tempc
+						  WHERE 1=1
+						  AND c.id=tempc.id
+						  AND tempc.rownum=1
+					) t 
+			     LEFT JOIN rocky_b_collectionrecord bc ON (bc.order=t.order-1 AND bc.BORROW_ID = t.BORROW_ID AND bc.TENDER_ID = t.TENDER_ID AND bc.user_id=t.user_id AND bc.FIRST_TENDER_REAL_ID = t.FIRST_TENDER_REAL_ID)
+			) re,rocky_borrow b,(
+			         SELECT sum(c.CAPITAL)		as sumCapital,
+			                 sum(c.INTEREST)  as sumInterest,
+			                 sum(c.REPAY_ACCOUNT) as sumRepayAccount,
+			                 c.borrow_id,
+			                 c.tender_id
+			         FROM rocky_b_collectionrecord c
+			         where c.status=0
+			         and c.USER_ID=#{userId}
+					 AND c.FIRST_TENDER_REAL_ID IS NOT NULL
+					 AND c.IS_FIRST_BORROW =1
+					 AND c.FIRST_TENDER_REAL_ID = #{firstTenderRealId}
+			          group by c.borrow_id,c.tender_id
+			) rbc
+	  WHERE re.borrow_id=b.id
+      and re.borrow_id=rbc.borrow_id
+      and re.tender_id=rbc.tender_id
+	</insert>
+  	
+  	<!--查询我的账号中-直通车转让对应标统计列表数量-->
+	<select id="queryCanTransferBorrowCount" parameterType="com.dxjr.portal.first.vo.FirstTransferBorrowCnd" resultType="java.lang.Integer" >
+			SELECT COUNT(DISTINCT c.BORROW_ID)
+			FROM rocky_b_collectionrecord c
+			WHERE c.status=0
+			AND c.USER_ID=#{userId}
+			AND c.FIRST_TENDER_REAL_ID IS NOT NULL
+			AND c.IS_FIRST_BORROW =1
+			AND c.FIRST_TENDER_REAL_ID = #{firstTenderRealId}
+			ORDER BY c.BORROW_ID,c.order
+  	</select>
+  	
+  	<!--查询我的账号中-直通车转让对应标统计列表-->
+	<select id="queryCanTransferBorrowList" parameterType="com.dxjr.portal.first.vo.FirstTransferBorrowCnd" resultMap="firstTenderRealBaseResultMap" >
+    	SELECT 
+           re.FIRST_BORROW_ID,	re.FIRST_TENDER_REAL_ID,	re.borrow_id,
+           re.id AS COLLECTION_ID,re.TENDER_ID,		b.NAME	AS BORROW_NAME, b.STYLE 	AS BORROW_STYLE,
+           b.APR  AS BORROW_APR, b.TIME_LIMIT AS BORROW_TIME_LIMIT,	b.BORROWTYPE, re.order	AS START_ORDER,	b.order	AS BORROW_ORDER,
+             CASE 
+                 WHEN b.STYLE in(1,2) THEN b.TIME_LIMIT-re.order+1
+                 ELSE b.TIME_LIMIT
+             END AS BORROW_REMAIN_LIMIT,
+             CASE 
+                 WHEN b.STYLE in(1,2) THEN b.TIME_LIMIT-re.order+ROUND(re.occupyDays/re.orderDays,2)
+                 WHEN b.STYLE =4 THEN re.unOccupyDays
+                 WHEN b.STYLE =3 THEN ROUND(re.unOccupyDays/30,2)
+             END AS BORROW_ACTUAL_LIMIT,
+             re.collectionBeginTime AS BEFORE_REPAY_TIME,   re.collectionEndtime AS NEXT_REPAY_TIME,
+             re.occupyDays AS OCCUPY_DAYS, re.unOccupyDays	AS UN_OCCUPY_DAYS, re.orderDays AS ORDER_DAYS,
+             re.orderInterest AS ORDER_INTEREST,	ROUND(re.orderInterest/orderDays,2) AS PER_DAY_INTEREST,
+			 ROUND(ROUND(re.orderInterest/orderDays,8)*re.occupyDays,2)                                        AS OCCUPY_INTEREST,
+			 ROUND(ROUND(ROUND(re.orderInterest/orderDays,8)*re.occupyDays,8)*b.APR/100/360*re.unOccupyDays,2)     AS INTEREST_DIFF,
+			 rbc.sumCapital+ROUND(ROUND(re.orderInterest/orderDays,8)*re.occupyDays,2)-ROUND(ROUND(ROUND(re.orderInterest/orderDays,8)*re.occupyDays,8)*b.APR/100/360*re.unOccupyDays,2) AS ACCOUNT,
+			 rbc.sumCapital AS BORROW_COLLECTION_CAPITAL,  rbc.sumInterest AS BORROW_COLLECTION_INTEREST,	rbc.sumRepayAccount AS BORROW_COLLECTION_ACCOUNT,b.PUBLISH_TIME
+		FROM(     
+				SELECT t.id,
+				       FROM_UNIXTIME(IFNULL(bc.REPAY_TIME,t.ADDTIME),'%Y-%m-%d %H:%i:%s')             AS collectionBeginTime,
+					   FROM_UNIXTIME(t.REPAY_TIME,'%Y-%m-%d %H:%i:%s')                                AS collectionEndtime,
+					   NOW()	                                        							  AS firstTransferAddTime,
+					   CASE WHEN DATEDIFF(DATE_FORMAT(NOW(),'%Y-%m-%d'),FROM_UNIXTIME(IFNULL(bc.REPAY_TIME,t.ADDTIME),'%Y-%m-%d')) &lt; 0 THEN 0 
+						 ELSE  DATEDIFF(DATE_FORMAT(NOW(),'%Y-%m-%d'),FROM_UNIXTIME(IFNULL(bc.REPAY_TIME,t.ADDTIME),'%Y-%m-%d')) END AS occupyDays,
+					   DATEDIFF(FROM_UNIXTIME(t.REPAY_TIME,'%Y-%m-%d'),DATE_FORMAT(NOW(),'%Y-%m-%d')) AS unOccupyDays,
+					   DATEDIFF(FROM_UNIXTIME(t.REPAY_TIME,'%Y-%m-%d'),FROM_UNIXTIME(IFNULL(bc.REPAY_TIME,t.ADDTIME),'%Y-%m-%d')) AS orderDays,
+					   t.INTEREST 	                                                              AS orderInterest,
+					   t.borrow_id,
+					   t.FIRST_TENDER_REAL_ID,
+                	   t.FIRST_BORROW_ID,
+                 	   t.TENDER_ID,
+                 	   t.order
+			    FROM (
+						  SELECT c.*
+						  FROM rocky_b_collectionrecord c ,
+						  (
+								SELECT @rn := IF(@borrowId = c.BORROW_ID and @tenderId = c.TENDER_ID and @firstTenderRealId = c.FIRST_TENDER_REAL_ID, @rn+1, 1) AS rownum,
+							     	 @borrowId := c.BORROW_ID,@tenderId := c.TENDER_ID,@firstTenderRealId := c.FIRST_TENDER_REAL_ID,c.id
+								FROM rocky_b_collectionrecord c,
+								     (SELECT @rn := 1, @borrowId := 0,@tenderId := 0,@firstTenderRealId := 0) X
+								WHERE c.status=0
+								AND c.USER_ID=#{userId}
+								AND c.FIRST_TENDER_REAL_ID IS NOT NULL
+								AND c.IS_FIRST_BORROW =1
+								AND c.FIRST_TENDER_REAL_ID = #{firstTenderRealId}
+								ORDER BY c.FIRST_TENDER_REAL_ID,c.BORROW_ID,c.TENDER_ID,c.order
+						  ) tempc
+						  WHERE 1=1
+						  AND c.id=tempc.id
+						  AND tempc.rownum=1
+					) t 
+			     LEFT JOIN rocky_b_collectionrecord bc ON (bc.order=t.order-1 AND bc.BORROW_ID = t.BORROW_ID AND bc.TENDER_ID = t.TENDER_ID AND bc.user_id=t.user_id AND bc.FIRST_TENDER_REAL_ID = t.FIRST_TENDER_REAL_ID)
+			) re,rocky_borrow b,(
+			         SELECT sum(c.CAPITAL)		as sumCapital,
+			                 sum(c.INTEREST)  	as sumInterest,
+			                 sum(c.REPAY_ACCOUNT) as sumRepayAccount,
+			                 c.borrow_id,
+			                 c.tender_id
+			         FROM rocky_b_collectionrecord c
+			         where c.status=0
+			         and c.USER_ID=#{userId}
+					 AND c.FIRST_TENDER_REAL_ID IS NOT NULL
+					 AND c.IS_FIRST_BORROW =1
+					 AND c.FIRST_TENDER_REAL_ID = #{firstTenderRealId}
+			          group by c.borrow_id,c.tender_id
+			) rbc
+	 		 WHERE re.borrow_id=b.id
+     		 and re.borrow_id=rbc.borrow_id	
+     		 and re.tender_id=rbc.tender_id	
+     		 order by NEXT_REPAY_TIME ASC
+  	</select>
+  	
+  	
+  	<!--查询我的账号中-直通车转让对应标统计列表-->
+	<select id="queryCanTransferBorrowUnList" parameterType="com.dxjr.portal.first.vo.FirstTransferBorrowCnd" resultMap="firstTenderRealBaseResultMap" >
+    	SELECT 
+           re.FIRST_BORROW_ID,	re.FIRST_TENDER_REAL_ID,	re.borrow_id,
+           re.id AS COLLECTION_ID,re.TENDER_ID,		b.NAME	AS BORROW_NAME, b.STYLE 	AS BORROW_STYLE,
+           b.APR  AS BORROW_APR, b.TIME_LIMIT AS BORROW_TIME_LIMIT,	b.BORROWTYPE, re.order	AS START_ORDER,	b.order	AS BORROW_ORDER,
+             CASE 
+                 WHEN b.STYLE in(1,2) THEN b.TIME_LIMIT-re.order+1
+                 ELSE b.TIME_LIMIT
+             END AS BORROW_REMAIN_LIMIT,
+             CASE 
+                 WHEN b.STYLE in(1,2) THEN b.TIME_LIMIT-re.order+ROUND(re.occupyDays/re.orderDays,2)
+                 WHEN b.STYLE =4 THEN re.unOccupyDays
+                 WHEN b.STYLE =3 THEN ROUND(re.unOccupyDays/30,2)
+             END AS BORROW_ACTUAL_LIMIT,
+             re.collectionBeginTime AS BEFORE_REPAY_TIME,   re.collectionEndtime AS NEXT_REPAY_TIME,
+             re.occupyDays AS OCCUPY_DAYS, re.unOccupyDays	AS UN_OCCUPY_DAYS, re.orderDays AS ORDER_DAYS,
+             re.orderInterest AS ORDER_INTEREST,	ROUND(re.orderInterest/orderDays,2) AS PER_DAY_INTEREST,
+			 ROUND(ROUND(re.orderInterest/orderDays,8)*re.occupyDays,2)                                        AS OCCUPY_INTEREST,
+			 ROUND(ROUND(ROUND(re.orderInterest/orderDays,8)*re.occupyDays,8)*b.APR/100/360*re.unOccupyDays,2)     AS INTEREST_DIFF,
+			 rbc.sumCapital+ROUND(ROUND(re.orderInterest/orderDays,8)*re.occupyDays,2)-ROUND(ROUND(ROUND(re.orderInterest/orderDays,8)*re.occupyDays,8)*b.APR/100/360*re.unOccupyDays,2) AS ACCOUNT,
+			 rbc.sumCapital AS BORROW_COLLECTION_CAPITAL,  rbc.sumInterest AS BORROW_COLLECTION_INTEREST,	rbc.sumRepayAccount AS BORROW_COLLECTION_ACCOUNT,b.PUBLISH_TIME
+		FROM(     
+				SELECT t.id,
+				       FROM_UNIXTIME(IFNULL(bc.REPAY_TIME,t.ADDTIME),'%Y-%m-%d %H:%i:%s')             AS collectionBeginTime,
+					   FROM_UNIXTIME(t.REPAY_TIME,'%Y-%m-%d %H:%i:%s')                                AS collectionEndtime,
+					   NOW()	                                        							  AS firstTransferAddTime,
+					   CASE WHEN DATEDIFF(DATE_FORMAT(NOW(),'%Y-%m-%d'),FROM_UNIXTIME(IFNULL(bc.REPAY_TIME,t.ADDTIME),'%Y-%m-%d')) &lt; 0 THEN 0 
+						 ELSE  DATEDIFF(DATE_FORMAT(NOW(),'%Y-%m-%d'),FROM_UNIXTIME(IFNULL(bc.REPAY_TIME,t.ADDTIME),'%Y-%m-%d')) END AS occupyDays,
+					   DATEDIFF(FROM_UNIXTIME(t.REPAY_TIME,'%Y-%m-%d'),DATE_FORMAT(NOW(),'%Y-%m-%d')) AS unOccupyDays,
+					   DATEDIFF(FROM_UNIXTIME(t.REPAY_TIME,'%Y-%m-%d'),FROM_UNIXTIME(IFNULL(bc.REPAY_TIME,t.ADDTIME),'%Y-%m-%d')) AS orderDays,
+					   t.INTEREST 	                                                              AS orderInterest,
+					   t.borrow_id,
+					   t.FIRST_TENDER_REAL_ID,
+                	   t.FIRST_BORROW_ID,
+                 	   t.TENDER_ID,
+                 	   t.order
+			    FROM (
+						  SELECT c.*
+						  FROM rocky_b_collectionrecord c ,
+						  (
+								SELECT @rn := IF(@borrowId = c.BORROW_ID and @tenderId = c.TENDER_ID and @firstTenderRealId = c.FIRST_TENDER_REAL_ID, @rn+1, 1) AS rownum,
+							     	 @borrowId := c.BORROW_ID,@tenderId := c.TENDER_ID,@firstTenderRealId := c.FIRST_TENDER_REAL_ID,c.id
+								FROM rocky_b_collectionrecord c,
+								     (SELECT @rn := 1, @borrowId := 0,@tenderId := 0,@firstTenderRealId := 0) X
+								WHERE c.status=0
+								AND c.USER_ID=#{userId}
+								AND c.FIRST_TENDER_REAL_ID IS NOT NULL
+								AND c.FIRST_TENDER_REAL_ID = #{firstTenderRealId}
+								ORDER BY c.FIRST_TENDER_REAL_ID,c.BORROW_ID,c.TENDER_ID,c.order
+						  ) tempc
+						  WHERE 1=1
+						  AND c.id=tempc.id
+						  AND tempc.rownum=1
+					) t 
+			     LEFT JOIN rocky_b_collectionrecord bc ON (bc.order=t.order-1 AND bc.BORROW_ID = t.BORROW_ID AND bc.TENDER_ID = t.TENDER_ID AND bc.user_id=t.user_id AND bc.FIRST_TENDER_REAL_ID = t.FIRST_TENDER_REAL_ID)
+			) re,rocky_borrow b,(
+			         SELECT sum(c.CAPITAL)		as sumCapital,
+			                 sum(c.INTEREST)  	as sumInterest,
+			                 sum(c.REPAY_ACCOUNT) as sumRepayAccount,
+			                 c.borrow_id,c.tender_id
+			         FROM rocky_b_collectionrecord c
+			         where c.status=0
+			         and c.USER_ID=#{userId}
+					 AND c.FIRST_TENDER_REAL_ID IS NOT NULL
+					 AND c.FIRST_TENDER_REAL_ID = #{firstTenderRealId}
+			          group by c.borrow_id,c.tender_id
+			) rbc
+	 		 WHERE re.borrow_id=b.id
+     		 and re.borrow_id=rbc.borrow_id	
+     		 and re.tender_id=rbc.tender_id	
+     		 order by NEXT_REPAY_TIME ASC
+  	</select>  	
+  	
+  	<!--转让资金明细信息查询-->
+  	<select id="queryTransferBorrowListByTransferId" parameterType="java.lang.Integer" resultMap="firstTenderRealBaseResultMap" >
+	  	SELECT BORROW_NAME,
+	  	       BORROW_ID,
+	  	       BORROWTYPE,
+		       BORROW_COLLECTION_ACCOUNT,
+		       BORROW_COLLECTION_CAPITAL,
+		       BORROW_COLLECTION_INTEREST
+		FROM   T_FIRST_TRANSFER_BORROW FTB
+		WHERE  FTB.FIRST_TRANSFER_ID = #{transferId}
+  	</select>
+  	
+  	<!--查询转让资金明细件数-->
+  	<select id="queryTransferBorrowListCount" parameterType="java.lang.Integer" resultType="java.lang.Integer" >
+	  	SELECT COUNT(ID)
+		FROM   T_FIRST_TRANSFER_BORROW FTB
+		WHERE  FTB.FIRST_TRANSFER_ID = #{transferId}
+  	</select>
+  	
+  	<!--查询债权剩余价值合计-->
+  	<select id="queryBorrowCollectionAccountSum" parameterType="java.lang.Integer" resultType="java.math.BigDecimal" >
+	  	SELECT IFNULL(SUM(BORROW_COLLECTION_ACCOUNT),0)
+		FROM   T_FIRST_TRANSFER_BORROW FTB
+		WHERE  FTB.FIRST_TRANSFER_ID = #{transferId}
+  	</select>
+  	
+  	<!--查询我的账号中-直通车转让对应标统计列表-->
+	<select id="queryCanTransferBorrowAccountSum" parameterType="com.dxjr.portal.first.vo.FirstTransferBorrowCnd" resultType="java.math.BigDecimal" >
+    	SELECT IFNULL(SUM(tt.ACCOUNT),0) 
+    	FROM (
+	    	SELECT 
+				 rbc.sumCapital+ROUND(ROUND(re.orderInterest/orderDays,8)*re.occupyDays,2)-ROUND(ROUND(ROUND(re.orderInterest/orderDays,8)*re.occupyDays,8)*b.APR/100/360*re.unOccupyDays,2) AS ACCOUNT
+			FROM(     
+					SELECT t.id,
+					       FROM_UNIXTIME(IFNULL(bc.REPAY_TIME,t.ADDTIME),'%Y-%m-%d %H:%i:%s')             AS collectionBeginTime,
+						   FROM_UNIXTIME(t.REPAY_TIME,'%Y-%m-%d %H:%i:%s')                                AS collectionEndtime,
+						   NOW()	                                        							  AS firstTransferAddTime,
+						   CASE WHEN DATEDIFF(DATE_FORMAT(NOW(),'%Y-%m-%d'),FROM_UNIXTIME(IFNULL(bc.REPAY_TIME,t.ADDTIME),'%Y-%m-%d')) &lt; 0 THEN 0 
+						 ELSE  DATEDIFF(DATE_FORMAT(NOW(),'%Y-%m-%d'),FROM_UNIXTIME(IFNULL(bc.REPAY_TIME,t.ADDTIME),'%Y-%m-%d')) END AS occupyDays,
+						   DATEDIFF(FROM_UNIXTIME(t.REPAY_TIME,'%Y-%m-%d'),DATE_FORMAT(NOW(),'%Y-%m-%d')) AS unOccupyDays,
+						   DATEDIFF(FROM_UNIXTIME(t.REPAY_TIME,'%Y-%m-%d'),FROM_UNIXTIME(IFNULL(bc.REPAY_TIME,t.ADDTIME),'%Y-%m-%d')) AS orderDays,
+						   t.INTEREST 	                                                              AS orderInterest,
+						   t.borrow_id,
+						   t.FIRST_TENDER_REAL_ID,
+	                	   t.FIRST_BORROW_ID,
+	                 	   t.TENDER_ID,
+	                 	   t.order
+				    FROM (
+							  SELECT c.*
+							  FROM rocky_b_collectionrecord c ,
+							  (
+									SELECT @rn := IF(@borrowId = c.BORROW_ID and @tenderId = c.TENDER_ID and @firstTenderRealId = c.FIRST_TENDER_REAL_ID, @rn+1, 1) AS rownum,
+								     	 @borrowId := c.BORROW_ID,@tenderId := c.TENDER_ID,@firstTenderRealId := c.FIRST_TENDER_REAL_ID,c.id
+									FROM rocky_b_collectionrecord c,
+									     (SELECT @rn := 1, @borrowId := 0,@tenderId := 0, @firstTenderRealId := 0) X
+									WHERE c.status=0
+									AND c.USER_ID=#{userId}
+									AND c.FIRST_TENDER_REAL_ID IS NOT NULL
+									AND c.IS_FIRST_BORROW =1
+									AND c.FIRST_TENDER_REAL_ID = #{firstTenderRealId}
+									ORDER BY c.FIRST_TENDER_REAL_ID,c.BORROW_ID,c.TENDER_ID,c.order
+							  ) tempc
+							  WHERE 1=1
+							  AND c.id=tempc.id
+							  AND tempc.rownum=1
+						) t 
+				     LEFT JOIN rocky_b_collectionrecord bc ON (bc.order=t.order-1 AND bc.BORROW_ID = t.BORROW_ID AND bc.TENDER_ID = t.TENDER_ID AND bc.user_id=t.user_id AND bc.FIRST_TENDER_REAL_ID = t.FIRST_TENDER_REAL_ID)
+				) re,rocky_borrow b,(
+				         SELECT sum(c.CAPITAL)		as sumCapital,
+				                 sum(c.INTEREST)  	as sumInterest,
+				                 sum(c.REPAY_ACCOUNT) as sumRepayAccount,
+				                 c.borrow_id,c.tender_id
+				         FROM rocky_b_collectionrecord c
+				         where c.status=0
+				         and c.USER_ID=#{userId}
+						 AND c.FIRST_TENDER_REAL_ID IS NOT NULL
+						 AND c.IS_FIRST_BORROW =1
+						 AND c.FIRST_TENDER_REAL_ID = #{firstTenderRealId}
+				          group by c.borrow_id,c.tender_id
+				) rbc
+		 		 WHERE re.borrow_id=b.id
+	     		 and re.borrow_id=rbc.borrow_id and re.tender_id=rbc.tender_id) tt
+  	</select>
+  	
+  	<select id="queryTransferedBorrow" parameterType="com.dxjr.portal.first.vo.FirstTransferBorrowCnd" resultMap="firstTenderRealBaseResultMap" >
+    	SELECT 
+			 rbc.sumCapital+ROUND(ROUND(re.orderInterest/orderDays,8)*re.occupyDays,2)-ROUND(ROUND(ROUND(re.orderInterest/orderDays,8)*re.occupyDays,8)*b.APR/100/360*re.unOccupyDays,2) AS ACCOUNT
+		FROM(     
+				SELECT t.id,
+				       FROM_UNIXTIME(IFNULL(bc.REPAY_TIME,t.ADDTIME),'%Y-%m-%d %H:%i:%s')             AS collectionBeginTime,
+					   FROM_UNIXTIME(t.REPAY_TIME,'%Y-%m-%d %H:%i:%s')                                AS collectionEndtime,
+					   NOW()	                                        							  AS firstTransferAddTime,
+					   CASE WHEN DATEDIFF(DATE_FORMAT(NOW(),'%Y-%m-%d'),FROM_UNIXTIME(IFNULL(bc.REPAY_TIME,t.ADDTIME),'%Y-%m-%d')) &lt; 0 THEN 0 
+						 ELSE  DATEDIFF(DATE_FORMAT(NOW(),'%Y-%m-%d'),FROM_UNIXTIME(IFNULL(bc.REPAY_TIME,t.ADDTIME),'%Y-%m-%d')) END AS occupyDays,
+					   DATEDIFF(FROM_UNIXTIME(t.REPAY_TIME,'%Y-%m-%d'),DATE_FORMAT(NOW(),'%Y-%m-%d')) AS unOccupyDays,
+					   DATEDIFF(FROM_UNIXTIME(t.REPAY_TIME,'%Y-%m-%d'),FROM_UNIXTIME(IFNULL(bc.REPAY_TIME,t.ADDTIME),'%Y-%m-%d')) AS orderDays,
+					   t.INTEREST 	                                                              AS orderInterest,
+					   t.borrow_id,
+					   t.FIRST_TENDER_REAL_ID,
+                	   t.FIRST_BORROW_ID,
+                 	   t.TENDER_ID,
+                 	   t.order
+			    FROM (
+						  SELECT c.*
+						  FROM rocky_b_collectionrecord c ,
+						  (
+								SELECT @rn := IF(@borrowId = c.BORROW_ID and @tenderId = c.TENDER_ID and @firstTenderRealId = c.FIRST_TENDER_REAL_ID, @rn+1, 1) AS rownum,
+							     	 @borrowId := c.BORROW_ID,@tenderId := c.TENDER_ID,@firstTenderRealId := c.FIRST_TENDER_REAL_ID,c.id
+								FROM rocky_b_collectionrecord c,
+								     (SELECT @rn := 1, @borrowId := 0,@tenderId := 0,@firstTenderRealId := 0) X
+								WHERE c.status=0
+								AND c.USER_ID=#{userId}
+								AND c.FIRST_TENDER_REAL_ID IS NOT NULL
+								AND c.IS_FIRST_BORROW =1
+								AND c.FIRST_TENDER_REAL_ID = #{firstTenderRealId}
+								ORDER BY c.FIRST_TENDER_REAL_ID,c.BORROW_ID,c.TENDER_ID,c.order
+						  ) tempc
+						  WHERE 1=1
+						  AND c.id=tempc.id
+						  AND tempc.rownum=1
+					) t 
+			     LEFT JOIN rocky_b_collectionrecord bc ON (bc.order=t.order-1 AND bc.BORROW_ID = t.BORROW_ID AND bc.TENDER_ID = t.TENDER_ID AND bc.user_id=t.user_id AND bc.FIRST_TENDER_REAL_ID = t.FIRST_TENDER_REAL_ID)
+			) re,rocky_borrow b,(
+			         SELECT sum(c.CAPITAL)		as sumCapital,
+			                 sum(c.INTEREST)  	as sumInterest,
+			                 sum(c.REPAY_ACCOUNT) as sumRepayAccount,
+			                 c.borrow_id,c.tender_id
+			         FROM rocky_b_collectionrecord c
+			         where c.status=0
+			         and c.USER_ID=#{userId}
+					 AND c.FIRST_TENDER_REAL_ID IS NOT NULL
+					 AND c.IS_FIRST_BORROW =1
+					 AND c.FIRST_TENDER_REAL_ID = #{firstTenderRealId}
+			          group by c.borrow_id,c.tender_id
+			) rbc
+	 		 WHERE re.borrow_id=b.id
+     		 and re.borrow_id= rbc.borrow_id
+     		 and re.tender_id= rbc.tender_id
+     		 and re.borrow_id = #{borrowId}
+     		 and re.TENDER_ID = #{tenderId}
+  	</select>
+  	
+  	
+  	<!--转让资金明细信息查询-->
+  	<select id="queryBorrowListByTransferId" parameterType="com.dxjr.portal.first.vo.FirstTransferBorrowCnd" resultMap="firstTenderRealBaseResultMap" >
+	  	SELECT b.PUBLISH_TIME,
+	  		   <include refid="firstTransferBorrowColumn"/>
+		FROM   T_FIRST_TRANSFER_BORROW TB
+		INNER JOIN ROCKY_BORROW B ON B.ID = TB.BORROW_ID
+		WHERE  TB.FIRST_TRANSFER_ID = #{firstTransferId}
+		<if test="borrowId != null">
+			AND TB.BORROW_ID = #{borrowId}
+		</if>
+  	</select>
+  	
+  	<!--转让资金明细信息查询-->
+  	<select id="queryBorrowSumByTransferId" parameterType="java.lang.Integer" resultType="java.math.BigDecimal" >
+	  	SELECT IFNULL(SUM(TB.ACCOUNT),0) 
+		FROM   T_FIRST_TRANSFER_BORROW TB
+		INNER JOIN ROCKY_BORROW B ON B.ID = TB.BORROW_ID
+		WHERE  TB.FIRST_TRANSFER_ID = #{transferId}
+  	</select>
+  	
+  	<!--转让资金明细信息查询-->
+  	<select id="queryBorrowListByRealId" parameterType="com.dxjr.portal.first.vo.FirstTransferBorrowCnd" resultMap="firstTenderRealBaseResultMap" >
+	  	SELECT
+		<include refid="firstTransferBorrowColumn"/>
+		FROM
+			T_FIRST_TRANSFER_BORROW TB
+		INNER JOIN T_FIRST_SUBSCRIBE FS ON FS.FIRST_TRANSFER_ID = TB.FIRST_TRANSFER_ID
+		AND FS.`STATUS` = 3 AND FS.NEW_FIRST_TENDER_REAL_ID = #{firstTenderRealId}
+		WHERE TB.BORROW_ID = #{borrowId}
+		<if test="tenderId != null">
+			AND TB.TENDER_ID = #{tenderId}
+		</if>
+  	</select>
+  	
+  	<!--转让资金明细信息查询-->
+  	<select id="queryTransferAccountByRealId" parameterType="com.dxjr.portal.first.vo.FirstTransferBorrowCnd" resultType="java.math.BigDecimal" >
+	  	SELECT IFNULL(SUM(TB.ACCOUNT),0) 	
+		FROM
+			T_FIRST_TRANSFER_BORROW TB
+		INNER JOIN T_FIRST_SUBSCRIBE FS ON FS.FIRST_TRANSFER_ID = TB.FIRST_TRANSFER_ID
+		AND FS.`STATUS` = 3 AND FS.NEW_FIRST_TENDER_REAL_ID = #{firstTenderRealId}
+		WHERE TB.BORROW_ID = #{borrowId}	
+		<if test="tenderId != null">
+			AND TB.TENDER_ID = #{tenderId}
+		</if>	
+  	</select>
+
+</mapper>

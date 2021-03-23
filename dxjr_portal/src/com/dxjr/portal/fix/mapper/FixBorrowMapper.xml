@@ -1,0 +1,714 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.dxjr.portal.fix.mapper.FixBorrowMapper">
+
+	<!-- 统计查询预发的，立即加入，收益中，已退出的认购总金额 -->
+	<select id="queryTotalAccountYes" resultType="java.math.BigDecimal">
+		SELECT SUM(ACCOUNT_YES) FROM T_FIX_BORROW WHERE STATUS IN (3,4,5,7)
+	</select>
+
+
+	<!-- 统计查询正在投标中的金额 -->
+	<select id="queryTotalAccountInUse" resultType="java.math.BigDecimal">
+		SELECT
+		(SELECT SUM(T_FIX_BORROW.ACCOUNT_YES) FROM T_FIX_BORROW WHERE STATUS=5) -
+		(SELECT SUM(IF(USE_MONEY <![CDATA[<]]> 0, 0,USE_MONEY)) FROM T_FIX_ACCOUNT,T_FIX_BORROW WHERE
+		T_FIX_ACCOUNT.FIX_BORROW_ID=T_FIX_BORROW.ID AND
+		(T_FIX_BORROW.`STATUS`=5 or T_FIX_BORROW.`STATUS`=8 ))
+	</select>
+
+	<!-- 统计查询锁定中的定期宝总金额 -->
+	<select id="queryTotalAccountIsLocked" resultType="java.math.BigDecimal">
+		SELECT SUM(ACCOUNT_YES) FROM T_FIX_BORROW WHERE ( STATUS = 5 or  STATUS = 8)
+	</select>
+
+	<!-- 查询定期宝的总记录(分页使用) -->
+	<select id="queryFixBorrowCount" resultType="java.lang.Integer">
+		<!-- select count(1) from T_FIX_BORROW where STATUS in (3,5,7) -->
+		
+		SELECT
+			count(*)
+		FROM(
+			(select *,1 as sort1,1 as sort2,6 as sort3, 1 as sort4 from t_fix_borrow where AREA_TYPE = 1 AND `STATUS` = 3 ORDER BY `STATUS` ASC,ACCOUNT_YES/PLAN_ACCOUNT DESC,PUBLISH_TIME DESC, ADDTIME DESC)
+		    UNION
+			(select * from ((select *,1 as sort1,1 as sort2,1 as sort3, 1 as sort4 from t_fix_borrow where `STATUS`=3 AND LOCK_LIMIT=1 and AREA_TYPE<![CDATA[<>]]>1 AND NOW() <![CDATA[>]]> PUBLISH_TIME ORDER BY ACCOUNT_YES/PLAN_ACCOUNT DESC,PUBLISH_TIME DESC, ADDTIME ASC LIMIT 1)
+			 UNION
+			 (select *,1 as sort1,1 as sort2,1 as sort3,2 as sort4 from t_fix_borrow where `STATUS`=3 AND LOCK_LIMIT=1 and AREA_TYPE<![CDATA[<>]]>1 AND NOW() <![CDATA[<]]> PUBLISH_TIME ORDER BY PUBLISH_TIME ASC, ADDTIME ASC LIMIT 1)) a order by sort4 limit 1)
+			UNION
+			(select * from ((select *,1 as sort1,1 as sort2,1 as sort3, 1 as sort4 from t_fix_borrow where `STATUS`=3 AND LOCK_LIMIT=3 and AREA_TYPE<![CDATA[<>]]>1 AND NOW() <![CDATA[>]]> PUBLISH_TIME ORDER BY ACCOUNT_YES/PLAN_ACCOUNT DESC,PUBLISH_TIME DESC, ADDTIME ASC LIMIT 1)
+			 UNION
+			 (select *,1 as sort1,1 as sort2,1 as sort3,2 as sort4 from t_fix_borrow where `STATUS`=3 AND LOCK_LIMIT=3 and AREA_TYPE<![CDATA[<>]]>1 AND NOW() <![CDATA[<]]> PUBLISH_TIME ORDER BY PUBLISH_TIME ASC, ADDTIME ASC LIMIT 1)) a order by sort4 limit 1)
+			UNION
+			(select * from ((select *,1 as sort1,1 as sort2,1 as sort3, 1 as sort4 from t_fix_borrow where `STATUS`=3 AND LOCK_LIMIT=6 and AREA_TYPE<![CDATA[<>]]>1 AND NOW() <![CDATA[>]]> PUBLISH_TIME ORDER BY ACCOUNT_YES/PLAN_ACCOUNT DESC,PUBLISH_TIME DESC, ADDTIME ASC LIMIT 1)
+			 UNION
+			 (select *,1 as sort1,1 as sort2,1 as sort3,2 as sort4 from t_fix_borrow where `STATUS`=3 AND LOCK_LIMIT=6 and AREA_TYPE<![CDATA[<>]]>1 AND NOW() <![CDATA[<]]> PUBLISH_TIME ORDER BY PUBLISH_TIME ASC, ADDTIME ASC LIMIT 1)) a order by sort4 limit 1)
+			UNION
+			(select * from ((select *,1 as sort1,1 as sort2,1 as sort3, 1 as sort4 from t_fix_borrow where `STATUS`=3 AND LOCK_LIMIT=12 and AREA_TYPE<![CDATA[<>]]>1 AND NOW() <![CDATA[>]]> PUBLISH_TIME ORDER BY ACCOUNT_YES/PLAN_ACCOUNT DESC,PUBLISH_TIME DESC, ADDTIME ASC LIMIT 1)
+			 UNION
+			 (select *,1 as sort1,1 as sort2,1 as sort3,2 as sort4 from t_fix_borrow where `STATUS`=3 AND LOCK_LIMIT=12 and AREA_TYPE<![CDATA[<>]]>1 AND NOW() <![CDATA[<]]> PUBLISH_TIME ORDER BY PUBLISH_TIME ASC, ADDTIME ASC LIMIT 1)) a order by sort4 limit 1)
+			UNION
+			(select *,5 as sort1,1 as sort2,1 as sort3,1 as sort4 from t_fix_borrow where `STATUS`in(5,7))
+		)tfb
+	
+	</select>
+
+
+
+	<!-- 结果集 -->
+	<resultMap type="com.dxjr.portal.fix.vo.FixBorrowVo" id="fixBorrowResultMap">
+		<id property="id" column="id" />
+		<result property="name" column="NAME" />
+		<result property="contractNo" column="CONTRACT_NO" />
+		<result property="planAccount" column="PLAN_ACCOUNT" />
+		<result property="accountYes" column="ACCOUNT_YES" />
+		<result property="apr" column="APR" />
+		<result property="lockLimit" column="LOCK_LIMIT" />
+		<result property="tenderTimes" column="TENDER_TIMES" />
+		<result property="status" column="STATUS" />
+		<result property="publishTime" column="PUBLISH_TIME" />
+		<result property="statusId" column="STATUSID" />
+		<result property="areaType" column="AREA_TYPE" />
+	</resultMap>
+
+
+	<!-- 结果集 -->
+	<resultMap type="com.dxjr.portal.fix.vo.FixBorrowStaticVo"
+		id="fixBorrowStaticResultMap">
+		<result property="repayYesAccountYes" column="repayYesAccountYes" />
+		<result property="capital" column="capital" />
+		<result property="repayYesAccountNo" column="repayYesAccountNo" />
+		<result property="jrz" column="jrz" />
+		<result property="syz" column="syz" />
+		<result property="ytc" column="ytc" />
+	</resultMap>
+
+
+
+	<!-- 定期宝列表查询 (分页使用) -->
+	<select id="queryFixBorrowVoList" parameterType="com.dxjr.portal.fix.vo.FixBorrowCnd"
+		resultMap="fixBorrowResultMap">
+		<!-- 
+		select
+		tfb.id,
+		tfb.name,
+		tfb.CONTRACT_NO ,
+		tfb.ACCOUNT_YES,
+		tfb.PLAN_ACCOUNT,
+		tfb.APR,
+		tfb.LOCK_LIMIT,
+		tfb.TENDER_TIMES,
+		tfb.STATUS,
+		tfb.PUBLISH_TIME
+		from t_fix_borrow tfb
+		where
+		tfb.STATUS in (3,5,7)
+		order by      (case when status =3 and now() <![CDATA[<=]]> PUBLISH_TIME then 1 when status =3 and now()<![CDATA[>]]> PUBLISH_TIME then 2 else `STATUS`  end )   asc,tfb.PUBLISH_TIME  asc, tfb.addtime  desc 
+		 -->
+		 
+		<!-- 新排序规则：2015-9-17
+				总体排序按敬请期待、立即加入、收益中、已退出状态排序
+				敬请期待：显示下一个1月宝，3月宝，6月宝（仅3条），按1月宝，3月宝，6月宝顺序排列。
+				立即加入：按发布时间顺序显示“立即加入”状态的所有定期宝。
+				收益中、已退出：按满宝时间倒序排列（最后满宝最靠前）显示。
+		 --> 
+		 <!-- 规则再改：2015-10-8
+				对于“立即加入”状态的定期宝，首页及全部定期宝页排序请按王总的要求做如下调整。其它状态的排序规则不变。
+				1、首先按照投标进度降序排列：投标进度靠前显示在前面，投标进度靠后的显示在后面；
+				2、在同样的投标进度下，按照发标时间时间倒序排列：最近发布的定期宝显示在前，发布时间越久显示越靠后。
+		  -->
+		  
+		 
+		select * from (
+		SELECT
+			tfb.id,
+			tfb.name,
+			tfb.CONTRACT_NO ,
+			tfb.ACCOUNT_YES,
+			tfb.PLAN_ACCOUNT,
+			tfb.APR,
+			tfb.LOCK_LIMIT,
+			tfb.TENDER_TIMES,
+			tfb.STATUS,
+			tfb.PUBLISH_TIME,SUCCESS_TIME,sort1,sort2,sort3,AREA_TYPE
+		FROM(
+			(select *,1 as sort1,1 as sort2,6 as sort3, 1 as sort4 from t_fix_borrow where AREA_TYPE = 1 AND `STATUS` = 3 ORDER BY `STATUS` ASC,ACCOUNT_YES/PLAN_ACCOUNT DESC,PUBLISH_TIME DESC, ADDTIME DESC)
+		    UNION
+			(select * from ((select *,1 as sort1,1 as sort2,1 as sort3, 1 as sort4 from t_fix_borrow where `STATUS`=3 AND LOCK_LIMIT=1 and AREA_TYPE<![CDATA[<>]]>1 AND NOW() <![CDATA[>]]> PUBLISH_TIME ORDER BY ACCOUNT_YES/PLAN_ACCOUNT DESC,PUBLISH_TIME DESC, ADDTIME ASC LIMIT 1)
+			 UNION
+			 (select *,1 as sort1,1 as sort2,1 as sort3,2 as sort4 from t_fix_borrow where `STATUS`=3 AND LOCK_LIMIT=1 and AREA_TYPE<![CDATA[<>]]>1 AND NOW() <![CDATA[<]]> PUBLISH_TIME ORDER BY PUBLISH_TIME ASC, ADDTIME ASC LIMIT 1)) a order by sort4 limit 1)
+			UNION
+			(select * from ((select *,1 as sort1,1 as sort2,1 as sort3, 1 as sort4 from t_fix_borrow where `STATUS`=3 AND LOCK_LIMIT=3 and AREA_TYPE<![CDATA[<>]]>1 AND NOW() <![CDATA[>]]> PUBLISH_TIME ORDER BY ACCOUNT_YES/PLAN_ACCOUNT DESC,PUBLISH_TIME DESC, ADDTIME ASC LIMIT 1)
+			 UNION
+			 (select *,1 as sort1,1 as sort2,1 as sort3,2 as sort4 from t_fix_borrow where `STATUS`=3 AND LOCK_LIMIT=3 and AREA_TYPE<![CDATA[<>]]>1 AND NOW() <![CDATA[<]]> PUBLISH_TIME ORDER BY PUBLISH_TIME ASC, ADDTIME ASC LIMIT 1)) a order by sort4 limit 1)
+			UNION
+			(select * from ((select *,1 as sort1,1 as sort2,1 as sort3, 1 as sort4 from t_fix_borrow where `STATUS`=3 AND LOCK_LIMIT=6 and AREA_TYPE<![CDATA[<>]]>1 AND NOW() <![CDATA[>]]> PUBLISH_TIME ORDER BY ACCOUNT_YES/PLAN_ACCOUNT DESC,PUBLISH_TIME DESC, ADDTIME ASC LIMIT 1)
+			 UNION
+			 (select *,1 as sort1,1 as sort2,1 as sort3,2 as sort4 from t_fix_borrow where `STATUS`=3 AND LOCK_LIMIT=6 and AREA_TYPE<![CDATA[<>]]>1 AND NOW() <![CDATA[<]]> PUBLISH_TIME ORDER BY PUBLISH_TIME ASC, ADDTIME ASC LIMIT 1)) a order by sort4 limit 1)
+			UNION
+			(select * from ((select *,1 as sort1,1 as sort2,1 as sort3, 1 as sort4 from t_fix_borrow where `STATUS`=3 AND LOCK_LIMIT=12 and AREA_TYPE<![CDATA[<>]]>1 AND NOW() <![CDATA[>]]> PUBLISH_TIME ORDER BY ACCOUNT_YES/PLAN_ACCOUNT DESC,PUBLISH_TIME DESC, ADDTIME ASC LIMIT 1)
+			 UNION
+			 (select *,1 as sort1,1 as sort2,1 as sort3,2 as sort4 from t_fix_borrow where `STATUS`=3 AND LOCK_LIMIT=12 and AREA_TYPE<![CDATA[<>]]>1 AND NOW() <![CDATA[<]]> PUBLISH_TIME ORDER BY PUBLISH_TIME ASC, ADDTIME ASC LIMIT 1)) a order by sort4 limit 1)
+			UNION
+			(select *,5 as sort1,1 as sort2,1 as sort3,1 as sort4 from t_fix_borrow where `STATUS`in(5,7))
+		)tfb ORDER BY sort1,sort2 desc,sort3 desc,`STATUS`,SUCCESS_TIME DESC,LOCK_LIMIT) t2
+		
+		 
+	</select>
+
+
+	<resultMap type="com.dxjr.portal.fix.vo.FixBorrowVo" id="fixBorrowResultMap2">
+		<id property="id" column="id" />
+		<result property="name" column="NAME" />
+		<result property="contractNo" column="CONTRACT_NO" />
+		<result property="planAccount" column="PLAN_ACCOUNT" />
+		<result property="accountYes" column="ACCOUNT_YES" />
+		<result property="apr" column="APR" />
+		<result property="lockLimit" column="LOCK_LIMIT" />
+		<result property="lowestAccount" column="LOWEST_ACCOUNT" />
+		<result property="lockEndtime" column="LOCK_ENDTIME" />
+	</resultMap>
+
+	<!-- 根据定期宝id查询定期宝明细 -->
+	<select id="getFixBorrowById" parameterType="java.lang.Integer"
+		resultType="com.dxjr.portal.fix.vo.FixBorrowVo">
+		select
+		tfb.id as id,
+		tfb.name as name,
+		tfb.CONTRACT_NO as contractNo,
+		tfb.PLAN_ACCOUNT as
+		planAccount,
+		tfb.ACCOUNT_YES as accountYes,
+		tfb.APR as apr,
+		tfb.STATUS as
+		status, 
+		(case when tfb.END_TIME <![CDATA[<=]]> CONCAT(DATE_FORMAT(tfb.END_TIME,'%Y-%m-%d'),' 22:30:00') then CONCAT(DATE_FORMAT(tfb.END_TIME,'%Y-%m-%d'),' 22:30:00') else DATE_ADD(CONCAT(DATE_FORMAT(tfb.END_TIME,'%Y-%m-%d'),' 22:30:00'),INTERVAL 1 DAY) end)
+		as endTime,
+		tfb.LOCK_LIMIT as lockLimit,
+		tfb.LOWEST_ACCOUNT as lowestAccount,
+		tfb.MOST_ACCOUNT as mostAccount,
+		tfb.LOCK_ENDTIME as lockEndtime,
+		tfb.PUBLISH_TIME as publishTime,
+		DATEDIFF(tfb.LOCK_ENDTIME,now()) as
+		endDays,
+		(select INTEREST from t_fix_repaymentrecord r where
+		r.FIX_BORROW_ID= #{id}) as sumInterest,
+		tfb.AREA_TYPE as areaType,
+		tfb.AREA_CHANGE_TIME as areaChangeTime,
+		tfb.BID_PASSWORD as bidPassword,
+		tfb.SUCCESS_TIME as successTime
+		from t_fix_borrow tfb
+		where tfb.id = #{id}
+		<!--  and tfb.STATUS in (3,5,7,10) -->
+	</select>
+
+
+	<!-- 定期宝统计已赚收益，定期宝总额，预期收益 查询 -->
+	<select id="queryFixAccountInfoMap" parameterType="com.dxjr.portal.fix.vo.FixBorrowCnd"
+		resultMap="fixBorrowStaticResultMap">
+		select SUM(tempstatic.REPAY_YESACCOUNTYES) repayYesAccountYes ,SUM(tempstatic.CAPITAL)
+		capital,SUM(tempstatic.REPAY_YESACCOUNTNO) repayYesAccountNo from (
+		
+		select IFNULL(SUM(c.REPAY_YESACCOUNT-c.CAPITAL),0) + IFNULL(fc.INTEREST,0) AS REPAY_YESACCOUNTYES , '' CAPITAL,''
+		REPAY_YESACCOUNTNO  from t_fix_collectionrecord c
+		LEFT JOIN t_float_coupon fc ON c.FIX_TENDER_REAL_ID = fc.TARGET_ID AND c.FIX_BORROW_ID = fc.BIZ_ID AND fc.`STATUS`=2 and fc.TARGET_TYPE = 2
+		where c.status ='1' and c.USER_ID=#{userId}
+		
+		union all
+		select '',IFNULL(SUM(account),0),'' from t_fix_tender_detail where status
+		in(0,1) and USER_ID=#{userId}
+		
+		union all
+		select '','',IFNULL(SUM(c.INTEREST),0) + IFNULL(ROUND(fc.CAPITAL*fc.APR_YEAR*b.LOCK_LIMIT/100/12,2),0) from t_fix_collectionrecord c 
+		LEFT JOIN t_float_coupon fc ON c.FIX_TENDER_REAL_ID = fc.TARGET_ID AND c.FIX_BORROW_ID = fc.BIZ_ID AND fc.`STATUS`=1 and fc.TARGET_TYPE = 2
+		, t_fix_borrow b
+		where c.status ='0' and c.USER_ID=#{userId} AND c.FIX_BORROW_ID = b.ID
+		) tempstatic
+	</select>
+	<!-- 根据客户ID查询定期宝分类各个总金额 -->
+	<select id="querySumAccountByLimit" parameterType="com.dxjr.portal.fix.vo.FixBorrowCnd" resultType="java.util.Map">
+		select IFNULL(sum(account),0) as account,lock_limit from (
+		select IFNULL(SUM(account),0) as account,lock_limit from t_fix_tender_detail  tender 
+		 join t_fix_borrow borrow on tender.FIX_BORROW_ID = borrow.id
+		where tender.STATUS IN (0, 1) and tender.user_id = #{userId} group by LOCK_LIMIT 
+		union all
+		select IFNULL(sum(INTEREST),0) as account ,lock_limit from t_fix_collectionrecord record 
+		 join t_fix_borrow borrow on record.FIX_BORROW_ID = borrow.ID
+		where record.STATUS = '0' AND USER_ID = #{userId} group by LOCK_LIMIT
+		)fix  group by lock_limit
+	</select>
+
+<!-- 定期宝统计加入中，收益中，已退出人次查询 -->
+	<select id="queryFixStatusCount" parameterType="com.dxjr.portal.fix.vo.FixBorrowCnd"
+		resultType="com.dxjr.portal.fix.vo.FixBorrowStaticVo">
+
+	select sum(tempf.jrz) jrz,
+		sum(tempf.syz) syz, sum(tempf.ytc) ytc from
+		(
+		select count(1) jrz,'' syz,''ytc from t_fix_borrow tfb LEFT JOIN
+			(
+			SELECT user_id,fix_borrow_id from
+			t_fix_tender_detail b GROUP BY user_id,fix_borrow_id
+			) tft on (tfb.id = tft.fix_borrow_id) where tft.USER_ID=#{userId} and tfb.STATUS=3
+
+		union all
+		select '',count(1),'' from
+			(
+			SELECT tfb.name from t_fix_tender_real tft,t_fix_borrow tfb
+			where tft.FIX_BORROW_ID = tfb.ID
+			and tft.STATUS ='0' and
+			tft.USER_ID=#{userId}
+			) as tempa 
+		union all
+			select '','',count(1) from
+			(
+			SELECT ftb.name from t_fix_tender_real tft,t_fix_borrow ftb
+			where tft.FIX_BORROW_ID = ftb.ID
+			and tft.STATUS ='1' and
+			tft.USER_ID=#{userId}
+			) as tempb 
+		)as tempf 
+	</select>
+
+
+
+
+	<!-- 根据定期宝id查询定期宝明细 并锁定 -->
+	<select id="getFixBorrowByIdForUpdate" parameterType="java.lang.Integer"
+		resultType="com.dxjr.portal.fix.vo.FixBorrowVo">
+		select
+		tfb.id as id,
+		tfb.name as name,
+		tfb.CONTRACT_NO as contractNo,
+		tfb.PLAN_ACCOUNT as
+		planAccount,
+		tfb.ACCOUNT_YES as accountYes,
+		tfb.APR as apr,
+		tfb.STATUS as
+		status,
+		(case when tfb.END_TIME <![CDATA[<=]]> CONCAT(DATE_FORMAT(tfb.END_TIME,'%Y-%m-%d'),' 22:30:00') then CONCAT(DATE_FORMAT(tfb.END_TIME,'%Y-%m-%d'),' 22:30:00') else DATE_ADD(CONCAT(DATE_FORMAT(tfb.END_TIME,'%Y-%m-%d'),' 22:30:00'),INTERVAL 1 DAY) end) 
+		as endTime,
+		tfb.LOCK_LIMIT as lockLimit,
+		tfb.LOWEST_ACCOUNT as lowestAccount,
+		tfb.MOST_ACCOUNT as mostAccount,
+		tfb.LOCK_ENDTIME as lockEndtime,
+		tfb.PUBLISH_TIME as publishTime,
+		DATEDIFF(tfb.LOCK_ENDTIME,now()) as
+		endDays,
+		(select INTEREST from t_fix_repaymentrecord r where
+		r.FIX_BORROW_ID= #{id}) as sumInterest,
+		tfb.AREA_TYPE as areaType,
+		tfb.AREA_CHANGE_TIME as areaChangeTime,
+		tfb.BID_PASSWORD as bidPassword,
+		tfb.SUCCESS_TIME as successTime
+		from t_fix_borrow tfb
+		where tfb.id =
+		#{id}
+		for update
+	</select>
+
+
+
+
+	<!-- 更新账户信息 -->
+	<update id="updateAccount" parameterType="com.dxjr.base.entity.FixTenderDetail">
+		update rocky_account ra
+		set ra.total = ra.total - #{account},
+		ra.use_money = ra.use_money - #{account},
+		ra.DRAW_MONEY=ra.DRAW_MONEY - #{drawMoney},
+		ra.NO_DRAW_MONEY=ra.NO_DRAW_MONEY - #{noDrawMoney}
+		where user_id = #{userId}
+	</update>
+
+	<!-- 更新定期宝信息表的实际认购总额和认购次数 -->
+
+	<update id="updateFixBorrow" parameterType="com.dxjr.base.entity.FixTenderDetail">
+		update t_fix_borrow
+		set ACCOUNT_YES = IFNULL(ACCOUNT_YES,0) + #{account},
+		TENDER_TIMES = IFNULL(TENDER_TIMES,0) + 1
+		where id = #{fixBorrowId}
+	</update>
+
+	<!-- 更新定期宝状态 -->
+	<update id="updateFixBorrowStatus" parameterType="com.dxjr.portal.fix.vo.FixBorrowVo">
+		update t_fix_borrow
+		<set>
+			<if test="status != null">
+				STATUS = #{status},
+			</if>
+			<if test="successTime != null">
+				SUCCESS_TIME = now(),
+			</if>
+			<if test="successTime != null">
+				LOCK_ENDTIME = DATE_ADD(DATE_ADD(CURDATE(),INTERVAL LOCK_LIMIT MONTH),INTERVAL 1 DAY),
+			</if>
+		</set>
+		where id=#{id}
+	</update>
+
+
+    <!-- 首页定期宝显示查询-->
+	<select id="getFixBorrowByCnd" parameterType="com.dxjr.portal.fix.vo.FixBorrowCnd"
+		resultMap="fixBorrowResultMap">
+
+
+		SELECT
+		CONTRACT_NO,STATUS,PUBLISH_TIME,PLAN_ACCOUNT,ACCOUNT_YES,LOCK_LIMIT,APR
+		,id, statusId
+		from (
+		SELECT
+		CONTRACT_NO,STATUS,PUBLISH_TIME,PLAN_ACCOUNT,ACCOUNT_YES,LOCK_LIMIT,APR,id
+		,1 as statusId from t_fix_borrow
+		tfb where `STATUS` =3 and AREA_TYPE<![CDATA[<>]]>1 and LOCK_LIMIT =#{lockLimit} and NOW() &gt;
+		tfb.PUBLISH_TIME order by ACCOUNT_YES/PLAN_ACCOUNT desc,PUBLISH_TIME desc,addtime asc LIMIT 1
+		) tempa
+
+		UNION
+		SELECT
+		CONTRACT_NO,STATUS,PUBLISH_TIME,PLAN_ACCOUNT,ACCOUNT_YES,LOCK_LIMIT,APR
+		,id,2 as statusId from (
+		SELECT
+		CONTRACT_NO,STATUS,PUBLISH_TIME,PLAN_ACCOUNT,ACCOUNT_YES,LOCK_LIMIT,APR,
+		id from t_fix_borrow
+		tfb where `STATUS` =3 and AREA_TYPE<![CDATA[<>]]>1 and LOCK_LIMIT =#{lockLimit} and NOW() &lt;
+		tfb.PUBLISH_TIME order by PUBLISH_TIME asc ,addtime asc LIMIT 1
+		) tempb
+
+
+		UNION
+		SELECT
+		CONTRACT_NO,STATUS,PUBLISH_TIME,PLAN_ACCOUNT,ACCOUNT_YES,LOCK_LIMIT,APR
+		,id,3 as statusId from (
+		SELECT
+		CONTRACT_NO,STATUS,PUBLISH_TIME,PLAN_ACCOUNT,ACCOUNT_YES,LOCK_LIMIT,APR,id
+		from t_fix_borrow
+		tfb where `STATUS` =5 and AREA_TYPE<![CDATA[<>]]>1 and LOCK_LIMIT =#{lockLimit} order by LOCK_ENDTIME
+		desc ,addtime desc   LIMIT 1
+		) tempc
+
+		UNION
+		SELECT
+		CONTRACT_NO,STATUS,PUBLISH_TIME,PLAN_ACCOUNT,ACCOUNT_YES,LOCK_LIMIT,APR
+		,id,4 as statusId from (
+		SELECT
+		CONTRACT_NO,STATUS,PUBLISH_TIME,PLAN_ACCOUNT,ACCOUNT_YES,LOCK_LIMIT,APR,id
+		from t_fix_borrow
+		tfb where `STATUS` =7 and AREA_TYPE<![CDATA[<>]]>1 and LOCK_LIMIT =#{lockLimit} order by LOCK_ENDTIME
+		desc,addtime desc LIMIT 1
+		) tempd
+		order by statusId asc
+	</select>
+
+	<!-- 查询锁定中和已结束状态用户加入定期宝金额 5:满宝复审还款中 7:还款结束 -->
+	<select id="querySumAccountYes" resultType="java.math.BigDecimal">
+		select IFNULL(sum(ACCOUNT_YES),0) from t_fix_borrow where STATUS in (5,7,8,9,10)
+	</select>
+
+	<!-- 查询用户已认购的本金 -->
+	<select id="querySumAccountByUserId" parameterType="com.dxjr.portal.fix.vo.FixBorrowCnd"
+		resultType="java.math.BigDecimal">
+
+		SELECT IFNULL(sum(account),0) from t_fix_tender_detail where fix_borrow_id =
+		#{fixBorrowId} and user_id = #{userId}
+	</select>
+	
+	<!-- 添加定期宝满宝待发邮件记录 -->
+	<insert id="insertMailRecord" parameterType="java.lang.Integer">
+		INSERT INTO rocky_mail_send_record 
+       	(
+       	type_id, 
+       	TYPE, 
+       	STATUS , 
+       	ADDTIME,
+       	email,
+       	user_id
+       	) 
+       	SELECT 
+       	tmp.FIX_BORROW_ID,
+       	tmp.type,
+       	tmp.`status`,
+       	tmp.addtime,
+       	tmp.EMAIL,
+       	tmp.userid FROM(
+         				SELECT 
+						tendreal.FIX_BORROW_ID,
+						6 as type,
+						0 as 'status',
+						NOW() as addtime,
+						member.EMAIL,
+						member.id as userid 
+						FROM t_fix_tender_real tendreal,rocky_member member 
+						WHERE tendreal.USER_ID = member.id
+						AND tendreal.FIX_BORROW_ID = #{fixBorrowId}
+						GROUP BY tendreal.user_id
+       	) AS tmp
+	</insert>
+	<!-- 查询用户最大可投金额 -->
+	<select id="queryRemainAccountByUserId" parameterType="com.dxjr.portal.fix.vo.FixBorrowCnd"
+		resultType="java.math.BigDecimal">
+ SELECT tfb.MOST_ACCOUNT- IFNULL(tft.hasJoinMoney,0) from t_fix_borrow tfb left join 
+( SELECT FIX_BORROW_ID,user_Id,sum(account) hasJoinMoney from t_fix_tender_detail where user_id = #{userId} GROUP BY FIX_BORROW_ID,USER_ID ) tft  on (tfb.id =tft.fix_borrow_id  )
+
+where  tfb.id  =#{fixBorrowId}  
+
+	 
+	</select>
+	
+	<!-- 修改定期宝状态 -->
+	<update id="updateFixBorrowStatusById" parameterType="com.dxjr.base.entity.FixBorrow">
+		UPDATE T_FIX_BORROW 
+		SET STATUS = #{status},
+		    LAST_MODIFY_USER = #{lastModifylUser},
+		    LAST_MODIFY_TIME = CURRENT_TIMESTAMP()
+		WHERE ID= #{id}
+	</update>
+	
+	<!-- 结果集 -->
+	<resultMap type="com.dxjr.portal.fix.vo.FixBorrowVo" id="fixBorrowVoResultMap">
+		<id property="id" column="id" />
+		<result property="name" column="NAME" />
+		<result property="status" column="STATUS" />
+		<result property="planAccount" column="PLAN_ACCOUNT" />
+		<result property="lowestAccount" column="LOWEST_ACCOUNT" />
+		<result property="mostAccount" column="MOST_ACCOUNT" />
+		<result property="lockLimit" column="LOCK_LIMIT" />
+		<result property="lockStyle" column="LOCK_STYLE" />
+		<result property="lockEndtime" column="LOCK_ENDTIME" />
+		<result property="successTime" column="SUCCESS_TIME" />
+		<result property="validTime" column="VALID_TIME" />
+		<result property="content" column="CONTENT" />
+		<result property="sendMessage" column="SENDMESSAGE" />
+		<result property="addtime" column="ADDTIME" />
+		<result property="addip" column="ADDIP" />
+		<result property="lastModifylUser" column="LAST_MODIFY_USER" />
+		<result property="lastModifyTime" column="LAST_MODIFY_TIME" />
+		<result property="lastModifyRemark" column="LAST_MODIFY_REMARK" />
+		<result property="bidPassword" column="BID_PASSWORD" />
+		<result property="remark" column="REMARK" />
+		<result property="publishTime" column="PUBLISH_TIME" />
+		<result property="tenderTimes" column="TENDER_TIMES" />
+		<result property="accountYes" column="ACCOUNT_YES" />
+		<result property="endTime" column="END_TIME" />
+		<result property="sourceFrom" column="SOURCE_FROM" />
+		<result property="contractNo" column="CONTRACT_NO" />
+		<result property="totalInvest" column="totalInvest" />
+		<result property="repaymentMoney" column="repaymentMoney" />
+		<result property="useMoney" column="USE_MONEY" />
+		<result property="defaultPubTime" column="defaultPubTime" />
+		<result property="zrMoney" column="zrMoney" />
+		<result property="tLight" column="tLight" />
+		<result property="capital" column="capital" />
+		<result property="fixAccountUserMoney" column="fixAccountUserMoney" />
+	</resultMap>
+	
+	<!--基本列 -->
+	<sql id="fixBorrowBaseColumn">
+		fixBorrow.ID,
+		fixBorrow.NAME,
+		fixBorrow.STATUS,
+		fixBorrow.PLAN_ACCOUNT,
+		fixBorrow.LOWEST_ACCOUNT,
+		fixBorrow.MOST_ACCOUNT,
+		fixBorrow.LOCK_LIMIT,
+		fixBorrow.LOCK_STYLE,
+		fixBorrow.LOCK_ENDTIME,
+		fixBorrow.APR,
+		fixBorrow.SUCCESS_TIME,
+		fixBorrow.VALID_TIME,
+		fixBorrow.CONTENT,
+		fixBorrow.SENDMESSAGE,
+		fixBorrow.ADDTIME,
+		fixBorrow.ADDIP,
+		fixBorrow.LAST_MODIFY_USER,
+		fixBorrow.LAST_MODIFY_TIME,
+		fixBorrow.LAST_MODIFY_REMARK,
+		fixBorrow.CONTRACT_NO,
+		fixBorrow.BID_PASSWORD,
+		fixBorrow.REMARK,
+		fixBorrow.PUBLISH_TIME,
+		fixBorrow.TENDER_TIMES,
+		fixBorrow.ACCOUNT_YES,
+		fixBorrow.END_TIME,
+		fixBorrow.SOURCE_FROM
+	</sql>
+	
+	<select id="queryMatureFixBorrowById" parameterType="java.lang.Integer" resultMap="fixBorrowVoResultMap" >
+		SELECT <include refid="fixBorrowBaseColumn"/> 
+			   ,fa.USE_MONEY as fixAccountUserMoney
+			   ,fa.CAPITAL
+		  FROM t_fix_borrow fixBorrow
+		INNER JOIN t_fix_account fa ON fixBorrow.ID = fa.FIX_BORROW_ID
+		 WHERE fixBorrow.`STATUS` = 5
+		   AND NOT EXISTS (SELECT 1 FROM rocky_b_tenderrecord rbt WHERE rbt.USER_ID = fixBorrow.ID AND rbt.`STATUS` = 0 LIMIT 0,1)
+		   AND LOCK_ENDTIME <![CDATA[<= CURDATE()]]>
+			AND fa.USE_MONEY <![CDATA[< fa.CAPITAL]]>
+			AND fa.COLLECTION <![CDATA[> 0]]>
+			AND fixBorrow.ID = #{id}
+		FOR UPDATE;
+	</select>	
+	
+	<!-- 双十一结果集 -->
+	<resultMap type="com.dxjr.portal.fix.vo.DoubleElevenVo" id="doubleElevenVoResultMap">		
+		<result property="numberNo" column="numberNo" />
+		<result property="username" column="username" />
+		<result property="invertTotal" column="invertTotal" />		
+	</resultMap>
+	
+	<!-- 查询投资金额排名前10  -->
+	<select id="queryFixForDoubleElevenList" parameterType="java.lang.Integer" resultMap="doubleElevenVoResultMap">
+		select
+		  (@rnTmp := @rnTmp + 1),
+		  if(@tmp = invertTotal, @rn := @rn, @rn := @rnTmp) numberNo,
+		   mid, username,
+		  invertTotal,
+		  (@tmp := invertTotal),
+			tenderTIME
+		from (
+		  select
+		    m.ID mid, m.USERNAME, sum(ACCOUNT) invertTotal, MAX(t.ADDTIME) tenderTIME
+		  from rocky_member m
+		  inner join (
+		    select td.USER_ID, sum(td.ACCOUNT) ACCOUNT,MAX(td.ADDTIME) ADDTIME
+		    from t_fix_tender_detail td
+				INNER JOIN t_fix_borrow fix on td.FIX_BORROW_ID=fix.ID  
+		    where td.`STATUS` in(1,3)
+		    and td.ADDTIME <![CDATA[>=]]> DATE('2015-11-11') and td.ADDTIME <![CDATA[<]]> DATE('2015-12-01')
+		    and fix.SUCCESS_TIME <![CDATA[>=]]> DATE('2015-11-11') and fix.SUCCESS_TIME <![CDATA[<]]> DATE('2015-12-01')
+				and fix.LOCK_LIMIT = #{lockLimit}
+		    group by td.USER_ID
+		  ) t on t.USER_ID = m.ID and t.ACCOUNT > 0
+		  where m.USERNAME not in ('顶玺金融')
+		    and m.`STATUS` = 0
+		    and m.IS_FINANCIAL_USER = 1
+		  group by m.ID
+		) t, (select @rn := 0) x, (select @rnTmp := 0) y, (select @tmp := 0) z
+		order by invertTotal desc,tenderTIME ASC
+		limit 0, 10
+	</select>
+	
+	<!-- 根据userId查询投资数量 -->
+  	<select id="getTenderCountByUserId" parameterType="java.lang.Integer" resultType="java.lang.Integer" >
+    	 SELECT SUM(num) FROM (
+			SELECT COUNT(*) as num FROM rocky_b_tenderrecord t, rocky_borrow b 
+			where t.USER_ID = #{userId} AND t.BORROW_ID = b.ID AND b.BORROWTYPE in(1,2,5) and t.`STATUS`<![CDATA[<>]]>-1
+			UNION ALL
+			SELECT COUNT(*) as num
+			from t_fix_tender_detail s 
+			where s.USER_ID = #{userId} and `STATUS`<![CDATA[<>]]>2
+			UNION ALL
+			SELECT COUNT(*) as num
+			from rocky_b_subscribe 
+			where USER_ID = #{userId} and `STATUS`<![CDATA[<>]]>2
+		) t
+    </select>
+    
+    <!-- 根据userId查询投资新手宝数量 -->
+  	<select id="getNewTenderCountByUserId" parameterType="java.lang.Integer" resultType="java.lang.Integer" >			
+		SELECT SUM(num) from (
+			SELECT COUNT(*) as num
+						from t_fix_tender_detail s 
+						INNER JOIN t_fix_borrow t on s.FIX_BORROW_ID=t.ID
+						where s.`STATUS` in(0,1,3) and s.USER_ID = #{userId} and AREA_TYPE=1
+			UNION ALL
+			SELECT COUNT(*) as num
+						from t_fix_tender_detail s 
+						INNER JOIN t_fix_borrow t on s.FIX_BORROW_ID=t.ID
+						where s.`STATUS` in(0,1,3) and s.USER_ID = #{userId} and t.AREA_TYPE=0 and t.AREA_CHANGE_TIME IS NOT NULL and s.ADDTIME<![CDATA[<]]>t.AREA_CHANGE_TIME
+		) t2
+    </select>   
+    
+    <select id="getNewFixBorrow" resultMap="fixBorrowVoResultMap"> 
+		select		
+		ID,  		
+		PLAN_ACCOUNT, 
+		LOCK_LIMIT,		
+		APR, 
+		ACCOUNT_YES, 
+		ROUND(ACCOUNT_YES/PLAN_ACCOUNT,2) SCHEDULE,  
+		`STATUS`,
+		PUBLISH_TIME,AREA_TYPE as areaType,
+		CONTRACT_NO
+		from t_fix_borrow 
+		where AREA_TYPE = 1 AND `STATUS` IN (3,5,7) 
+		ORDER BY `STATUS` ASC,ACCOUNT_YES/PLAN_ACCOUNT DESC,PUBLISH_TIME DESC, ADDTIME DESC LIMIT 1
+	</select>
+	
+	<select id="getLimitFixBorrow" resultMap="fixBorrowVoResultMap" parameterType="Integer"> 
+		select		
+		ID,  		
+		PLAN_ACCOUNT, 
+		LOCK_LIMIT,		
+		APR, 
+		ACCOUNT_YES, 
+		ROUND(ACCOUNT_YES/PLAN_ACCOUNT,2) SCHEDULE,  
+		`STATUS`,
+		PUBLISH_TIME,AREA_TYPE as areaType
+		from t_fix_borrow 
+		where AREA_TYPE != 1 AND `STATUS` IN (3,5,7)  and LOCK_LIMIT=#{limit}
+		ORDER BY `STATUS` ASC,ACCOUNT_YES/PLAN_ACCOUNT DESC,PUBLISH_TIME <![CDATA[<]]> now() DESC,PUBLISH_TIME DESC, ADDTIME DESC LIMIT 1
+	</select>
+	
+	<!-- 查询3月宝及以上投资金额排名前10  -->
+	<select id="queryFixForNewYearList" parameterType="com.dxjr.portal.fix.vo.FixActivityCnd" resultMap="doubleElevenVoResultMap">
+		select
+		  (@rnTmp := @rnTmp + 1),
+		  if(@tmp = invertTotal, @rn := @rn, @rn := @rnTmp) numberNo,
+		   mid, username,
+		  invertTotal,
+		  (@tmp := invertTotal),
+			tenderTIME
+		from (
+		  select
+		    m.ID mid, m.USERNAME, sum(ACCOUNT) invertTotal, MAX(t.ADDTIME) tenderTIME
+		  from rocky_member m
+		  inner join (
+		    select td.USER_ID, sum(td.ACCOUNT) ACCOUNT,MAX(td.ADDTIME) ADDTIME
+		    from t_fix_tender_detail td
+				INNER JOIN t_fix_borrow fix on td.FIX_BORROW_ID=fix.ID  
+		    where td.`STATUS` in(1,3)
+		    and td.ADDTIME <![CDATA[>=]]> DATE('2016-02-01') and td.ADDTIME <![CDATA[<]]> DATE('2016-03-02')
+		    and fix.SUCCESS_TIME <![CDATA[>=]]> DATE('2016-02-01') and fix.SUCCESS_TIME <![CDATA[<]]> DATE('2016-03-02')
+				and fix.LOCK_LIMIT in (${limitStr})
+		    group by td.USER_ID
+		  ) t on t.USER_ID = m.ID and t.ACCOUNT > 0
+		  where m.USERNAME not in ('顶玺金融')
+		    and m.`STATUS` = 0
+		    and m.IS_FINANCIAL_USER = 1
+		  group by m.ID
+		) t, (select @rn := 0) x, (select @rnTmp := 0) y, (select @tmp := 0) z
+		order by invertTotal desc,tenderTIME ASC
+		limit 0, 10
+	</select>
+	
+	<!-- 双十一结果集 -->
+	<resultMap type="com.dxjr.portal.fix.vo.FixActivityVo" id="fixActivityVoResultMap">
+		<result property="username" column="username" />		
+		<result property="mobile" column="mobile" />
+		<result property="regTime" column="regTime" />		
+	</resultMap>
+	
+	<!-- 查询2月1号以后当月注册并投资的金额大于等于1W的被邀请人信息  -->
+	<select id="queryFixForInvitedList" parameterType="java.lang.Integer" resultMap="fixActivityVoResultMap">
+		select m.ID mid, m.username username, rma.MOBILENUM mobile, FROM_UNIXTIME(m.ADDTIME) regTime
+		from rocky_member m
+		INNER JOIN (
+			select td.USER_ID, sum(td.ACCOUNT) ACCOUNT
+			from t_fix_tender_detail td
+			INNER JOIN t_fix_borrow fix on td.FIX_BORROW_ID=fix.ID  
+			where td.`STATUS` in(1,3)
+			and DATE_FORMAT(td.ADDTIME,'%Y-%m')=DATE_FORMAT(CURDATE(),'%Y-%m')
+			and DATE_FORMAT(fix.SUCCESS_TIME,'%Y-%m')=DATE_FORMAT(CURDATE(),'%Y-%m')
+			and td.ADDTIME >= DATE('2016-02-01')
+			and fix.SUCCESS_TIME >= DATE('2016-02-01')		
+			group by td.USER_ID
+		) t on t.USER_ID = m.ID
+		INNER JOIN rocky_mobile_appro rma on m.ID=rma.USER_ID
+		where m.USERNAME not in ('顶玺金融')
+			and m.`STATUS` = 0
+			and m.IS_FINANCIAL_USER = 1
+			and m.INVITERID=#{userId}
+			and t.ACCOUNT>=10000
+			and FROM_UNIXTIME(m.ADDTIME,'%Y-%m') = DATE_FORMAT(CURDATE(),'%Y-%m')
+			and FROM_UNIXTIME(m.ADDTIME)>=DATE('2016-02-01')
+	</select>
+</mapper>  

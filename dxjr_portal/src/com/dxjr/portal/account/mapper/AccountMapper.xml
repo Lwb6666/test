@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.dxjr.portal.account.mapper.AccountMapper">
+	
+	<!-- 返回的结果集 -->
+	<resultMap type="com.dxjr.portal.account.vo.AccountVo" id="accountMapperResultMap">
+		<id property="id" column="id" />
+		<result property="userId" 					column="USER_ID" />
+		<result property="total" 					column="TOTAL" />
+		<result property="useMoney" 				column="USE_MONEY" />
+		<result property="noUseMoney" 				column="NO_USE_MONEY" />
+		<result property="collection"	    		column="COLLECTION" />
+		<result property="netvalue"  				column="NETVALUE" />
+		<result property="firstBorrowUseMoney" 		column="FIRST_BORROW_USE_MONEY" />
+		<result property="version"					column="VERSION"/>
+		<result property="drawMoney"				column="DRAW_MONEY"/>
+		<result property="noDrawMoney" 				column="NO_DRAW_MONEY"/>
+		<result property="eUseMoney" 				column="e_use_money"/>	
+		<result property="eFreezeMoney" 			column="e_freeze_money"/>	
+		<result property="eCollection" 				column="e_collection"/>		
+	</resultMap>
+	<resultMap type="com.dxjr.portal.account.vo.YearCollect" id="yearCollectMapperResultMap">
+	</resultMap>
+	<!--基本列 -->
+	<sql id="accountBaseColumn">
+		a.ID, 
+		a.USER_ID, 
+		a.TOTAL, 
+		a.USE_MONEY, 
+		a.NO_USE_MONEY, 
+		a.COLLECTION, 
+		a.NETVALUE, 
+		a.FIRST_BORROW_USE_MONEY,
+		a.VERSION,
+		a.DRAW_MONEY,
+		a.NO_DRAW_MONEY,
+		a.e_use_money,
+		a.e_freeze_money,
+		a.e_collection	
+	</sql>
+	
+	<!-- 封装查询条件 -->
+	<sql id="account_Where_Clause">
+		<if test="id != null">
+			and a.id =#{id}
+		</if>
+		<if test="userId != null ">
+			and a.USER_ID = #{userId}
+		</if>
+	</sql>
+	
+  	<!-- 根据条件查询记录集合 -->
+	<select id="queryAccountList" parameterType="com.dxjr.portal.account.vo.AccountCnd" resultMap="accountMapperResultMap" >
+		select 	
+		   <include refid="accountBaseColumn"/>
+		from
+			rocky_account a
+		where 1=1
+		<include refid="account_Where_Clause"/>
+		<if test="lockedRecordYn != null and lockedRecordYn == 'yes'">
+			FOR UPDATE
+		</if>		
+  	</select>
+  	
+  	
+  	<select id="findAccountByUserIdForUpdate" parameterType="java.lang.Integer" resultMap="accountMapperResultMap" >
+  	select 	
+		   <include refid="accountBaseColumn"/>
+		from
+			rocky_account a where a.USER_ID = #{userId} FOR UPDATE
+  	
+  	</select>
+  	
+  	<!-- 根据条件查询记录集合 -->
+	<select id="queryCollectionCapital" parameterType="com.dxjr.portal.account.vo.AccountCnd" resultType="java.math.BigDecimal" >
+		select SUM(CAPITAL) from rocky_b_collectionrecord where `STATUS` in(0)  
+		<if test="userId != null ">
+			and USER_ID = #{userId}
+		</if>
+  	</select>
+  	  	<!-- 根据条件查询记录数量-->
+	<select id="queryAccountCount" parameterType="com.dxjr.portal.account.vo.AccountCnd" resultType="java.lang.Integer" >
+		select count(a.id)
+		from
+			rocky_account a
+		where 1=1
+		<include refid="account_Where_Clause"/>
+  	</select>
+  	
+  	<!-- 根据UserId查询 -->
+	<select id="queryByUserId" parameterType="java.lang.Integer" resultMap="accountMapperResultMap" >
+		select 	* from rocky_account a where a.user_id=#{userId}
+  	</select>
+  	
+  	<!-- 添加vip提醒日志 -->
+	<insert id="insert" parameterType="com.dxjr.portal.account.vo.LoginRemindLogVo">
+		INSERT INTO t_login_remind_log(USER_ID,TYPE,MESSAGE,ADD_TIME ) VALUES 
+		(#{userId,jdbcType=INTEGER},
+		1,#{message,jdbcType=VARCHAR},current_timestamp ) 
+  	</insert>
+	<select id="queryDayCollect" parameterType="com.dxjr.portal.account.vo.AccountCnd" resultMap="yearCollectMapperResultMap" >
+			select t1.TOTALCOLLECT as totalCollect,t1.TOTALYESCOLLECT as totalYesCollect,
+			(select IFNULL(SUM(REPAY_ACCOUNT),0) as COLLECT  from t_fix_collectionrecord where USER_ID=#{userId} and `STATUS` in(0,4) and REPAY_TIME=#{dateTime}) as fixCollect,
+			(select IFNULL(SUM(REPAY_ACCOUNT),0) as COLLECT from rocky_b_collectionrecord where USER_ID=#{userId} and `STATUS` in(0,4)  and DATE(FROM_UNIXTIME(REPAY_TIME))=#{dateTime}) as borrowCollect,
+			(select IFNULL(SUM(REPAY_YESACCOUNT),0) as YESCOLLECT   from t_fix_collectionrecord where USER_ID=#{userId} and `STATUS` in(1,2,3) and DATE(REPAY_YESTIME)=#{dateTime}) as fixYesCollect,
+			(select IFNULL(SUM(REPAY_YESACCOUNT),0) as YESCOLLECT  from rocky_b_collectionrecord where USER_ID=#{userId} and `STATUS` in(1,2,3)  and DATE(FROM_UNIXTIME(REPAY_YESTIME))=#{dateTime}) as borrowYesCollect 
+			from (
+				select IFNULL(SUM(t.COLLECT),0) as TOTALCOLLECT,IFNULL(SUM(t.YESCOLLECT),0) as TOTALYESCOLLECT 
+				from (
+					select IFNULL(SUM(REPAY_ACCOUNT),0) as COLLECT ,0 as YESCOLLECT 
+					from t_fix_collectionrecord where USER_ID=#{userId} and `STATUS` in(0,4) and REPAY_TIME=#{dateTime} 
+					UNION ALL 
+					select IFNULL(SUM(REPAY_ACCOUNT),0) as COLLECT,0 as YESCOLLECT 
+					from rocky_b_collectionrecord where USER_ID=#{userId} and `STATUS` in(0,4)  and DATE(FROM_UNIXTIME(REPAY_TIME))=#{dateTime}
+					UNION ALL 
+					select 0 as COLLECT  ,IFNULL(SUM(REPAY_YESACCOUNT),0) as YESCOLLECT 
+					from t_fix_collectionrecord where USER_ID=#{userId} and `STATUS` in(1,2,3) and DATE(REPAY_YESTIME)=#{dateTime} 
+					UNION ALL 
+					select 0 as COLLECT,IFNULL(SUM(REPAY_YESACCOUNT),0) as YESCOLLECT 
+					from rocky_b_collectionrecord where USER_ID=#{userId} and `STATUS` in(1,2,3)  and DATE(FROM_UNIXTIME(REPAY_YESTIME))=#{dateTime}) 
+				t) t1
+  	</select>
+  	<select id="queryYearCollect" parameterType="com.dxjr.portal.account.vo.AccountCnd" resultMap="yearCollectMapperResultMap" >
+			select t.ADDTIME as collectTime,
+				CASE when t.ADDTIME=CURDATE() then 3
+				when t.ADDTIME&lt;CURDATE() and (IFNULL(SUM(t.YESACCOUNT),0)+IFNULL(SUM(t.ACCOUNT),0))&gt;0 then 2
+				when t.ADDTIME&gt;CURDATE() and (IFNULL(SUM(t.YESACCOUNT),0)+IFNULL(SUM(t.ACCOUNT),0))&gt;0 then 1 end as type 
+				from (
+				select DATE(REPAY_TIME) as ADDTIME,REPAY_ACCOUNT as ACCOUNT,0 as YESACCOUNT
+							from t_fix_collectionrecord where USER_ID=#{userId} and `STATUS` in(0,4) and DATE_FORMAT(REPAY_TIME,'%Y') =#{year} 
+							UNION ALL 
+				select DATE(FROM_UNIXTIME(REPAY_TIME)) as ADDTIME,REPAY_ACCOUNT as ACCOUNT,0 as YESACCOUNT 
+							from rocky_b_collectionrecord where USER_ID=#{userId} and `STATUS` in(0,4) and DATE_FORMAT(FROM_UNIXTIME(REPAY_TIME),'%Y') =#{year} 
+			                UNION ALL 
+			    select DATE(REPAY_YESTIME) as ADDTIME,0 as ACCOUNT,REPAY_YESACCOUNT as YESACCOUNT 
+							from t_fix_collectionrecord where USER_ID=#{userId} and `STATUS` in(1,2,3) and DATE_FORMAT(REPAY_YESTIME,'%Y') =#{year} 
+							UNION ALL 
+				select DATE(FROM_UNIXTIME(REPAY_YESTIME)) as ADDTIME,0 as ACCOUNT,REPAY_YESACCOUNT as  YESACCOUNT
+							from rocky_b_collectionrecord where USER_ID=#{userId} and `STATUS` in(1,2,3) and DATE_FORMAT(FROM_UNIXTIME(REPAY_YESTIME),'%Y') =#{year} 
+				) t group by t.ADDTIME 
+  	</select>
+  	
+  	
+  	<update id="updateCGAccount" parameterType="com.dxjr.portal.account.vo.AccountVo">
+  		update rocky_account set e_use_money=#{eUseMoney},e_freeze_money=#{eFreezeMoney}  where ID=#{id}
+  	</update>
+  	
+</mapper>  

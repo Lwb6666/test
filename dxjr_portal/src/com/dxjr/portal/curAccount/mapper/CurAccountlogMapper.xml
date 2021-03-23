@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dxjr.portal.curAccount.mapper.CurAccountlogMapper" >
+  <resultMap id="BaseResultMap" type="com.dxjr.portal.curAccount.vo.CurAccountLogVo" >
+    <id column="ID" property="id" jdbcType="INTEGER" />
+    <result column="USER_ID" property="userId" jdbcType="INTEGER" />
+    <result column="MONEY" property="money" jdbcType="DECIMAL" />
+    <result column="TYPE" property="type" jdbcType="INTEGER" />
+    <result column="TOTAL" property="total" jdbcType="DECIMAL" />
+    <result column="USE_MONEY" property="useMoney" jdbcType="DECIMAL" />
+    <result column="NO_USE_MONEY" property="noUseMoney" jdbcType="DECIMAL" />
+    <result column="INTEREST_TOTAL" property="interestTotal" jdbcType="DECIMAL" />
+    <result column="INTEREST_YESTERDAY" property="interestYesterday" jdbcType="DECIMAL" />
+    <result column="ADDUSER" property="adduser" jdbcType="INTEGER" />
+    <result column="ADDTIME" property="addtime" jdbcType="TIMESTAMP" />
+    <result column="ADDIP" property="addip" jdbcType="VARCHAR" />
+    <result column="REMARK" property="remark" jdbcType="VARCHAR" />
+    <result column="TYPE_Z" property="type_z" jdbcType="VARCHAR" />
+    
+  </resultMap>
+  <sql id="Base_Column_List" >
+    ID, USER_ID, MONEY, TYPE, TOTAL, USE_MONEY, NO_USE_MONEY, INTEREST_TOTAL, INTEREST_YESTERDAY, 
+    ADDUSER, ADDTIME, ADDIP, REMARK
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from t_cur_accountlog
+    where ID = #{id,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from t_cur_accountlog
+    where ID = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.dxjr.portal.curAccount.entity.CurAccountlog" >
+    insert into t_cur_accountlog (ID, USER_ID, MONEY, 
+      TYPE, TOTAL, USE_MONEY, 
+      NO_USE_MONEY, INTEREST_TOTAL, INTEREST_YESTERDAY, 
+      ADDUSER, ADDTIME, ADDIP, 
+      REMARK)
+    values (#{id,jdbcType=INTEGER}, #{userId,jdbcType=INTEGER}, #{money,jdbcType=DECIMAL}, 
+      #{type,jdbcType=INTEGER}, #{total,jdbcType=DECIMAL}, #{useMoney,jdbcType=DECIMAL}, 
+      #{noUseMoney,jdbcType=DECIMAL}, #{interestTotal,jdbcType=DECIMAL}, #{interestYesterday,jdbcType=DECIMAL}, 
+      #{adduser,jdbcType=INTEGER}, #{addtime,jdbcType=TIMESTAMP}, #{addip,jdbcType=VARCHAR}, 
+      #{remark,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="com.dxjr.portal.curAccount.entity.CurAccountlog" >
+    insert into t_cur_accountlog
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        ID,
+      </if>
+      <if test="userId != null" >
+        USER_ID,
+      </if>
+      <if test="money != null" >
+        MONEY,
+      </if>
+      <if test="type != null" >
+        TYPE,
+      </if>
+      <if test="total != null" >
+        TOTAL,
+      </if>
+      <if test="useMoney != null" >
+        USE_MONEY,
+      </if>
+      <if test="noUseMoney != null" >
+        NO_USE_MONEY,
+      </if>
+      <if test="interestTotal != null" >
+        INTEREST_TOTAL,
+      </if>
+      <if test="interestYesterday != null" >
+        INTEREST_YESTERDAY,
+      </if>
+      <if test="adduser != null" >
+        ADDUSER,
+      </if>
+      <if test="addtime != null" >
+        ADDTIME,
+      </if>
+      <if test="addip != null" >
+        ADDIP,
+      </if>
+      <if test="remark != null" >
+        REMARK,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="userId != null" >
+        #{userId,jdbcType=INTEGER},
+      </if>
+      <if test="money != null" >
+        #{money,jdbcType=DECIMAL},
+      </if>
+      <if test="type != null" >
+        #{type,jdbcType=INTEGER},
+      </if>
+      <if test="total != null" >
+        #{total,jdbcType=DECIMAL},
+      </if>
+      <if test="useMoney != null" >
+        #{useMoney,jdbcType=DECIMAL},
+      </if>
+      <if test="noUseMoney != null" >
+        #{noUseMoney,jdbcType=DECIMAL},
+      </if>
+      <if test="interestTotal != null" >
+        #{interestTotal,jdbcType=DECIMAL},
+      </if>
+      <if test="interestYesterday != null" >
+        #{interestYesterday,jdbcType=DECIMAL},
+      </if>
+      <if test="adduser != null" >
+        #{adduser,jdbcType=INTEGER},
+      </if>
+      <if test="addtime != null" >
+        #{addtime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="addip != null" >
+        #{addip,jdbcType=VARCHAR},
+      </if>
+      <if test="remark != null" >
+        #{remark,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.dxjr.portal.curAccount.entity.CurAccountlog" >
+    update t_cur_accountlog
+    <set >
+      <if test="userId != null" >
+        USER_ID = #{userId,jdbcType=INTEGER},
+      </if>
+      <if test="money != null" >
+        MONEY = #{money,jdbcType=DECIMAL},
+      </if>
+      <if test="type != null" >
+        TYPE = #{type,jdbcType=INTEGER},
+      </if>
+      <if test="total != null" >
+        TOTAL = #{total,jdbcType=DECIMAL},
+      </if>
+      <if test="useMoney != null" >
+        USE_MONEY = #{useMoney,jdbcType=DECIMAL},
+      </if>
+      <if test="noUseMoney != null" >
+        NO_USE_MONEY = #{noUseMoney,jdbcType=DECIMAL},
+      </if>
+      <if test="interestTotal != null" >
+        INTEREST_TOTAL = #{interestTotal,jdbcType=DECIMAL},
+      </if>
+      <if test="interestYesterday != null" >
+        INTEREST_YESTERDAY = #{interestYesterday,jdbcType=DECIMAL},
+      </if>
+      <if test="adduser != null" >
+        ADDUSER = #{adduser,jdbcType=INTEGER},
+      </if>
+      <if test="addtime != null" >
+        ADDTIME = #{addtime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="addip != null" >
+        ADDIP = #{addip,jdbcType=VARCHAR},
+      </if>
+      <if test="remark != null" >
+        REMARK = #{remark,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where ID = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.dxjr.portal.curAccount.entity.CurAccountlog" >
+    update t_cur_accountlog
+    set USER_ID = #{userId,jdbcType=INTEGER},
+      MONEY = #{money,jdbcType=DECIMAL},
+      TYPE = #{type,jdbcType=INTEGER},
+      TOTAL = #{total,jdbcType=DECIMAL},
+      USE_MONEY = #{useMoney,jdbcType=DECIMAL},
+      NO_USE_MONEY = #{noUseMoney,jdbcType=DECIMAL},
+      INTEREST_TOTAL = #{interestTotal,jdbcType=DECIMAL},
+      INTEREST_YESTERDAY = #{interestYesterday,jdbcType=DECIMAL},
+      ADDUSER = #{adduser,jdbcType=INTEGER},
+      ADDTIME = #{addtime,jdbcType=TIMESTAMP},
+      ADDIP = #{addip,jdbcType=VARCHAR},
+      REMARK = #{remark,jdbcType=VARCHAR}
+    where ID = #{id,jdbcType=INTEGER}
+  </update>
+  
+  
+  <!-- 1.1 根据userId 查询资金信息 count (1.2 条件一致)  -->
+  <select id="queryCurAccountLogCount" parameterType="com.dxjr.portal.curAccount.vo.CurAccountLogCnd"
+		resultType="java.lang.Integer">
+			select count(1) from t_cur_accountlog tt
+			where 1=1
+			and ( tt.type !=101 and  tt.type!=105)
+			and user_id=#{userId}
+			<if test=" type!=null and type!='' and type=='1'.toString() ">
+				and  ( type = 102 or type =103 or type =104 )
+			</if>
+			<if test=" type!=null and type!='' and type=='2'.toString() ">
+				and  ( type = 201 or type =202 or type =203 or type =204  or type =205  or type =206 or type =207)
+			</if>
+			<if test="beginDay != null and beginDay != '' and  endDay != null and  endDay != '' " >
+				and addtime between concat(#{beginDay},' 00:00:00') and concat(#{endDay},' 23:59:59')
+			</if>
+	</select>
+  
+  
+   <!-- 1.2 根据userId 查询资金信息 list  (1.1 条件一致)   -->
+  <select id="queryCurAccountLogList" parameterType="com.dxjr.portal.curAccount.vo.CurAccountLogCnd"
+		resultMap="BaseResultMap">
+			select 
+			case
+			when tt.type=102 then '转入'
+			when tt.type=103 then '转入'
+			when tt.type=104 then '转入'
+			when tt.type=201 then '转出'
+			when tt.type=202 then '转出'
+			when tt.type=203 then '转出'
+			when tt.type=204 then '转出'
+			when tt.type=205 then '转出'
+			when tt.type=206 then '转出'
+			when tt.type=207 then '转出'
+			end 
+			as type_z,
+			tt.total, tt.money,tt.addtime,tt.id  from t_cur_accountlog tt
+			where 1=1
+			and ( tt.type !=101 and  tt.type!=105)
+			and user_id=#{userId}
+			<if test=" type!=null and type!='' and type=='1'.toString() ">
+				and  ( type = 102 or type =103 or type =104 )
+			</if>
+			<if test=" type!=null and type!='' and type=='2'.toString() ">
+				and  ( type = 201 or type =202 or type =203 or type =204  or type =205  or type =206 or type =207)
+			</if>
+			<if test="beginDay != null and beginDay != '' and endDay != null and endDay != '' " >
+				and addtime between concat(#{beginDay},' 00:00:00') and concat(#{endDay},' 23:59:59')
+			</if>
+			order by id desc
+  </select>
+  
+</mapper>

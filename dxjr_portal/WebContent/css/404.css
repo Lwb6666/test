@@ -1,0 +1,8 @@
+.network-content{ margin:0 auto ;width:600px; padding-top:180px}
+.network-wrong{ float:left;padding:0px; margin:0px;}
+.network-content .headline{ float:left;color:#a2a2a2; width:360px; font-size:36px; display:block; margin-left:50px;}
+.network-content .txts{float:left;line-height:25px; width:360px;display:block;margin-left:50px;margin-top:20px; }
+.network-content .txts a{ color:#00a7e5; margin-left:10px;}
+
+.footbg{ background:#555; color:#ccc; width:100%; position:absolute; bottom:0;}
+.footer-copyright {font-size:14px;line-height:40px;position: relative;text-align:center; width:1000px; margin:auto;}

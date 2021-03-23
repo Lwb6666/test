@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.dxjr.portal.scwInterface.mapper.ScwMapper">
+	
+	<!-- 插入记录，返回主键 -->
+	<insert id="insertScwMemberBinding" parameterType="com.dxjr.portal.scwInterface.vo.ScwMemberBinding">
+		INSERT INTO scw_member_binding 
+                ( 
+                  phone, 
+                  username,                                
+                  usernamep,
+                  fr, 
+                  userpwd, 
+                  user_id,                 
+                  status,
+                  loggingType,                  
+                  addtime,
+                  updatetime
+                )
+                VALUES 
+                (
+                #{phone}, 
+                #{username},                              
+                #{usernamep}, 
+                #{fr}, 
+                #{userpwd},               
+                #{user_id},
+                #{status}, 
+                #{loggingType},
+                NOW(),
+                NOW()
+                );
+ 		 <selectKey resultType="java.lang.Integer" order="AFTER" keyProperty="id">  
+      	    SELECT LAST_INSERT_ID() AS ID    
+   		 </selectKey>
+	</insert>
+	
+	<!-- 查询生菜网用户数量 -->
+	<select id="queryScwMemberCount" parameterType="com.dxjr.portal.scwInterface.vo.ScwCnd" resultType="java.lang.Integer" >
+		select count(m.id)
+		from
+			scw_member_binding m
+		where 1=1
+		<if test="status != null">
+			and m.status = #{status}
+		</if>
+		<if test="phone !=null and phone !=''">
+			and m.phone = #{phone}
+		</if>
+  	</select>
+  	
+  	<!-- 更新指定的访问日志-->
+	<update id="updateScwMemberBinding" parameterType="com.dxjr.portal.scwInterface.vo.ScwMemberBinding">
+			UPDATE scw_member_binding tmb 			
+			   <set >
+			   		tmb.updatetime=NOW(), 
+			  	  <if test="phone != null and phone != ''" >
+			        tmb.phone = #{phone},
+			      </if>
+			      <if test="username != null and username != '' " >
+			        tmb.username = #{username},
+			      </if>			      
+			      <if test="usernamep != null and usernamep != '' " >
+			        tmb.usernamep = #{usernamep},
+			      </if>
+			      <if test="fr != null and fr != ''" >
+			        tmb.fr = #{fr},
+			      </if>
+			      <if test="userpwd != null and userpwd != ''" >
+			        tmb.userpwd = #{userpwd},
+			      </if>			      
+			      <if test="user_id != null" >
+			        tmb.user_id = #{user_id},
+			      </if>
+			      <if test="status != null" >
+			        tmb.status = #{status},
+			      </if>	
+			      <if test="loggingType != null" >
+			        tmb.loggingType = #{loggingType},
+			      </if>			           
+			    </set>
+			WHERE tmb.phone = #{phone};
+	</update>
+	
+	<resultMap id="tenderRecordResult" type="com.dxjr.portal.scwInterface.vo.ScwTenderRecord">		
+		<result property="rbuid" column="rbuid" />
+		<result property="pid" column="pid" />
+		<result property="time" column="time" />
+		<result property="money" column="money" />
+	</resultMap>
+	
+	<select id="queryTenderRecord" parameterType="com.dxjr.portal.scwInterface.vo.ScwCnd" resultMap="tenderRecordResult">
+		(SELECT
+				DISTINCT
+				tmb.user_id as rbuid,
+				rbt.BORROW_ID as pid,
+				FROM_UNIXTIME(rbt.ADDTIME,'%Y-%m-%d %H:%i:%S') as time,
+				rbt.ACCOUNT as money
+				FROM rocky_borrow rb
+				INNER JOIN rocky_b_tenderrecord rbt ON rb.id = rbt.BORROW_ID 
+				INNER JOIN scw_member_binding tmb ON tmb.user_id = rbt.user_id
+				INNER JOIN rocky_member rm ON rm.id = tmb.user_id AND rm.type = 0		
+				WHERE tmb.`status` = 1 AND rbt.ADDTIME > UNIX_TIMESTAMP(tmb.addtime)
+				and rbt.`STATUS` in(1,2) and rbt.PARENT_ID IS NULL
+				<if test="stime!=null and stime!=''" >
+			       and FROM_UNIXTIME(rbt.ADDTIME)<![CDATA[>=]]>#{stime}
+			    </if>
+			    <if test="etime!=null and etime!=''" >
+			       and FROM_UNIXTIME(rbt.ADDTIME)<![CDATA[<=]]>#{etime}
+			    </if>
+		)
+		
+		UNION ALL
+		(SELECT
+				DISTINCT
+				tmb.user_id as rbuid,
+				rbt.FIX_BORROW_ID as pid,
+				DATE_FORMAT(rbt.ADDTIME,'%Y-%m-%d %H:%i:%S') as time,
+				rbt.ACCOUNT as money
+				FROM t_fix_borrow rb
+				INNER JOIN t_fix_tender_detail rbt ON rb.id = rbt.FIX_BORROW_ID 
+				INNER JOIN scw_member_binding tmb ON tmb.user_id = rbt.user_id
+				INNER JOIN rocky_member rm ON rm.id = tmb.user_id AND rm.type = 0
+				WHERE tmb.`status` = 1 AND rbt.ADDTIME > tmb.addtime
+				and rbt.`STATUS` in(1,3)
+				<if test="stime!=null and stime!=''" >
+			       and rbt.ADDTIME<![CDATA[>=]]>#{stime}
+			    </if>
+			    <if test="etime!=null and etime!=''" >
+			       and rbt.ADDTIME<![CDATA[<=]]>#{etime}
+			    </if>
+		)
+	</select>
+	
+	<!-- 查询生菜网用户信息 -->
+	<select id="queryScwMemberInfo" parameterType="java.lang.String" resultType="com.dxjr.portal.scwInterface.vo.ScwMemberBinding" >
+		select * from scw_member_binding where status=1 and phone=#{phone} limit 1
+  	</select>
+  	
+  	<resultMap id="borrowVoResult" type="com.dxjr.portal.scwInterface.vo.ScwBorrowVo">		
+		<result property="pid" column="pid" />
+		<result property="pname" column="pname" />
+		<result property="desc" column="desc" />
+		<result property="from" column="from" />
+		<result property="rate" column="rate" />
+		<result property="cycle" column="cycle" />
+		<result property="p_sum" column="p_sum" />
+		<result property="url" column="url" />
+		<result property="url_h5" column="url_h5" />
+		<result property="start_time" column="start_time" />
+		<result property="paytype" column="paytype" />
+		<result property="minmoney" column="minmoney" />
+		<result property="guarantee" column="guarantee" />
+		<result property="amountleft" column="amountleft" />
+		<result property="interest_time" column="interest_time" />
+	</resultMap>
+  	
+  	<!-- 查询生菜网可投标列表 -->
+  	<select id="queryBorrowVoList" parameterType="com.dxjr.portal.scwInterface.vo.ScwCnd" resultMap="borrowVoResult">
+		select * from (
+				SELECT                    	  
+						rb.id AS pid,
+						rb.NAME AS pname,
+						rb.CONTENT AS `desc`,
+						'顶玺金融' AS `from`,
+						rb.APR AS rate,
+						rb.TIME_LIMIT AS cycle,
+						rb.ACCOUNT AS p_sum,
+						CONCAT('http://www.dxjr.com/toubiao/', rb.id, '.html') AS url,
+						CONCAT('http://m.dxjr.com/tender/bid/', rb.id) AS url_h5,	
+						FROM_UNIXTIME(rb.PUBLISH_TIME,'%Y-%m-%d') as start_time,
+						CASE
+								WHEN rb.STYLE = 0 THEN '没有限制'
+								WHEN rb.STYLE = 1 THEN '等额本息'
+								WHEN rb.STYLE = 2 THEN '按月付息到期还本'
+								WHEN rb.STYLE = 3 THEN '到期还本付息' ELSE '按天还款'
+						END AS paytype,
+						rb.LOWEST_ACCOUNT as minmoney,
+						'全额本息担保' as guarantee,
+						(rb.ACCOUNT-rb.ACCOUNT_YES) as amountleft,
+						'满标计息' as interest_time
+						FROM rocky_borrow rb                                                          
+						WHERE rb.STATUS = 2
+						AND rb.IS_AUTOTENDER = 0
+						AND rb.BORROWTYPE != 4			
+			UNION ALL
+				SELECT	
+						fix.id AS pid,
+						CONCAT('定期宝', fix.CONTRACT_NO) AS pname,
+						'定期宝' AS `desc`,
+						'顶玺金融' AS `from`,
+						fix.APR AS rate,
+						fix.LOCK_LIMIT AS cycle,
+						fix.PLAN_ACCOUNT AS p_sum,
+						CONCAT('http://www.dxjr.com/dingqibao/', fix.id, '.html') AS url,
+						CONCAT('http://m.dxjr.com/favorite/fix/detail/', fix.id) AS url_h5,	
+						DATE_FORMAT(fix.PUBLISH_TIME,'%Y-%m-%d') as start_time,
+						'到期还本付息' AS paytype,
+						fix.LOWEST_ACCOUNT as minmoney,
+						'全额本息担保' as guarantee,
+						(fix.PLAN_ACCOUNT-fix.ACCOUNT_YES) as amountleft,
+						'满宝计息' as interest_time
+						FROM t_fix_borrow fix 
+						where STATUS = 3
+		) taAll WHERE 1=1 
+		<if test="limitType!=null and limitType!=''" >
+	       and (cycle*30)<![CDATA[<=]]>#{limitType}
+	    </if>
+	</select>
+  	
+  	
+</mapper>  

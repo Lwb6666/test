@@ -1,0 +1,15 @@
+body{font-family:Microsoft YaHei,"微软雅黑",SimSun, Arial,Helvetica,Tahoma;color:#555; background:#fff;_background-attachment:fixed; font-size:13px;}
+html,body{height:100%;width:100%;}
+html,body,div,span,h5,p,table,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;}
+a{color:#555;text-decoration:none;}
+a:hover{ color:#00a7e5;text-decoration:none;}
+.o-page{padding:10px 10px; margin:0 auto;}
+h5{text-align:center; padding:20px 0 20px 0; font-size:18px;}
+input[type="checkbox"]{ vertical-align:middle;}
+.pretit{ width:98%; text-align:center; margin:0 auto;padding-bottom:20px; }
+.pretit span{margin-right:40px;}
+.agreement p{padding:0px 10px 10px 10px; line-height:2em;overflow-x:hidden; }
+.agreement table{margin: 0px auto 20px;border-collapse: collapse;border: 1px solid #838383;width:70%;font-size: 12px;}
+.agreement tr td{border: 1px solid #838383; text-align:left; padding:10px 4px;}
+.agreement em{ font-style:normal;}
+.fontred {color: red}

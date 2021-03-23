@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.dxjr.portal.member.mapper.StaffMapper">
+	
+	<!-- 返回的结果集 -->
+	<resultMap type="com.dxjr.portal.member.vo.StaffVo" id="staffMapperResultMap">
+		<id property="id" column="id" />
+		<result property="jobNum" 		column="JOBNUM" />
+		<result property="passwd" 		column="PASSWD" />
+		<result property="name"			column="NAME" />
+		<result property="qq"			column="QQ" />
+		<result property="email"		column="EMAIL" />
+		<result property="mobile"		column="MOBILE" />
+		<result property="tel"			column="TEL" />
+		<result property="jobPost"		column="JOBPOST" />
+		<result property="powerRight"	column="POWERRIGHT" />
+		<result property="approPower"	column="COMEINDATE" />
+		<result property="comeinDate"	column="APPROPOWER" />
+		<result property="deptValue"	column="DEPTVALUE" />
+	</resultMap>
+	
+	<!--基本列 -->
+	<sql id="staffBaseColumn">
+		s.ID, 
+		s.JOBNUM, 
+		s.PASSWD, 
+		s.NAME, 
+		s.QQ, 
+		s.EMAIL,
+		s.MOBILE,
+		s.TEL,
+		s.JOBPOST,
+		s.POWERRIGHT,
+		s.COMEINDATE,
+		s.APPROPOWER,
+		s.DEPTVALUE
+	</sql>
+	
+	<!-- 封装查询条件 -->
+	<sql id="staff_Where_Clause">
+		<if test="id != null">
+			and s.id =#{id}
+		</if>
+		<if test="deptValue != null ">
+			and s.DEPTVALUE = #{deptValue}
+		</if>
+	</sql>
+	
+  	<!-- 根据条件查询记录集合 -->
+	<select id="queryStaffList" parameterType="com.dxjr.portal.member.vo.StaffCnd" resultMap="staffMapperResultMap" >
+		select 	
+		   <include refid="staffBaseColumn"/>
+		from
+			rocky_staff s
+		where 1=1
+		<include refid="staff_Where_Clause"/>
+  	</select>
+  	
+  	  	<!-- 根据条件查询记录数量-->
+	<select id="queryStaffCount" parameterType="com.dxjr.portal.member.vo.StaffCnd" resultType="java.lang.Integer" >
+		select count(s.id)
+		from
+			rocky_staff s
+		where 1=1
+		<include refid="staff_Where_Clause"/>
+  	</select>
+</mapper>  

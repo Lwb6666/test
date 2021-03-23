@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.dxjr.portal.red.mapper.RedAccountLogMapper">
+
+<resultMap type="com.dxjr.portal.red.entity.RedAccountLog" id="redAccountLogMap">
+	<id 	property="id" 				column="id" />
+	<result property="redId" 			column="red_id" />
+	<result property="userId" 			column="user_id" />
+	<result property="usebizId"			column="USEBIZ_ID" />
+	<result property="bizId"			column="BIZ_ID" />
+	<result property="bizType"			column="USEBIZ_TYPE" />
+	<result property="freezeTime"		column="FREEZE_TIME" />
+	<result property="useTime"			column="USE_TIME" />
+</resultMap>
+
+<!-- 查询所有 -->
+<select id="getAll" resultMap="redAccountLogMap">
+	select * from t_red_envelop_account_log
+</select>
+
+<!-- 根据ID查询 -->
+<select id="getById" parameterType="Integer" resultMap="redAccountLogMap">
+	select * from t_red_envelop_account_log where id=#{id}
+</select>
+
+<!-- 新增 -->
+<insert id="add" parameterType="com.dxjr.portal.red.entity.RedAccountLog" >
+	insert into t_red_envelop_account_log(RED_ID,MONEY,USER_ID,USEBIZ_ID,BIZ_ID,BIZ_TYPE,STATUS,OPTUSER,OPTTIME,FREEZE_TIME,USE_TIME,ADDIP,REMARK)
+	values(#{redId},#{money},#{userId},#{usebizId},#{bizId},#{bizType},#{status},#{optuser},now(),#{freezeTime},#{useTime},#{addip},#{remark})
+<selectKey resultType="java.lang.Integer" order="AFTER" keyProperty="id">  
+	SELECT LAST_INSERT_ID() AS ID    
+</selectKey>
+</insert>
+
+<insert id="addByRed" parameterType="com.dxjr.portal.red.entity.RedAccountLog">
+insert into t_red_envelop_account_log(
+	RED_ID,MONEY,USER_ID,USEBIZ_ID,BIZ_ID,BIZ_TYPE,
+	`STATUS`,OPTUSER,OPTTIME,FREEZE_TIME,USE_TIME,
+	ADDIP,REMARK)
+SELECT 
+	a.ID,a.MONEY,a.USER_ID,a.USEBIZ_ID,#{bizId},#{bizType},
+	a.status,#{optuser},now(),a.FREEZE_TIME,a.USE_TIME,
+	#{addip},#{remark}
+from t_red_envelop_account a where a.id=#{redId}
+<selectKey resultType="java.lang.Integer" order="AFTER" keyProperty="id">  
+	SELECT LAST_INSERT_ID() AS ID    
+</selectKey>
+</insert>
+ 
+ 
+</mapper>

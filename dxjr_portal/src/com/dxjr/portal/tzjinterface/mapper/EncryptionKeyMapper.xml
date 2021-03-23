@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.dxjr.portal.tzjinterface.mapper.EncryptionKeyMapper">
+	
+	<!-- 返回的结果集 -->
+	<resultMap type="com.dxjr.portal.tzjinterface.vo.EncryptionKeyVo" id="EncryptionKeyResultMap">
+		<id property="id" column="ID" />
+		<result property="addTime" 		column="ADD_TIME" />
+		<result property="ts" 			column="TS" />
+		<result property="dr" 		    column="DR" />
+		<result property="version"	    column="version" />		
+	</resultMap>
+	
+			<!--基本列 -->
+			<sql id="EncryptionKeyBaseColumn">
+				                    tek.ID,
+		                            tek.ADD_TIME,
+		                            tek.TS,
+		                            tek.DR,
+		                            tek.version  
+			</sql>
+	
+	<!-- 封装查询条件 -->
+	<sql id="EncryptionKey_Where_Clause">
+		<if test="id != null">
+			and tek.id =#{id}
+		</if>
+	</sql>
+	
+  	<!-- 根据条件查询记录集合 -->
+	<select id="queryNewestEncryptionKey" parameterType="java.lang.Integer" resultMap="EncryptionKeyResultMap" >
+		select 	
+		   <include refid="EncryptionKeyBaseColumn"/>
+		from
+		tzj_encryption_key tek WHERE tek.DR = 1 
+		<include refid="EncryptionKey_Where_Clause"/>
+		ORDER BY tek.version DESC limit 1
+		
+  	</select>
+  	
+  	 
+</mapper>  

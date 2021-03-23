@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.dxjr.portal.member.mapper.IntegralMapper">
+	
+	<!-- 返回的结果集 -->
+	<resultMap type="com.dxjr.portal.member.vo.IntegralVo" id="integralMapperResultMap">
+		<id property="id" column="id" />
+		<result property="userId" 					column="USER_ID" />
+		<result property="creditLevel" 				column="CREDITLEVEL" />
+		<result property="creditIntegral" 			column="CREDITINTEGRAL" />
+		<result property="investLevel" 				column="INVESTLEVEL" />
+		<result property="investIntegral"	    	column="INVESTINTEGRAL" />
+		<result property="integral"  				column="INTEGRAL" />
+	</resultMap>
+	
+	<!--基本列 -->
+	<sql id="integralBaseColumn">
+		i.ID, 
+		i.USER_ID, 
+		i.CREDITLEVEL, 
+		i.CREDITINTEGRAL, 
+		i.INVESTLEVEL, 
+		i.INVESTINTEGRAL, 
+		i.INTEGRAL
+	</sql>
+	
+	<!-- 封装查询条件 -->
+	<sql id="integral_Where_Clause">
+		<if test="id != null">
+			and i.id =#{id}
+		</if>
+		<if test="userId != null ">
+			and i.USER_ID = #{userId}
+		</if>
+	</sql>
+	
+  	<!-- 根据条件查询记录集合 -->
+	<select id="queryIntegralList" parameterType="com.dxjr.portal.member.vo.IntegralCnd" resultMap="integralMapperResultMap" >
+		select 	
+		   <include refid="integralBaseColumn"/>
+		from
+			ROCKY_INTEGRAL i
+		where 1=1
+		<include refid="integral_Where_Clause"/>
+  	</select>
+  	
+  	  	<!-- 根据条件查询记录数量-->
+	<select id="queryIntegralCount" parameterType="com.dxjr.portal.member.vo.IntegralCnd" resultType="java.lang.Integer" >
+		select count(i.id)
+		from
+			ROCKY_INTEGRAL i
+		where 1=1
+		<include refid="integral_Where_Clause"/>
+  	</select>
+</mapper>  

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dxjr.wx.entry.message.autoreply.mapper.AutoMapper" >
+  <resultMap id="BaseResultMap" type="com.dxjr.wx.entry.message.autoreply.vo.Auto" >
+    <id column="ID" property="id" jdbcType="INTEGER" />
+    <result column="K_ID" property="kId" jdbcType="INTEGER" />
+    <result column="CONTENT" property="content" jdbcType="VARCHAR" />
+    <result column="STATUS" property="status" jdbcType="INTEGER" />
+    <result column="EVENT_KEY" property="eventKey" jdbcType="VARCHAR" />
+    <result column="need_permission" property="needPermission" />
+  </resultMap>
+ 
+  <sql id="Base_Column_List" >
+    ID, K_ID, CONTENT, STATUS, EVENT_KEY,need_permission
+  </sql>
+  <select id="queryTextByEvent" parameterType="com.dxjr.wx.entry.message.autoreply.vo.Auto" resultMap="BaseResultMap">
+  		SELECT au.* FROM wx_auto_reply AS au WHERE au.EVENT_KEY=(SELECT m.ID FROM wx_menu as m 
+  		WHERE m.EVENT_KEY=#{key})
+  		AND au.STATUS=1 limit 0,1;
+  </select>
+  
+  <select id="queryByKeyWord" resultMap="BaseResultMap" parameterType="java.lang.String">
+      SELECT 
+      au.* from  wx_auto_reply as au WHERE K_ID=(SELECT k.ID FROM wx_keyword AS k WHERE k.KEY_WORD LIKE concat('%',#{key},'%') limit 0,1) 
+      AND au.STATUS=1 limit 1;
+  </select>
+</mapper>

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CHINABANK>
+    <VERSION>${version?if_exists}</VERSION>
+    <MERCHANT>${merchant?if_exists}</MERCHANT>
+    <TERMINAL>${terminal?if_exists}</TERMINAL>
+    <DATA>${data?if_exists}</DATA>
+    <SIGN>${sign?if_exists}</SIGN>
+</CHINABANK>

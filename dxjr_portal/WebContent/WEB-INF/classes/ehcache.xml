@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ehcache>
+	<diskStore path="java.io.tmpdir"/>
+
+	<!-- set default cache -->
+	<defaultCache
+			maxElementsInMemory="10000"
+			eternal="false"
+			overflowToDisk="true"
+			timeToIdleSeconds="0"
+			timeToLiveSeconds="0"
+			diskPersistent="false"
+			diskExpiryThreadIntervalSeconds="120"/>
+
+	<!-- 手机验证码cache-->
+	<cache name="phoneCache"
+		   maxElementsInMemory="10000"
+		   eternal="false"
+		   timeToIdleSeconds="180"
+		   timeToLiveSeconds="180"
+		   overflowToDisk="true"
+		   diskPersistent="false"
+		   diskExpiryThreadIntervalSeconds="60"/>
+		   
+	<!-- vip提醒cache-->
+	<cache name="vipCache"
+		   maxElementsInMemory="10000"
+		   eternal="false"
+		   timeToIdleSeconds="0"
+		   timeToLiveSeconds="0"
+		   overflowToDisk="true"
+		   diskPersistent="false"
+		   diskExpiryThreadIntervalSeconds="60"/>
+
+	<!-- 12月活动奖励推荐cache -->
+	<cache name="inviteCache"
+			maxElementsInMemory="100"
+			eternal="false"
+			timeToIdleSeconds="86400"
+			timeToLiveSeconds="86400"
+			overflowToDisk="true"
+			diskPersistent="false"
+			diskExpiryThreadIntervalSeconds="60"/>
+
+	<!-- 数据字典缓存 -->
+	<cache name="queryAllConfigurations"
+			maxElementsInMemory="10000"
+			maxElementsOnDisk="10000000"
+			eternal="false"
+			overflowToDisk="true"
+			timeToIdleSeconds="0"
+			timeToLiveSeconds="0"
+			diskPersistent="false"
+			diskExpiryThreadIntervalSeconds="120"
+			diskSpoolBufferSizeMB="30"
+			memoryStoreEvictionPolicy="LRU"/>		   
+</ehcache>

@@ -33,6 +33,7 @@ public class TestJedis {
 	        System.out.println(jedis.hget("myhash2", "username"));
 	        jedis.del("myhash2");
 	        System.out.println(jedis.get("myhash2"));
+	        System.out.println(jedis.get("myhash2"));
 		/*
 		 * jedis.lpush("list", "a"); jedis.lpush("list", "b"); jedis.lpush("list", "c");
 		 * jedis.lpush("list", "d");
